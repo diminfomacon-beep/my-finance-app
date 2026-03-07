@@ -23,13 +23,15 @@
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
-    background: #FEE84A;
+    background: #ffb347;
     color: #000;
     transition: 0.15s;
   }
   .dim-nav-btn.active {
-    background: #ED7800;
-    color: #c6dbd7;
+    background: #000;
+    border: 2px solid #ffb347;
+    border-radius: 10px;
+    color: #ffb347;
   }
   .dim-nav-btn:hover {
     transform: translateY(-2px);
@@ -45,9 +47,11 @@
   /* Products grid */
   .dim-products-grid {
     display: grid;
+    max-width: 1200px;
+    margin: auto;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    
+    justify-content: center;    
     padding: 20px;
     margin-top: 20px
   }
@@ -147,11 +151,13 @@
   .dim-floating-cart-wrapper {
     position: fixed;
     right: 20px;
-    bottom: 20px;
+    top: 15px;
     z-index: 9999;
   }
   .dim-floating-cart-icon {
-    position: relative;
+    position: fixed;
+    top: 15px;
+    right: 20px;
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -227,6 +233,8 @@
   }
   .dim-product-card {
   background: #CAE4DB;
+  width: 100%;
+  max-width: 280px;
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -317,7 +325,7 @@
         <input type="text" id="dim-search-input" placeholder="Search products..." />
         <select id="dim-filter-select">
           <option value="">All Categories</option>
-          <option value="tshirt">T-Shirts</option>
+          <option value="apparel">Apparels</option>
           <option value="mug">Mugs</option>
           <option value="games">Games</option>
           <option value="home">Home and Decor</option>
@@ -643,7 +651,6 @@
                     alt="PayPal" style="height:24px;">
                 Pay with PayPal
               </button>
-            
 
             </form>
           </div>
@@ -665,7 +672,7 @@
 
 <script>
 var products = [
-  {name: "Rooted in Christ T-Shirt",category: "tshirt",description: "High-quality graphic tee featuring the Rooted in Christ design.",images: ["https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/Rooted%20in%20Christ.jpg"],basePrice: 15.99,variations: [{ label: "Small", extra: 0 },{ label: "Medium", extra: 0 },{ label: "XL", extra: 2.00 },{ label: "XXL", extra: 4.00 }]},
+  {name: "Rooted in Christ T-Shirt",category: "apparel",description: "High-quality graphic tee featuring the Rooted in Christ design.",images: ["https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/Rooted%20in%20Christ.jpg"],basePrice: 15.99,variations: [{ label: "Small", extra: 0 },{ label: "Medium", extra: 0 },{ label: "XL", extra: 2.00 },{ label: "XXL", extra: 4.00 }]},
 
   {name: "Cardboard Puzzle",category: "games",description: "9.5x7.5 inches, 30 pieces. Customize it with memories, kids art or whatever your heart desires.",images: ["https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SFS-SPUZ30puzzle_1.png"],basePrice: 10.00},
 
