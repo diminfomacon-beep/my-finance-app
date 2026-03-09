@@ -653,18 +653,15 @@ box-shadow:0 10px 18px rgba(0,0,0,0.18);
 
           <!-- PayPal Standard Checkout link -->
           <div style="display: flex; justify-content: flex-end;">
-            <form id="dim-paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-
-            <input type="hidden" name="cmd" value="_cart">
-            <input type="hidden" name="upload" value="1">
-
-            <input type="hidden" name="business" value="attestedfs@gmail.com">
-            <input type="hidden" name="currency_code" value="USD">
-
-            <input type="hidden" name="return" value="https://www.dimbrightideas.com/home?checkout=success">
-            <input type="hidden" name="cancel_return" value="https://www.dimbrightideas.com/store">
-
-            <div id="dim-paypal-hidden-fields"></div>
+            <form id="dim-paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" style="display:none;">
+              <input type="hidden" name="cmd" value="_cart">
+              <input type="hidden" name="upload" value="1">
+              <input type="hidden" name="business" value="your-email@example.com">
+              <input type="hidden" name="currency_code" value="USD">
+              
+              <div id="dim-paypal-hidden-fields"></div>
+          </form>
+        </div>
           
             
               <button id="dim-paypal-checkout-button" style="
@@ -982,42 +979,50 @@ function renderCheckoutView() {
     document.getElementById("dim-checkout-subtotal").textContent = formatCurrency(subtotal);
     document.getElementById("dim-checkout-total").textContent = formatCurrency(subtotal); // Add tax/shipping logic if needed
 }
-document.getElementById("dim-paypal-checkout-button").onclick = function(e) {
+document.getElementById("dim-paypal-checkout-button").onclick = function() {
     // 1. Basic Cart Check
     if (cart.length === 0) {
         alert("Your cart is empty.");
         return false;
     }
 
-    // 2. Validation Check (Info + Terms)
-    if (!validateCheckout()) {
-        // Validation failed; alert is handled inside validateCheckout
+    // 2. Validation Check (Your Info + Terms Check)
+    if (typeof validateCheckout === "function") {
+        if (!validateCheckout()) return false;
+    }
+
+    // 3. Prepare the Form
+    const hiddenFields = document.getElementById("dim-paypal-hidden-fields");
+    const paypalForm = document.getElementById("dim-paypal-form");
+    
+    if (!paypalForm || !hiddenFields) {
+        alert("Checkout system error: Form elements missing.");
         return false;
     }
 
-    // 3. If valid, build the PayPal hidden fields
-    var hiddenFields = document.getElementById("dim-paypal-hidden-fields");
+    // Clear any previous items from the hidden div
     hiddenFields.innerHTML = "";
 
+    // 4. Inject Cart Items into the Form
     cart.forEach(function(item, index) {
-        var i = index + 1;
-        
-        // Item Name
-        var nameInput = document.createElement("input");
+        const i = index + 1;
+
+        // Create Item Name input
+        const nameInput = document.createElement("input");
         nameInput.type = "hidden";
-        nameInput.name = "item_name_" + i;
+        nameInput.name = `item_name_${i}`;
         nameInput.value = item.name;
 
-        // Amount
-        var amountInput = document.createElement("input");
+        // Create Amount input
+        const amountInput = document.createElement("input");
         amountInput.type = "hidden";
-        amountInput.name = "amount_" + i;
+        amountInput.name = `amount_${i}`;
         amountInput.value = item.price;
 
-        // Quantity
-        var qtyInput = document.createElement("input");
+        // Create Quantity input
+        const qtyInput = document.createElement("input");
         qtyInput.type = "hidden";
-        qtyInput.name = "quantity_" + i;
+        qtyInput.name = `quantity_${i}`;
         qtyInput.value = item.quantity;
 
         hiddenFields.appendChild(nameInput);
@@ -1025,8 +1030,9 @@ document.getElementById("dim-paypal-checkout-button").onclick = function(e) {
         hiddenFields.appendChild(qtyInput);
     });
 
-    // 4. Submit the actual form to PayPal
-    document.getElementById("dim-paypal-form").submit();
+    // 5. Submit the Form
+    // target="_top" ensures it breaks out of the Google Sites iframe
+    paypalForm.submit();
 };
 function validateCheckout() {
     // Check Terms and Conditions
