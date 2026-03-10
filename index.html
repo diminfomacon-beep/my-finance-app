@@ -662,19 +662,7 @@ box-shadow:0 10px 18px rgba(0,0,0,0.18);
         </div>
           
             
-              <button id="dim-paypal-checkout-button" style="
-                background-color: #003087;  /* PayPal blue */
-                color: #e9e5e5;             /* White text */
-                font-weight: bold;
-                font-size: 16px;
-                padding: 12px 24px;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-              ">
+              <button id="dim-paypal-checkout-button" style=" background-color: #003087; color: #e9e5e5; font-weight: bold; font-size: 16px; padding: 12px 24px; border: none;  border-radius: 10px;  cursor: pointer; display: flex;  align-items: center;  gap: 8px;">
                 <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" 
                     alt="PayPal" style="height:24px;">
                 Pay with PayPal
@@ -689,12 +677,37 @@ box-shadow:0 10px 18px rgba(0,0,0,0.18);
 </div>
 
 <!-- Floating Cart -->
+<!-- Floating Cart Button + Slide-Out Drawer -->
 <div class="dim-floating-cart-wrapper">
+  <!-- Floating Cart Button -->
   <div class="dim-floating-cart-icon" id="dim-floating-cart-button">
     <span class="dim-floating-cart-count" id="dim-floating-cart-count">0</span>
     <svg viewBox="0 0 24 24" width="28" height="28">
       <path d="M7 4h-2l-1 2h2l2.6 7.59L7.24 16.04C7.09 16.32 7 16.65 7 17a2 2 0 1 0 2 2h6a2 2 0 1 0 2-2c0-.35-.09-.68-.24-.96l1.88-3.76A1 1 0 0 0 18 10H10l-.75-2H20V6H8.42L7.7 4.29A1 1 0 0 0 7 4z"/>
     </svg>
+  </div>
+
+  <!-- Slide-Out Cart Drawer -->
+  <div id="dim-cart-drawer" style="
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+      z-index: 9999;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      padding: 20px;
+      display: block;
+  ">
+      <h3 style="text-align:center;">Your Cart</h3>
+      <div id="dim-drawer-cart-body"></div>
+      <div style="text-align:center; margin-top:20px;">
+          <button id="dim-drawer-checkout-btn" class="dim-btn dim-btn-primary">Go to Checkout</button>
+      </div>
   </div>
 </div>
 
@@ -963,7 +976,65 @@ function removeCartItem(index) {
     renderCartView();
     renderCheckoutView();
 }
+// Existing cart array and functions assumed
+// let cart = []; // already exists
+// function formatCurrency(), changeQty(), saveCart(), renderCartView() etc.
 
+// Drawer toggle
+// Drawer toggle
+const drawer = document.getElementById("dim-cart-drawer");
+const cartBtn = document.getElementById("dim-floating-cart-button");
+
+cartBtn.addEventListener("click", () => {
+    if(drawer.style.transform === "translateX(0%)") {
+        drawer.style.transform = "translateX(100%)"; // hide
+    } else {
+        renderDrawerCart();           // populate cart
+        drawer.style.transform = "translateX(0%)";   // show
+    }
+});
+
+// Optional: close drawer if clicking outside
+document.addEventListener("click", e => {
+    if(!drawer.contains(e.target) && !cartBtn.contains(e.target)) {
+        drawer.style.transform = "translateX(100%)";
+    }
+});
+
+// Render drawer contents
+function renderDrawerCart() {
+    const container = document.getElementById("dim-drawer-cart-body");
+    container.innerHTML = "";
+
+    if(cart.length === 0){
+        container.innerHTML = "<p style='text-align:center;'>Your cart is empty.</p>";
+        return;
+    }
+
+    cart.forEach((item,index)=>{
+        const div = document.createElement("div");
+        div.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;";
+
+        div.innerHTML = `
+            <div style="flex:1;">${item.name} (${item.quantity})</div>
+            <div style="flex-shrink:0;">${formatCurrency(item.price * item.quantity)}</div>
+            <button style="margin-left:5px;" onclick="changeQty(${index},-1)">-</button>
+            <button onclick="changeQty(${index},1)">+</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// Checkout button
+document.getElementById("dim-drawer-checkout-btn").addEventListener("click", () => {
+    drawer.style.transform = "translateX(100%)";
+    switchView("checkout"); // or your existing checkout function
+});
+
+// Update cart count live
+function updateCartCount() {
+    document.getElementById("dim-floating-cart-count").textContent = cart.reduce((sum,i)=>sum+i.quantity,0);
+}
 /**
  * VIEW RENDERING (CART / CHECKOUT)
  */
@@ -1087,6 +1158,7 @@ document.getElementById("dim-paypal-checkout-button").onclick = function() {
     // target="_top" ensures it breaks out of the Google Sites iframe
     paypalForm.submit();
 };
+
 function validateCheckout() {
     // Check Terms and Conditions
     var terms = document.getElementById("dim-terms-checkbox");
