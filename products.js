@@ -1,5 +1,7 @@
-  var products = [
+ /*PRODUCTS.JS*/
+ var products = [
     {
+      id: "GA-CPVN01",
       name: "Cardboard Puzzle",
       category: "game",
       description: "9.5x7.5 inches, 30 pieces. Customize it with memories, kids art or whatever your heart desires.",
@@ -8,6 +10,7 @@
     },
 
     {
+      id: "MU-CCVN01",
       name: "Coffee Cup - 10oz",
       category: "mug",
       description: "Double-wall vacuum insulated cup with tinted sliding lid",
@@ -16,6 +19,7 @@
     },
 
     {
+      id: "HO-CJV201",
       name: "Candle Jar",
       category: "home",
       description: "10oz glass candle jar. Diameter 10 inches and height 3.7 inches. Perfect for gifting and fully customizable",
@@ -28,6 +32,7 @@
     },
 
     {
+      id: "BO-KWV601",
       name: "Kids Water Bottle - 12oz",
       category: "bottle",
       description: "Leak proof flip top lid and built in internal straw. Avaiable in multiple colors.",
@@ -44,6 +49,7 @@
     },
 
     {
+      id: "TU-SWGVN1",
       name: "Stemless Wine Glass - 12oz", 
       category: "tumbler",
       description: "Stemless tumbler shape wineglass withdouble-wall vacuum insulated and clear sliding lid. Comes with a clear straw.",
@@ -52,6 +58,7 @@
     },
 
     {
+      id: "BA-TV3001",
       name: "Tote Bag",
       category: "bag", 
       description: "13.5 inches x 13.5 inches x 4 inches customizable tote bag, available in multiple colors.",
@@ -65,6 +72,7 @@
     },
 
     {
+      id: "MU-CCCVN1",
       name: "Ceramic Coffee Mug - 15oz", 
       category: "mug",
       description: "Ceramic coffee mug perfect for gifting and fully customizable print.",
@@ -73,6 +81,7 @@
     },
 
     {
+      id: "MU-CHHVN1",
       name: "Ceramic Heat Changing Coffee Mug - 15oz",
       category: "mug",
       description: "Perfect for gifting. Changes color with hot liquid. Customizable.",
@@ -81,6 +90,7 @@
     },
 
     {
+      id: "MU-GCVN01",
       name: "Glass Coffee Mug - 15oz", 
       category: "mug",
       description: "Glitter globe glass coffee mug with woodes straw lid and clear plastic straw. ",
@@ -89,6 +99,7 @@
     },
 
     {
+      id: "HO-ASPVN1",
       name: "Aluminum Spray Bottle - 16oz", 
       category: "home",
       description: "Useful spray bottle withscrew-on spray head.",
@@ -97,6 +108,7 @@
     },
 
     {
+      id: "MU-GCVN02",
       name: "Glass Coffee Mug", 
       category: "mug",
       description: "17oz matte glass coffee mug. Custmizable and perfect for gifting.",
@@ -105,6 +117,7 @@
     },
 
     {
+      id: "HO-SDVN01",
       name: "Soap Dispenser", 
       category: "home",
       description: "18oz handsoap dispenser. Design it your way for a personalized feel.",
@@ -113,6 +126,7 @@
     },
 
     {
+      id: "HO-BV4001",
       name: "Blanket", 
       category: "home",
       description: "Multiple layout designs, soft minky material. Capture you precious moments for a lifetime.",
@@ -127,6 +141,7 @@
     },
     
     {
+      id: "TU-SV1601",
       name: "20oz Skinny Tumbler", 
       category: "tumbler",
       description: "Skinny tumblers is a variety of color options. Duo tumblers comes with 2 lids. Customizable.",
@@ -153,6 +168,7 @@
     },
 
     {
+      id: "TU-GGV301",
       name: "Gradient Glass Tumbler", 
       category: "tumbler",
       description: "20oz gradient glass skinny tumbler available in multiple colors. Comes  with2 lids.",
@@ -166,6 +182,7 @@
     },
 
     {
+      id: "TU-GV7001",
       name: "Grippy Tumbler", 
       category: "tumbler",
       description: "Comes ith clear twist on lid, removable handle and metal straw available in multiple colors, styles and sizes. ",
@@ -183,6 +200,7 @@
     },
 
     {
+      id: "TU-SGV201",
       name: "Snow Globe Tumbler", 
       category: "tumbler",
       description: "This 20oz tumbler is perfect for seasonal designs and comes with a sliding lid and steel straw. Available with or without handle.",
@@ -195,6 +213,7 @@
     },
 
     {
+      id: "TU-TRV201",
       name: "Tri Sip Tumbler", 
       category: "tumbler",
       description: "Offers three different drinking styles and comes witha clear screw-on tri-sip lid with black handle and accents. Built in flip straw and straw insert option. Comes in 2 sizes.",
@@ -207,6 +226,7 @@
     },
 
     {
+      id: "TU-SPV501",
       name: "Speaker Tumbler", 
       category: "tumbler",
       description: "Tumblers with detachable bluetooth speaker. Available in multiple sizes.",
@@ -222,6 +242,7 @@
     },
 
     {
+      id: "TU-FVN001",
       name: "Fatty Tumbler", 
       category: "tumbler",
       description: "Double wall vacuum insulated with tinted lid and clear straw. Diameter is 3.45 inches",
@@ -230,6 +251,7 @@
     },
 
     {
+      id: "BO-HHV101",
       name: "Hydro Handle Bottle", 
       category: "bottle",
       description: "Available in a variety of sizes. Personalize it your way.",
@@ -250,7 +272,8 @@
     },
 
     {
-      name: "Big Swig Tumbler", 
+      id: "TU-BSV201",
+      name: "40oz Big Swig Tumbler", 
       category: "tumbler",
       description: "Vacuum insulated, detachable handle, screw on lid, stainless steel straw.",
       images: ["https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/40SUBBIGSWIG1.png","https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/40SUBHOLOBIGSWIG1.png"],
@@ -262,6 +285,7 @@
     },
 
     {
+      id: "TU-BSOV71",
       name: "40oz Big Swig Ombre Game Day Collection Tumbler ", 
       category: "tumbler",
       description: "Double Wall Vacuum, detachable handle with silicone accents. Free matching mini 4oz mini traveler key chain tumbler.",
@@ -279,6 +303,7 @@
     },
 
     {
+      id: "TU-TV5001",
       name: "Traveler Tumbler", 
       category: "tumbler",
       description: "Get ready for that road trip with a personalized tumbler. Multiple options available.",
@@ -294,6 +319,7 @@
     },
 
     {
+      id: "HO-SPFVN1",
       name: "Slate Photo Frame", 
       category: "home",
       description: "7.8 inches x 11.8 inches photo frame with display stand included.",
@@ -302,6 +328,7 @@
     },
 
     {
+      id: "HO-TWPHV2",
       name: "Tabletop Wood Photo Panel", 
       category: "home",
       description: "Preserve precious moments or personalized gifts. Availale in two sizes.",
@@ -314,6 +341,7 @@
     },
 
     {
+      id: "HO-WPPV21",
       name: "Wood Photo Panel", 
       category: "home",
       description: "8 inches x 10 inches. Perfect for showcasing your precious moments or personalized gifting.",
@@ -326,6 +354,7 @@
     },
 
     {
+      id: "BO-FV1001",
       name: "Flask", 
       category: "bottle",
       description: "7oz flask, perfect for gifting. Personalize it with custom designs.",
@@ -334,6 +363,7 @@
     },
 
     {
+      id: "AP-BOV401",
       name: "Baby Onesie", 
       category: "apparel",
       description: "Personalized baby body suit to capture those precious moments. Perfect for gifting.",
@@ -348,6 +378,7 @@
     },
 
     {
+      id: "HO-SCV101",
       name: "Storage Container", 
       category: "home",
       description: "Glazed ceramic sassy storage container with removable lid. Ideal for storing treats or small items. 3.5 inches tall without lid and 3.5 inchs diameter at bottom.",
@@ -356,6 +387,7 @@
     },
 
     {
+      id: "AP-BBSPV1",
       name: "Baby Bibb with Spill Pocket", 
       category: "apparel",
       description: "10.24 x 9.06 inches made from linen and neoprene providing durability and comfort for your little one.",
@@ -364,21 +396,7 @@
     },
 
     {
-      name: "Custom Print White T-Shirt",
-      category: "apparel",
-      description: "Polyester white T-shirt ready for your custom design.Perfect for events and special occasions.",
-      images: ["https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"],
-      basePrice: 15.99,
-      variations: [
-        { label: "Small", extra: 0, image:"https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"},
-        { label: "Medium", extra: 0, image:"https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"},
-        { label: "Large", extra: 0, image:"https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"},
-        { label: "XL", extra: 0, image:"https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"},
-        { label: "XXL", extra: 0, image:"https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"}
-      ]
-    },
-
-    {
+      id: "AP-ATSVM1",
       name: "Adult White Polyester Graphic T-Shirt",
       category: "apparel",
       description: "Premium polyester shirt with multiple design styles.",
@@ -399,9 +417,36 @@
       {label:"Logo Front", extra:0, image:"https://yoursite.com/images/shirt-vinyl.png"},
       {label:"Large Front", extra:3, image:"https://yoursite.com/images/shirt-dtf.png"},
       {label:"Large Back", extra:3, image:"https://yoursite.com/images/shirt-dtf.png"},
-      {label:"Logo Front & Large Back", extra:43, image:"https://yoursite.com/images/shirt-sublimation.png"}
+      {label:"Logo Front & Large Back", extra:6, image:"https://yoursite.com/images/shirt-sublimation.png"}
+      ]
+    },
+
+    {
+      id: "AP-ATSVM2",
+      name: "Adult Cotton T-Shirt",
+      category: "apparel",
+      description: "Premium polyester shirt with multiple design styles.",
+      basePrice: 15.99,
+
+      images:["https://raw.githubusercontent.com/diminfomacon-beep/store-app-full-checkout/main/product-pics/SUBSHIRT%20s%20xx%20xxx.png"],
+
+      sizes:[
+      {label:"S", extra:0},
+      {label:"M", extra:0},
+      {label:"L", extra:0},
+      {label:"XL", extra:0},
+      {label:"2XL", extra:0},
+      {label:"3XL", extra:0}
+      ],
+
+      styles:[
+      {label:"Logo Front", extra:0, image:"https://yoursite.com/images/shirt-vinyl.png"},
+      {label:"Large Front", extra:3, image:"https://yoursite.com/images/shirt-dtf.png"},
+      {label:"Large Back", extra:3, image:"https://yoursite.com/images/shirt-dtf.png"},
+      {label:"Logo Front & Large Back", extra:6, image:"https://yoursite.com/images/shirt-sublimation.png"}
       ]
     }
+
 
   ];
  
