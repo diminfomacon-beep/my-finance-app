@@ -8,6 +8,11 @@
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
         
+        /* Company Header */
+        .header { background: white; padding: 15px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+        .logo { max-height: 50px; font-weight: 900; color: var(--primary); font-size: 20px; letter-spacing: -1px; }
+
+        /* Navigation */
         .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; white-space: nowrap; }
         .nav-item { flex: 0 0 auto; padding: 15px 20px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
@@ -19,22 +24,30 @@
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
         h3 { margin-top: 0; font-size: 15px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
         label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
+        
+        /* Inputs */
         input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+        .search-bar { background: #fff; border: 2px solid #e2e8f0; margin-bottom: 15px; padding-left: 35px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'); background-repeat: no-repeat; background-position: 10px center; }
         
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
         .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 12px; font-weight: bold; }
         
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #eee; }
+        .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; }
 
-        /* Modal for Spec Picker */
         #specModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
-        .modal-content { background:white; width:90%; max-height:80%; border-radius:15px; padding:20px; overflow-y:auto; }
+        .modal-content { background:white; width:90%; border-radius:15px; padding:20px; }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; z-index:1000;}
     </style>
 </head>
 <body>
+
+    <div class="header">
+        <div class="logo">
+            COMPANY LOGO
+        </div>
+    </div>
 
     <div class="nav-bar">
         <div class="nav-item active" onclick="showPage('calc', this)">PRICING</div>
@@ -47,7 +60,7 @@
         <div id="calc" class="page active">
             <div class="card">
                 <h3>Product Template</h3>
-                <label>Template Name</label><input type="text" id="prodName" placeholder="e.g. 20oz Tumbler - Full Wrap">
+                <label>Template Name</label><input type="text" id="prodName" placeholder="e.g. 20oz Tumbler">
                 <div id="material-list"></div>
                 <button class="btn-small" style="width:100%; border:2px dashed var(--primary); margin-top:10px;" onclick="addMaterialRow()">+ Add Material</button>
             </div>
@@ -58,57 +71,58 @@
                 </div>
                 <button class="btn-primary" onclick="saveProduct()">Save Product</button>
             </div>
-            <div class="card"><div id="saved-list"></div></div>
+            <div class="card">
+                <input type="text" class="search-bar" id="searchCalc" placeholder="Search templates..." oninput="renderSaved()">
+                <div id="saved-list"></div>
+            </div>
         </div>
 
         <div id="orders" class="page">
             <div class="card">
                 <h3>New Order</h3>
-                <label>Customer Name</label><input type="text" id="custName" placeholder="John Smith">
+                <label>Customer Name</label><input type="text" id="custName" placeholder="Name">
                 <label>Product Template</label><select id="orderProductSelect"></select>
                 <label>Quantity</label><input type="number" id="orderQty" value="1">
                 <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
-            <div class="card"><h3>Active Jobs</h3><div id="order-list"></div></div>
+            <div class="card">
+                <input type="text" class="search-bar" id="searchOrders" placeholder="Search customers..." oninput="renderOrders()">
+                <div id="order-list"></div>
+            </div>
         </div>
 
         <div id="inventory" class="page">
             <div class="card">
                 <h3>Add New Stock</h3>
-                <label>Blank Item</label><input type="text" id="invItemName" placeholder="e.g. White XL Poly Shirt">
+                <label>Blank Item</label><input type="text" id="invItemName" placeholder="e.g. XL Shirt">
                 <label>Stock Count</label><input type="number" id="invCount" value="0">
                 <button class="btn-primary" onclick="saveInventoryItem()">Save Blank</button>
             </div>
-            <div class="card"><h3>Inventory Status</h3><div id="inventory-list"></div></div>
+            <div class="card">
+                <input type="text" class="search-bar" id="searchInv" placeholder="Search inventory..." oninput="renderInventory()">
+                <div id="inventory-list"></div>
+            </div>
         </div>
 
         <div id="specs" class="page">
             <div class="card">
                 <h3>New Dimension Spec</h3>
-                <label>Preset Name</label><input type="text" id="specName" placeholder="e.g. Tumbler Full Wrap">
+                <label>Preset Name</label><input type="text" id="specName" placeholder="e.g. Full Wrap">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Width (In)</label><input type="number" id="specW" placeholder="9.3"></div>
-                    <div><label>Height (In)</label><input type="number" id="specH" placeholder="8.2"></div>
+                    <div><label>Width (In)</label><input type="number" id="specW" placeholder="0"></div>
+                    <div><label>Height (In)</label><input type="number" id="specH" placeholder="0"></div>
                 </div>
                 <button class="btn-primary" onclick="saveSpec()">Save Size</button>
             </div>
-            <div class="card"><h3>My Sizes</h3><div id="specs-list"></div></div>
+            <div class="card">
+                <input type="text" class="search-bar" id="searchSpecs" placeholder="Search sizes..." oninput="renderSpecs()">
+                <div id="specs-list"></div>
+            </div>
         </div>
     </div>
 
-    <div id="specModal">
-        <div class="modal-content">
-            <h3>Select Print Size</h3>
-            <div id="modal-options"></div>
-            <button class="btn-primary" style="margin-top:15px; background:#64748b;" onclick="closeModal()">Cancel</button>
-        </div>
-    </div>
-
-    <div class="bottom-bar" id="calc-footer">
-        <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>Calculated Price:</span> <span id="out-total">$0.00</span>
-        </div>
-    </div>
+    <div id="specModal"><div class="modal-content"><h3>Select Print Size</h3><div id="modal-options"></div><button class="btn-primary" style="margin-top:15px; background:#64748b;" onclick="closeModal()">Cancel</button></div></div>
+    <div class="bottom-bar" id="calc-footer"><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>Est. Total Price:</span> <span id="out-total">$0.00</span></div></div>
 
     <script>
         const PRICES = { "SubPaper": 1, "HTVPaper": 1, "IronOn": 3, "PermVinyl": 2, "PolyesterFabric": 2, "ButtonBase": 3, "PolyesterShirt": 15.99, "AdultCottonShirt": 15.99, "KidsCottonShirt": 10.99 };
@@ -123,112 +137,87 @@
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById(pId).classList.add('active'); el.classList.add('active');
             document.getElementById('calc-footer').style.display = (pId === 'calc') ? 'block' : 'none';
-            if(pId === 'orders') updateOrderDropdown();
-            if(pId === 'inventory') renderInventory();
-            if(pId === 'specs') renderSpecs();
-            if(pId === 'calc') renderSaved();
+            updateOrderDropdown(); renderInventory(); renderSpecs(); renderSaved(); renderOrders();
         }
 
-        /* --- SPEC MODAL LOGIC --- */
-        function openSpecPicker(btn) {
-            activeRowForSpec = btn.closest('.material-row').querySelector('.mat-qty');
-            const modal = document.getElementById('specModal');
-            const options = document.getElementById('modal-options');
-            modal.style.display = 'flex';
-            
-            if(specs.length === 0) {
-                options.innerHTML = "<p>No specs saved yet. Go to PRINT SPECS tab to add one!</p>";
-                return;
-            }
-
-            options.innerHTML = specs.map(s => `
-                <div class="list-row" onclick="applySpec(${s.w}, ${s.h})">
-                    <div><strong>${s.name}</strong><br><small>${s.w}" x ${s.h}"</small></div>
-                    <span style="color:var(--primary); font-weight:bold;">Apply</span>
-                </div>
-            `).join('');
+        /* --- LOGIC: DELETE & RENDER --- */
+        function deleteItem(type, id) {
+            if(!confirm("Are you sure you want to delete this?")) return;
+            if(type === 'prod') savedProducts = savedProducts.filter(x => x.id !== id);
+            if(type === 'order') savedOrders = savedOrders.filter(x => x.id !== id);
+            if(type === 'inv') inventory = inventory.filter(x => x.id !== id);
+            if(type === 'spec') specs = specs.filter(x => x.id !== id);
+            syncStorage();
         }
 
-        function applySpec(w, h) {
-            const sqFt = ((w * h) / 144).toFixed(2);
-            activeRowForSpec.value = sqFt;
-            closeModal();
-            calculate();
-        }
-
-        function closeModal() { document.getElementById('specModal').style.display = 'none'; }
-
-        /* --- PRINT SPECS LOGIC --- */
-        function saveSpec() {
-            const name = document.getElementById('specName').value, w = document.getElementById('specW').value, h = document.getElementById('specH').value;
-            if(!name || !w || !h) return;
-            specs.push({ id: Date.now(), name, w, h });
-            localStorage.setItem('mySpecs', JSON.stringify(specs));
-            document.getElementById('specName').value = ''; renderSpecs();
-        }
-        function renderSpecs() {
-            document.getElementById('specs-list').innerHTML = specs.map(s => `
-                <div class="list-row">
-                    <div><strong>${s.name}</strong><br><small>${s.w}" x ${s.h}" (${((s.w*s.h)/144).toFixed(2)} sq ft)</small></div>
-                    <button onclick="deleteSpec(${s.id})" style="border:none; color:red;">✕</button>
-                </div>`).join('');
-        }
-        function deleteSpec(id) { specs = specs.filter(x=>x.id!==id); localStorage.setItem('mySpecs', JSON.stringify(specs)); renderSpecs(); }
-
-        /* --- INVENTORY LOGIC --- */
-        function saveInventoryItem() {
-            const name = document.getElementById('invItemName').value, count = parseInt(document.getElementById('invCount').value) || 0;
-            if(!name) return;
-            inventory.push({ id: Date.now(), name, count });
+        function syncStorage() {
+            localStorage.setItem('myProducts', JSON.stringify(savedProducts));
+            localStorage.setItem('myOrders', JSON.stringify(savedOrders));
             localStorage.setItem('myInventory', JSON.stringify(inventory));
-            document.getElementById('invItemName').value = ''; renderInventory();
+            localStorage.setItem('mySpecs', JSON.stringify(specs));
+            renderSaved(); renderOrders(); renderInventory(); renderSpecs();
         }
-        function adjustStock(id, amt) {
-            const item = inventory.find(x => x.id === id);
-            item.count = Math.max(0, item.count + amt);
-            localStorage.setItem('myInventory', JSON.stringify(inventory)); renderInventory();
-        }
-        function renderInventory() {
-            document.getElementById('inventory-list').innerHTML = inventory.map(item => `
+
+        function renderSaved() {
+            const term = document.getElementById('searchCalc').value.toLowerCase();
+            document.getElementById('saved-list').innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `
                 <div class="list-row">
-                    <strong>${item.name}</strong>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <button class="btn-small" onclick="adjustStock(${item.id}, -1)">-</button>
-                        <span style="min-width:25px; text-align:center;">${item.count}</span>
-                        <button class="btn-small" onclick="adjustStock(${item.id}, 1)">+</button>
+                    <div><strong>${p.name}</strong><br><small>$${p.total}</small></div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-small" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="btn-small" style="color:red;" onclick="deleteItem('prod', ${p.id})">✕</button>
                     </div>
                 </div>`).join('');
         }
 
-        /* --- PRICING & ORDERS --- */
-        function addMaterialRow(type="SubPaper", qty=1) {
-            const div = document.createElement('div'); div.className = 'material-row';
-            div.innerHTML = `<div><label>Type</label><select class="mat-type" onchange="calculate()">${Object.keys(PRICES).map(k=>`<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}</select></div>
-                <div><label>Qty/SqFt <span onclick="openSpecPicker(this)" style="cursor:pointer;">📏</span></label><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
-                <button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red; padding-bottom:10px;">✕</button>`;
-            document.getElementById('material-list').appendChild(div); calculate();
+        function renderOrders() {
+            const term = document.getElementById('searchOrders').value.toLowerCase();
+            document.getElementById('order-list').innerHTML = savedOrders.filter(o => o.customer.toLowerCase().includes(term)).map(o => `
+                <div class="list-row">
+                    <div><strong>${o.customer}</strong><br><small>${o.qty}x ${o.productName}</small></div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-small" onclick="toggleOrderStatus(${o.id})">${o.status}</button>
+                        <button class="btn-small" style="color:red;" onclick="deleteItem('order', ${o.id})">✕</button>
+                    </div>
+                </div>`).join('');
         }
-        function calculate() {
-            let mTotal = 0; document.querySelectorAll('.material-row').forEach(r => { mTotal += (PRICES[r.querySelector('.mat-type').value] || 0) * (parseFloat(r.querySelector('.mat-qty').value) || 0); });
-            const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-            const total = ((mTotal + (mins / 60 * 32)) * (parseFloat(document.getElementById('markup').value) || 1)) * 1.07;
-            document.getElementById('out-total').innerText = `$${total.toFixed(2)}`; return total.toFixed(2);
+
+        function renderInventory() {
+            const term = document.getElementById('searchInv').value.toLowerCase();
+            document.getElementById('inventory-list').innerHTML = inventory.filter(i => i.name.toLowerCase().includes(term)).map(item => `
+                <div class="list-row">
+                    <strong>${item.name}</strong>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="btn-small" onclick="adjustStock(${item.id}, -1)">-</button>
+                        <span style="min-width:20px; text-align:center;">${item.count}</span>
+                        <button class="btn-small" onclick="adjustStock(${item.id}, 1)">+</button>
+                        <button class="btn-small" style="color:red;" onclick="deleteItem('inv', ${item.id})">✕</button>
+                    </div>
+                </div>`).join('');
         }
-        function saveProduct() {
-            const data = { id: editingId || Date.now(), name: document.getElementById('prodName').value || "Unnamed", materials: Array.from(document.querySelectorAll('.material-row')).map(r => ({ type: r.querySelector('.mat-type').value, qty: r.querySelector('.mat-qty').value })), labor: document.getElementById('laborMinutes').value, markup: document.getElementById('markup').value, total: calculate() };
-            if(editingId) { savedProducts[savedProducts.findIndex(p=>p.id===editingId)] = data; } else { savedProducts.unshift(data); }
-            localStorage.setItem('myProducts', JSON.stringify(savedProducts)); resetForm(); renderSaved();
+
+        function renderSpecs() {
+            const term = document.getElementById('searchSpecs').value.toLowerCase();
+            document.getElementById('specs-list').innerHTML = specs.filter(s => s.name.toLowerCase().includes(term)).map(s => `
+                <div class="list-row">
+                    <div><strong>${s.name}</strong><br><small>${s.w}"x${s.h}"</small></div>
+                    <button class="btn-small" style="color:red;" onclick="deleteItem('spec', ${s.id})">✕</button>
+                </div>`).join('');
         }
-        function renderSaved() { document.getElementById('saved-list').innerHTML = savedProducts.map(p=>`<div class="list-row"><div><strong>${p.name}</strong><br><small>$${p.total}</small></div><div style="display:flex;gap:5px;"><button class="btn-small" onclick="editProduct(${p.id})">Edit</button></div></div>`).join(''); }
+
+        /* --- ALL OTHER LOGIC --- */
+        function openSpecPicker(btn) { activeRowForSpec = btn.closest('.material-row').querySelector('.mat-qty'); document.getElementById('specModal').style.display = 'flex'; const options = document.getElementById('modal-options'); options.innerHTML = specs.length ? specs.map(s => `<div class="list-row" onclick="applySpec(${s.w}, ${s.h})"><div><strong>${s.name}</strong></div><span>Apply</span></div>`).join('') : "No specs saved."; }
+        function applySpec(w, h) { activeRowForSpec.value = ((w * h) / 144).toFixed(2); closeModal(); calculate(); }
+        function closeModal() { document.getElementById('specModal').style.display = 'none'; }
+        function saveSpec() { const n = document.getElementById('specName').value, w = document.getElementById('specW').value, h = document.getElementById('specH').value; if(n&&w&&h) { specs.push({id:Date.now(), name:n, w, h}); syncStorage(); document.getElementById('specName').value=''; } }
+        function saveInventoryItem() { const n = document.getElementById('invItemName').value, c = parseInt(document.getElementById('invCount').value)||0; if(n) { inventory.push({id:Date.now(), name:n, count:c}); syncStorage(); document.getElementById('invItemName').value=''; } }
+        function adjustStock(id, amt) { const i = inventory.find(x=>x.id===id); i.count = Math.max(0, i.count+amt); syncStorage(); }
+        function addMaterialRow(type="SubPaper", qty=1) { const div = document.createElement('div'); div.className = 'material-row'; div.innerHTML = `<div><label>Type</label><select class="mat-type" onchange="calculate()">${Object.keys(PRICES).map(k=>`<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}</select></div><div><label>Qty <span onclick="openSpecPicker(this)">📏</span></label><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div><button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red;">✕</button>`; document.getElementById('material-list').appendChild(div); calculate(); }
+        function calculate() { let mTotal = 0; document.querySelectorAll('.material-row').forEach(r => { mTotal += (PRICES[r.querySelector('.mat-type').value] || 0) * (parseFloat(r.querySelector('.mat-qty').value) || 0); }); const mins = parseFloat(document.getElementById('laborMinutes').value) || 0; const total = ((mTotal + (mins / 60 * 32)) * (parseFloat(document.getElementById('markup').value) || 1)) * 1.07; document.getElementById('out-total').innerText = `$${total.toFixed(2)}`; return total.toFixed(2); }
+        function saveProduct() { const data = { id: editingId || Date.now(), name: document.getElementById('prodName').value || "Unnamed", materials: Array.from(document.querySelectorAll('.material-row')).map(r => ({ type: r.querySelector('.mat-type').value, qty: r.querySelector('.mat-qty').value })), labor: document.getElementById('laborMinutes').value, markup: document.getElementById('markup').value, total: calculate() }; if(editingId) { savedProducts[savedProducts.findIndex(p=>p.id===editingId)] = data; } else { savedProducts.unshift(data); } syncStorage(); resetForm(); }
         function updateOrderDropdown() { document.getElementById('orderProductSelect').innerHTML = savedProducts.map(p=>`<option value="${p.id}">${p.name} ($${p.total})</option>`).join(''); }
-        function saveOrder() {
-            const p = savedProducts.find(x => x.id == document.getElementById('orderProductSelect').value);
-            if(!p) return;
-            savedOrders.unshift({ id: Date.now(), customer: document.getElementById('custName').value || "Guest", productName: p.name, qty: document.getElementById('orderQty').value, totalPrice: (p.total * document.getElementById('orderQty').value).toFixed(2), status: 'pending' });
-            localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders();
-        }
-        function renderOrders() { document.getElementById('order-list').innerHTML = savedOrders.map(o => `<div class="list-row"><div><strong>${o.customer}</strong><br><small>${o.qty}x ${o.productName}</small></div><button class="btn-small" onclick="toggleOrderStatus(${o.id})">${o.status}</button></div>`).join(''); }
-        function toggleOrderStatus(id) { const o = savedOrders.find(x=>x.id==id); o.status = (o.status==='pending')?'done':'pending'; localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders(); }
+        function saveOrder() { const p = savedProducts.find(x => x.id == document.getElementById('orderProductSelect').value); if(p) { savedOrders.unshift({ id: Date.now(), customer: document.getElementById('custName').value || "Guest", productName: p.name, qty: document.getElementById('orderQty').value, totalPrice: (p.total * document.getElementById('orderQty').value).toFixed(2), status: 'pending' }); syncStorage(); document.getElementById('custName').value=''; } }
+        function toggleOrderStatus(id) { const o = savedOrders.find(x=>x.id==id); o.status = (o.status==='pending')?'done':'pending'; syncStorage(); }
         function resetForm() { editingId = null; document.getElementById('prodName').value = ''; document.getElementById('material-list').innerHTML = ''; addMaterialRow(); }
         function editProduct(id) { const p = savedProducts.find(x=>x.id===id); editingId = id; document.getElementById('prodName').value = p.name; document.getElementById('laborMinutes').value = p.labor; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m=>addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); }
 
