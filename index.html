@@ -3,58 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PriceEngine Pro</title>
+    <title>MakerBiz Pro</title>
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 140px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 100px; }
+        
+        /* Navigation Tabs */
+        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .nav-item { flex: 1; text-align: center; padding: 15px 5px; font-size: 12px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+
+        .container { padding: 15px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; display: flex; justify-content: space-between; }
+        h3 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; }
         label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; background: #fff; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
         
         .material-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
         .btn-add { background: #f8fafc; color: var(--primary); border: 2px dashed var(--primary); padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-remove { background: #fee2e2; color: #ef4444; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
         
         .saved-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-edit { background: #dcfce7; color: #166534; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .btn-copy { background: #e0f2fe; color: #0369a1; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .btn-action { padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 20px 20px 0 0; z-index: 100; }
-        .total-line { display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h3>Product Details</h3>
-        <label>Product Name</label>
-        <input type="text" id="prodName" placeholder="e.g. Custom Blue T-Shirt">
-        
-        <div id="material-list"></div>
-        <button class="btn-add" onclick="addMaterialRow()">+ Add Material</button>
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('calc', this)">CALCULATOR</div>
+        <div class="nav-item" onclick="showPage('orders', this)">ORDERS</div>
+        <div class="nav-item" onclick="showPage('inventory', this)">INVENTORY</div>
     </div>
 
-    <div class="card">
-        <h3>Labor & Markup</h3>
-        <label>Comp Time (Mins)</label>
-        <input type="number" id="laborMinutes" value="15" oninput="calculate()">
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div><label>Markup (x)</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
-            <div><label>Tax (%)</label><input type="number" id="taxRate" value="7" oninput="calculate()"></div>
+    <div class="container">
+        <div id="calc" class="page active">
+            <div class="card">
+                <h3>Product Details</h3>
+                <label>Product Name</label>
+                <input type="text" id="prodName" placeholder="e.g. Custom Blue T-Shirt">
+                <div id="material-list"></div>
+                <button class="btn-add" onclick="addMaterialRow()">+ Add Material</button>
+            </div>
+            <div class="card">
+                <h3>Labor & Markup</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><label>Mins</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
+                    <div><label>Markup</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
+                </div>
+                <button class="btn-primary" onclick="saveProduct()">Save Product Template</button>
+            </div>
+            <div class="card">
+                <h3>Template Search</h3>
+                <input type="text" id="searchInput" placeholder="Search templates..." oninput="renderSaved()">
+                <div id="saved-list"></div>
+            </div>
         </div>
-        <button class="btn-save" onclick="saveProduct()">Save Product</button>
+
+        <div id="orders" class="page">
+            <div class="card">
+                <h3>Current Orders</h3>
+                <p style="color:#64748b; font-size: 14px;">This section will track customer names, due dates, and items ordered.</p>
+                <button class="btn-primary" onclick="alert('Order Logic Coming Soon!')">+ New Order</button>
+            </div>
+        </div>
+
+        <div id="inventory" class="page">
+            <div class="card">
+                <h3>Supply Stock</h3>
+                <p style="color:#64748b; font-size: 14px;">Track your physical stock here (e.g., 5 Adult XL Shirts remaining).</p>
+                <button class="btn-primary" onclick="alert('Inventory Logic Coming Soon!')">Update Stock</button>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>Search Saved Products</h3>
-        <input type="text" id="searchInput" placeholder="Search by name..." oninput="renderSaved()">
-        <div id="saved-list"></div>
+    <div class="bottom-bar" id="calc-footer">
+        <div style="display:flex; justify-content:space-between; font-size: 20px; font-weight: bold;">
+            <span>Price:</span> <span id="out-total">$0.00</span>
+        </div>
     </div>
-
-    <div class="bottom-bar"><div class="total-line"><span>Total:</span> <span id="out-total">$0.00</span></div></div>
 
     <script>
         const PRICES = { 
@@ -66,16 +97,26 @@
         let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
         let editingId = null;
 
+        function showPage(pageId, navEl) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            navEl.classList.add('active');
+            
+            // Hide footer if not on calculator
+            document.getElementById('calc-footer').style.display = (pageId === 'calc') ? 'block' : 'none';
+        }
+
         function addMaterialRow(type = "SubPaper", qty = 1) {
             const container = document.getElementById('material-list');
             const div = document.createElement('div');
             div.className = 'material-row';
             div.innerHTML = `
-                <div><label>Type</label><select class="mat-type" onchange="calculate()">
-                    ${Object.keys(PRICES).map(k => `<option value="${k}" ${type===k?'selected':''}>${k} ($${PRICES[k]})</option>`).join('')}
+                <div><select class="mat-type" onchange="calculate()">
+                    ${Object.keys(PRICES).map(k => `<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}
                 </select></div>
-                <div><label>Qty</label><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
-                <button class="btn-remove" onclick="this.parentElement.remove(); calculate();">✕</button>
+                <div><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
+                <button onclick="this.parentElement.remove(); calculate();" style="border:none; background:none; color:red; font-size:20px;">✕</button>
             `;
             container.appendChild(div);
             calculate();
@@ -88,9 +129,10 @@
             });
             const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
             const subtotal = matTotal + ((mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD));
-            const final = (subtotal * (parseFloat(document.getElementById('markup').value) || 1)) * (1 + (parseFloat(document.getElementById('taxRate').value) || 0) / 100);
-            document.getElementById('out-total').innerText = `$${final.toFixed(2)}`;
-            return final.toFixed(2);
+            const final = subtotal * (parseFloat(document.getElementById('markup').value) || 1);
+            const total = final * 1.07; // 7% tax baked in
+            document.getElementById('out-total').innerText = `$${total.toFixed(2)}`;
+            return total.toFixed(2);
         }
 
         function saveProduct() {
@@ -103,7 +145,6 @@
                 })),
                 labor: document.getElementById('laborMinutes').value,
                 markup: document.getElementById('markup').value,
-                tax: document.getElementById('taxRate').value,
                 total: calculate()
             };
             if (editingId) {
@@ -114,15 +155,37 @@
             resetForm(); renderSaved();
         }
 
+        function renderSaved() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const list = document.getElementById('saved-list');
+            list.innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `
+                <div class="saved-item">
+                    <div><strong>${p.name}</strong><br><small>$${p.total}</small></div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-action" style="background:#e0f2fe; color:#0369a1;" onclick="duplicateProduct(${p.id})">Copy</button>
+                        <button class="btn-action" style="background:#dcfce7; color:#166534;" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="btn-action" style="background:#fee2e2; color:#ef4444;" onclick="deleteProduct(${p.id})">Del</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteProduct(id) {
+            if(confirm("Delete?")) {
+                savedProducts = savedProducts.filter(p => p.id !== id);
+                localStorage.setItem('myProducts', JSON.stringify(savedProducts));
+                renderSaved();
+            }
+        }
+
         function duplicateProduct(id) {
             const p = savedProducts.find(prod => prod.id === id);
-            if(!p) return;
-            editingId = null; // Forces save as new
+            editingId = null;
             document.getElementById('prodName').value = p.name + " (Copy)";
             document.getElementById('laborMinutes').value = p.labor;
             document.getElementById('material-list').innerHTML = '';
             p.materials.forEach(m => addMaterialRow(m.type, m.qty));
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            window.scrollTo({top:0, behavior:'smooth'});
             calculate();
         }
 
@@ -133,30 +196,7 @@
             document.getElementById('laborMinutes').value = p.labor;
             document.getElementById('material-list').innerHTML = '';
             p.materials.forEach(m => addMaterialRow(m.type, m.qty));
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-
-        function renderSaved() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const list = document.getElementById('saved-list');
-            list.innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `
-                <div class="saved-item">
-                    <div><strong>${p.name}</strong><br><small>$${p.total}</small></div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-copy" onclick="duplicateProduct(${p.id})">Copy</button>
-                        <button class="btn-edit" onclick="editProduct(${p.id})">Edit</button>
-                        <button class="btn-edit" style="background:#fee2e2; color:#ef4444;" onclick="deleteProduct(${p.id})">Del</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function deleteProduct(id) {
-            if(confirm("Delete this product?")) {
-                savedProducts = savedProducts.filter(p => p.id !== id);
-                localStorage.setItem('myProducts', JSON.stringify(savedProducts));
-                renderSaved();
-            }
+            window.scrollTo({top:0, behavior:'smooth'});
         }
 
         function resetForm() { editingId = null; document.getElementById('prodName').value = ''; document.getElementById('material-list').innerHTML = ''; addMaterialRow(); }
