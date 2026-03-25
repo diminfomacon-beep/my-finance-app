@@ -197,18 +197,56 @@
         }
 
        function renderSaved() {
-            const list = document.getElementById('saved-list');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            // Filter the products based on the search term
-            const filtered = savedProducts.filter(p => 
-                p.name.toLowerCase().includes(searchTerm)
-            );
-        
-            if (filtered.length === 0) {
-                list.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">No products found</div>';
-                return;
-            }
+    const list = document.getElementById('saved-list');
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+    
+    const filtered = savedProducts.filter(p => 
+        p.name.toLowerCase().includes(searchTerm)
+    );
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">No products found</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(p => `
+        <div class="saved-item" style="border-bottom: 1px solid #eee; padding: 15px 0;">
+            <div style="flex: 1;">
+                <strong style="font-size: 15px;">${p.name}</strong><br>
+                <small style="color:var(--primary); font-weight:bold; font-size: 14px;">$${p.total}</small>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn-edit" style="background:#e0f2fe; color:#0369a1;" onclick="duplicateProduct(${p.id})">Copy</button>
+                <button class="btn-edit" onclick="editProduct(${p.id})">Edit</button>
+                <button class="btn-edit" style="background:#fee2e2; color:#ef4444;" onclick="deleteProduct(${p.id})">Del</button>
+            </div>
+        </div>
+    `).join('');
+}
+function duplicateProduct(id) {
+    const p = savedProducts.find(prod => prod.id === id);
+    if(!p) return;
+
+    // 1. Clear the editing ID so it saves as a NEW product
+    editingId = null; 
+
+    // 2. Load the data into the form fields
+    document.getElementById('prodName').value = p.name + " (Copy)";
+    document.getElementById('laborMinutes').value = p.labor;
+    document.getElementById('markup').value = p.markup;
+    document.getElementById('taxRate').value = p.tax;
+    
+    // 3. Rebuild the material rows
+    document.getElementById('material-list').innerHTML = '';
+    p.materials.forEach(m => addMaterialRow(m.type, m.qty));
+
+    // 4. Scroll to top so you can see it's loaded
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // 5. Run calculation for the new "Total" display
+    calculate();
+}
         
             list.innerHTML = filtered.map(p => `
                 <div class="saved-item">
