@@ -8,8 +8,9 @@
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; }
         
-        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .nav-item { flex: 1; text-align: center; padding: 15px 5px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        /* Navigation */
+        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
+        .nav-item { flex: 0 0 auto; min-width: 80px; text-align: center; padding: 15px 10px; font-size: 10px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
 
         .container { padding: 15px; }
@@ -17,18 +18,17 @@
         .page.active { display: block; }
 
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; }
-        label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
+        h3 { margin-top: 0; font-size: 15px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
+        label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; }
         
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
+        .btn-small { padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 11px; }
         
-        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .stock-tag { font-weight: bold; padding: 4px 8px; border-radius: 4px; background: #f1f5f9; }
-        .low-stock { color: var(--danger); background: #fee2e2; }
+        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .material-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px; }
 
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 20px 20px 0 0; }
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; }
     </style>
 </head>
 <body>
@@ -37,28 +37,25 @@
         <div class="nav-item active" onclick="showPage('calc', this)">PRICING</div>
         <div class="nav-item" onclick="showPage('orders', this)">ORDERS</div>
         <div class="nav-item" onclick="showPage('inventory', this)">INVENTORY</div>
+        <div class="nav-item" onclick="showPage('specs', this)">PRINT SPECS</div>
     </div>
 
     <div class="container">
         <div id="calc" class="page active">
             <div class="card">
-                <h3>Product Details</h3>
-                <label>Name</label><input type="text" id="prodName" placeholder="e.g. XL Cotton Shirt - Red">
+                <h3>Template Setup</h3>
+                <label>Product Name</label><input type="text" id="prodName" placeholder="e.g. XL Shirt - Full Wrap">
                 <div id="material-list"></div>
-                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); color:var(--primary); margin-bottom:10px;" onclick="addMaterialRow()">+ Add Material</button>
+                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); margin-bottom:10px;" onclick="addMaterialRow()">+ Add Material</button>
             </div>
             <div class="card">
-                <h3>Math</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Mins</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
+                    <div><label>Labor (Mins)</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
                     <div><label>Markup</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
                 </div>
-                <button class="btn-primary" onclick="saveProduct()">Save Template</button>
+                <button class="btn-primary" onclick="saveProduct()">Save Product Template</button>
             </div>
-            <div class="card">
-                <input type="text" id="searchInput" placeholder="Search templates..." oninput="renderSaved()">
-                <div id="saved-list"></div>
-            </div>
+            <div class="card"><div id="saved-list"></div></div>
         </div>
 
         <div id="orders" class="page">
@@ -66,31 +63,40 @@
                 <h3>New Order</h3>
                 <label>Customer</label><input type="text" id="custName" placeholder="Name">
                 <label>Template</label><select id="orderProductSelect"></select>
-                <label>Qty</label><input type="number" id="orderQty" value="1">
+                <label>Quantity</label><input type="number" id="orderQty" value="1">
                 <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
-            <div class="card"><h3>Active Orders</h3><div id="order-list"></div></div>
+            <div class="card"><h3>Active Jobs</h3><div id="order-list"></div></div>
         </div>
 
         <div id="inventory" class="page">
             <div class="card">
-                <h3>Add New Blank</h3>
-                <label>Item Name (Size/Color)</label>
-                <input type="text" id="invItemName" placeholder="e.g. Adult XL White Shirt">
-                <label>Starting Count</label>
-                <input type="number" id="invCount" value="0">
-                <button class="btn-primary" onclick="saveInventoryItem()">Add to Stock</button>
+                <h3>Add Stock</h3>
+                <label>Blank Item</label><input type="text" id="invItemName" placeholder="e.g. 20oz Skinny Tumbler">
+                <label>Qty</label><input type="number" id="invCount" value="0">
+                <button class="btn-primary" onclick="saveInventoryItem()">Add to Inventory</button>
             </div>
+            <div class="card"><div id="inventory-list"></div></div>
+        </div>
+
+        <div id="specs" class="page">
             <div class="card">
-                <h3>Current Stock</h3>
-                <div id="inventory-list"></div>
+                <h3>Save Print Area</h3>
+                <label>Product/Style Name</label><input type="text" id="specName" placeholder="e.g. T-Shirt Full Front">
+                <label>Dimensions (Inches)</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="number" id="specW" placeholder="Width">
+                    <input type="number" id="specH" placeholder="Height">
+                </div>
+                <button class="btn-primary" onclick="saveSpec()">Save Dimension</button>
             </div>
+            <div class="card"><h3>Saved Sizes</h3><div id="specs-list"></div></div>
         </div>
     </div>
 
     <div class="bottom-bar" id="calc-footer">
         <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>Est. Price:</span> <span id="out-total">$0.00</span>
+            <span>Price:</span> <span id="out-total">$0.00</span>
         </div>
     </div>
 
@@ -99,6 +105,7 @@
         let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
         let savedOrders = JSON.parse(localStorage.getItem('myOrders')) || [];
         let inventory = JSON.parse(localStorage.getItem('myInventory')) || [];
+        let specs = JSON.parse(localStorage.getItem('mySpecs')) || [];
         let editingId = null;
 
         function showPage(pId, el) {
@@ -107,7 +114,28 @@
             document.getElementById('calc-footer').style.display = (pId === 'calc') ? 'block' : 'none';
             if(pId === 'orders') updateOrderDropdown();
             if(pId === 'inventory') renderInventory();
+            if(pId === 'specs') renderSpecs();
         }
+
+        /* --- PRINT SPECS LOGIC --- */
+        function saveSpec() {
+            const name = document.getElementById('specName').value;
+            const w = document.getElementById('specW').value;
+            const h = document.getElementById('specH').value;
+            if(!name || !w || !h) return;
+            specs.push({ id: Date.now(), name, w, h });
+            localStorage.setItem('mySpecs', JSON.stringify(specs));
+            document.getElementById('specName').value = ''; 
+            renderSpecs();
+        }
+        function renderSpecs() {
+            document.getElementById('specs-list').innerHTML = specs.map(s => `
+                <div class="list-row">
+                    <div><strong>${s.name}</strong><br><small>${s.w}" x ${s.h}"</small></div>
+                    <button onclick="deleteSpec(${s.id})" style="border:none; color:red;">✕</button>
+                </div>`).join('');
+        }
+        function deleteSpec(id) { specs = specs.filter(x=>x.id!==id); localStorage.setItem('mySpecs', JSON.stringify(specs)); renderSpecs(); }
 
         /* --- INVENTORY LOGIC --- */
         function saveInventoryItem() {
@@ -116,36 +144,27 @@
             if(!name) return;
             inventory.push({ id: Date.now(), name, count });
             localStorage.setItem('myInventory', JSON.stringify(inventory));
-            document.getElementById('invItemName').value = '';
-            document.getElementById('invCount').value = 0;
             renderInventory();
         }
-
         function adjustStock(id, amt) {
             const item = inventory.find(x => x.id === id);
             item.count = Math.max(0, item.count + amt);
             localStorage.setItem('myInventory', JSON.stringify(inventory));
             renderInventory();
         }
-
         function renderInventory() {
-            const list = document.getElementById('inventory-list');
-            list.innerHTML = inventory.map(item => `
+            document.getElementById('inventory-list').innerHTML = inventory.map(item => `
                 <div class="list-row">
-                    <div><strong>${item.name}</strong></div>
-                    <div style="display:flex; align-items:center; gap:10px;">
+                    <strong>${item.name}</strong>
+                    <div style="display:flex; align-items:center; gap:8px;">
                         <button class="btn-small" onclick="adjustStock(${item.id}, -1)">-</button>
-                        <span class="stock-tag ${item.count <= 2 ? 'low-stock' : ''}">${item.count}</span>
+                        <span>${item.count}</span>
                         <button class="btn-small" onclick="adjustStock(${item.id}, 1)">+</button>
-                        <button onclick="deleteInv(${item.id})" style="border:none; background:none; color:red; margin-left:10px;">✕</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
-        function deleteInv(id) { if(confirm("Delete item?")) { inventory = inventory.filter(x => x.id !== id); localStorage.setItem('myInventory', JSON.stringify(inventory)); renderInventory(); } }
-
-        /* --- REMAINING LOGIC (Pricing/Orders) --- */
+        /* --- CALCULATOR/ORDERS --- */
         function addMaterialRow(type="SubPaper", qty=1) {
             const div = document.createElement('div'); div.className = 'material-row';
             div.innerHTML = `<div><select class="mat-type" onchange="calculate()">${Object.keys(PRICES).map(k=>`<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}</select></div>
@@ -164,22 +183,20 @@
             if(editingId) { savedProducts[savedProducts.findIndex(p=>p.id===editingId)] = data; } else { savedProducts.unshift(data); }
             localStorage.setItem('myProducts', JSON.stringify(savedProducts)); resetForm(); renderSaved();
         }
-        function renderSaved() { const term = document.getElementById('searchInput').value.toLowerCase(); document.getElementById('saved-list').innerHTML = savedProducts.filter(p=>p.name.toLowerCase().includes(term)).map(p=>`<div class="list-row"><div><strong>${p.name}</strong><br><small>$${p.total}</small></div><div style="display:flex;gap:5px;"><button class="btn-small" onclick="duplicateProduct(${p.id})">Copy</button><button class="btn-small" onclick="editProduct(${p.id})">Edit</button></div></div>`).join(''); }
+        function renderSaved() { document.getElementById('saved-list').innerHTML = savedProducts.map(p=>`<div class="list-row"><div><strong>${p.name}</strong><br><small>$${p.total}</small></div><div style="display:flex;gap:5px;"><button class="btn-small" onclick="editProduct(${p.id})">Edit</button></div></div>`).join(''); }
         function updateOrderDropdown() { document.getElementById('orderProductSelect').innerHTML = savedProducts.map(p=>`<option value="${p.id}">${p.name} ($${p.total})</option>`).join(''); }
         function saveOrder() {
             const p = savedProducts.find(x => x.id == document.getElementById('orderProductSelect').value);
             if(!p) return;
             savedOrders.unshift({ id: Date.now(), customer: document.getElementById('custName').value || "Guest", productName: p.name, qty: document.getElementById('orderQty').value, totalPrice: (p.total * document.getElementById('orderQty').value).toFixed(2), status: 'pending' });
-            localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders(); document.getElementById('custName').value = '';
+            localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders();
         }
-        function renderOrders() { document.getElementById('order-list').innerHTML = savedOrders.map(o => `<div class="list-row"><div><strong>${o.customer}</strong><br><small>${o.qty}x ${o.productName} - $${o.totalPrice}</small></div><div><button class="btn-small" onclick="toggleOrderStatus(${o.id})">${o.status}</button><button onclick="deleteOrder(${o.id})" style="border:none; color:red; margin-left:10px;">✕</button></div></div>`).join(''); }
+        function renderOrders() { document.getElementById('order-list').innerHTML = savedOrders.map(o => `<div class="list-row"><div><strong>${o.customer}</strong><br><small>${o.qty}x ${o.productName}</small></div><button class="btn-small" onclick="toggleOrderStatus(${o.id})">${o.status}</button></div>`).join(''); }
         function toggleOrderStatus(id) { const o = savedOrders.find(x=>x.id==id); o.status = (o.status==='pending')?'done':'pending'; localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders(); }
-        function deleteOrder(id) { if(confirm("Del?")) { savedOrders = savedOrders.filter(x=>x.id!==id); localStorage.setItem('myOrders',JSON.stringify(savedOrders)); renderOrders(); } }
         function resetForm() { editingId = null; document.getElementById('prodName').value = ''; document.getElementById('material-list').innerHTML = ''; addMaterialRow(); }
         function editProduct(id) { const p = savedProducts.find(x=>x.id===id); editingId = id; document.getElementById('prodName').value = p.name; document.getElementById('laborMinutes').value = p.labor; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m=>addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); }
-        function duplicateProduct(id) { const p = savedProducts.find(x=>x.id===id); editingId = null; document.getElementById('prodName').value = p.name+" (Copy)"; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m=>addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); calculate(); }
 
-        addMaterialRow(); renderSaved(); renderOrders(); renderInventory();
+        addMaterialRow(); renderSaved(); renderOrders(); renderInventory(); renderSpecs();
     </script>
 </body>
 </html>
