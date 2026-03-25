@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MakerBiz Pro</title>
     <style>
-        :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --warn: #f59e0b; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 100px; }
+        :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; }
         
         .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .nav-item { flex: 1; text-align: center; padding: 15px 5px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
@@ -21,16 +21,14 @@
         label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
         
-        .material-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-add { background: #f8fafc; color: var(--primary); border: 2px dashed var(--primary); padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-weight: bold; }
         
-        .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; color: white; }
-        .badge-pending { background: var(--warn); }
-        .badge-done { background: var(--accent); }
+        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .stock-tag { font-weight: bold; padding: 4px 8px; border-radius: 4px; background: #f1f5f9; }
+        .low-stock { color: var(--danger); background: #fee2e2; }
 
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 20px 20px 0 0; z-index: 100; }
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 20px 20px 0 0; }
     </style>
 </head>
 <body>
@@ -45,21 +43,19 @@
         <div id="calc" class="page active">
             <div class="card">
                 <h3>Product Details</h3>
-                <label>Product Name</label>
-                <input type="text" id="prodName" placeholder="e.g. Custom Blue T-Shirt">
+                <label>Name</label><input type="text" id="prodName" placeholder="e.g. XL Cotton Shirt - Red">
                 <div id="material-list"></div>
-                <button class="btn-add" onclick="addMaterialRow()">+ Add Material</button>
+                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); color:var(--primary); margin-bottom:10px;" onclick="addMaterialRow()">+ Add Material</button>
             </div>
             <div class="card">
-                <h3>Labor & Markup</h3>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <h3>Math</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div><label>Mins</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
                     <div><label>Markup</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
                 </div>
-                <button class="btn-primary" onclick="saveProduct()">Save Product Template</button>
+                <button class="btn-primary" onclick="saveProduct()">Save Template</button>
             </div>
             <div class="card">
-                <h3>Template Search</h3>
                 <input type="text" id="searchInput" placeholder="Search templates..." oninput="renderSaved()">
                 <div id="saved-list"></div>
             </div>
@@ -68,187 +64,122 @@
         <div id="orders" class="page">
             <div class="card">
                 <h3>New Order</h3>
-                <label>Customer Name</label>
-                <input type="text" id="custName" placeholder="John Doe">
-                
-                <label>Select Product Template</label>
-                <select id="orderProductSelect"></select>
-                
-                <label>Quantity</label>
-                <input type="number" id="orderQty" value="1">
-                
+                <label>Customer</label><input type="text" id="custName" placeholder="Name">
+                <label>Template</label><select id="orderProductSelect"></select>
+                <label>Qty</label><input type="number" id="orderQty" value="1">
                 <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
-
-            <div class="card">
-                <h3>Active Orders</h3>
-                <div id="order-list"></div>
-            </div>
+            <div class="card"><h3>Active Orders</h3><div id="order-list"></div></div>
         </div>
 
         <div id="inventory" class="page">
             <div class="card">
-                <h3>Inventory Management</h3>
-                <p>Tracking for vinyl rolls and blank stock coming soon.</p>
+                <h3>Add New Blank</h3>
+                <label>Item Name (Size/Color)</label>
+                <input type="text" id="invItemName" placeholder="e.g. Adult XL White Shirt">
+                <label>Starting Count</label>
+                <input type="number" id="invCount" value="0">
+                <button class="btn-primary" onclick="saveInventoryItem()">Add to Stock</button>
+            </div>
+            <div class="card">
+                <h3>Current Stock</h3>
+                <div id="inventory-list"></div>
             </div>
         </div>
     </div>
 
     <div class="bottom-bar" id="calc-footer">
-        <div style="display:flex; justify-content:space-between; font-size: 20px; font-weight: bold;">
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
             <span>Est. Price:</span> <span id="out-total">$0.00</span>
         </div>
     </div>
 
     <script>
-        const PRICES = { 
-            "SubPaper": 1.00, "HTVPaper": 1.00, "IronOn": 3.00, "PermVinyl": 2.00,
-            "PolyesterFabric": 2.00, "ButtonBase": 3.00, "PolyesterShirt": 15.99,
-            "AdultCottonShirt": 15.99, "KidsCottonShirt": 10.99 
-        };
-        const HOURLY_LABOR = 30, HOURLY_OVERHEAD = 2;
-        
+        const PRICES = { "SubPaper": 1, "HTVPaper": 1, "IronOn": 3, "PermVinyl": 2, "PolyesterFabric": 2, "ButtonBase": 3, "PolyesterShirt": 15.99, "AdultCottonShirt": 15.99, "KidsCottonShirt": 10.99 };
         let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
         let savedOrders = JSON.parse(localStorage.getItem('myOrders')) || [];
+        let inventory = JSON.parse(localStorage.getItem('myInventory')) || [];
         let editingId = null;
 
-        function showPage(pageId, navEl) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            navEl.classList.add('active');
-            document.getElementById('calc-footer').style.display = (pageId === 'calc') ? 'block' : 'none';
-            if(pageId === 'orders') updateOrderDropdown();
+        function showPage(pId, el) {
+            document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
+            document.getElementById(pId).classList.add('active'); el.classList.add('active');
+            document.getElementById('calc-footer').style.display = (pId === 'calc') ? 'block' : 'none';
+            if(pId === 'orders') updateOrderDropdown();
+            if(pId === 'inventory') renderInventory();
         }
 
-        /* --- CALCULATOR LOGIC --- */
-        function addMaterialRow(type = "SubPaper", qty = 1) {
-            const container = document.getElementById('material-list');
-            const div = document.createElement('div');
-            div.className = 'material-row';
-            div.innerHTML = `
-                <div><select class="mat-type" onchange="calculate()">
-                    ${Object.keys(PRICES).map(k => `<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}
-                </select></div>
+        /* --- INVENTORY LOGIC --- */
+        function saveInventoryItem() {
+            const name = document.getElementById('invItemName').value;
+            const count = parseInt(document.getElementById('invCount').value) || 0;
+            if(!name) return;
+            inventory.push({ id: Date.now(), name, count });
+            localStorage.setItem('myInventory', JSON.stringify(inventory));
+            document.getElementById('invItemName').value = '';
+            document.getElementById('invCount').value = 0;
+            renderInventory();
+        }
+
+        function adjustStock(id, amt) {
+            const item = inventory.find(x => x.id === id);
+            item.count = Math.max(0, item.count + amt);
+            localStorage.setItem('myInventory', JSON.stringify(inventory));
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = inventory.map(item => `
+                <div class="list-row">
+                    <div><strong>${item.name}</strong></div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button class="btn-small" onclick="adjustStock(${item.id}, -1)">-</button>
+                        <span class="stock-tag ${item.count <= 2 ? 'low-stock' : ''}">${item.count}</span>
+                        <button class="btn-small" onclick="adjustStock(${item.id}, 1)">+</button>
+                        <button onclick="deleteInv(${item.id})" style="border:none; background:none; color:red; margin-left:10px;">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteInv(id) { if(confirm("Delete item?")) { inventory = inventory.filter(x => x.id !== id); localStorage.setItem('myInventory', JSON.stringify(inventory)); renderInventory(); } }
+
+        /* --- REMAINING LOGIC (Pricing/Orders) --- */
+        function addMaterialRow(type="SubPaper", qty=1) {
+            const div = document.createElement('div'); div.className = 'material-row';
+            div.innerHTML = `<div><select class="mat-type" onchange="calculate()">${Object.keys(PRICES).map(k=>`<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}</select></div>
                 <div><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
-                <button onclick="this.parentElement.remove(); calculate();" style="border:none; background:none; color:red; font-size:20px;">✕</button>
-            `;
-            container.appendChild(div);
-            calculate();
+                <button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red;">✕</button>`;
+            document.getElementById('material-list').appendChild(div); calculate();
         }
-
         function calculate() {
-            let matTotal = 0;
-            document.querySelectorAll('.material-row').forEach(row => {
-                matTotal += (PRICES[row.querySelector('.mat-type').value] || 0) * (parseFloat(row.querySelector('.mat-qty').value) || 0);
-            });
+            let mTotal = 0; document.querySelectorAll('.material-row').forEach(r => { mTotal += (PRICES[r.querySelector('.mat-type').value] || 0) * (parseFloat(r.querySelector('.mat-qty').value) || 0); });
             const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-            const subtotal = matTotal + ((mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD));
-            const total = (subtotal * (parseFloat(document.getElementById('markup').value) || 1)) * 1.07;
-            document.getElementById('out-total').innerText = `$${total.toFixed(2)}`;
-            return total.toFixed(2);
+            const total = ((mTotal + (mins / 60 * 32)) * (parseFloat(document.getElementById('markup').value) || 1)) * 1.07;
+            document.getElementById('out-total').innerText = `$${total.toFixed(2)}`; return total.toFixed(2);
         }
-
         function saveProduct() {
-            const productData = {
-                id: editingId || Date.now(),
-                name: document.getElementById('prodName').value || "Unnamed",
-                materials: Array.from(document.querySelectorAll('.material-row')).map(row => ({
-                    type: row.querySelector('.mat-type').value,
-                    qty: row.querySelector('.mat-qty').value
-                })),
-                labor: document.getElementById('laborMinutes').value,
-                markup: document.getElementById('markup').value,
-                total: calculate()
-            };
-            if (editingId) {
-                const idx = savedProducts.findIndex(p => p.id === editingId);
-                savedProducts[idx] = productData;
-            } else { savedProducts.unshift(productData); }
-            localStorage.setItem('myProducts', JSON.stringify(savedProducts));
-            resetForm(); renderSaved();
+            const data = { id: editingId || Date.now(), name: document.getElementById('prodName').value || "Unnamed", materials: Array.from(document.querySelectorAll('.material-row')).map(r => ({ type: r.querySelector('.mat-type').value, qty: r.querySelector('.mat-qty').value })), labor: document.getElementById('laborMinutes').value, markup: document.getElementById('markup').value, total: calculate() };
+            if(editingId) { savedProducts[savedProducts.findIndex(p=>p.id===editingId)] = data; } else { savedProducts.unshift(data); }
+            localStorage.setItem('myProducts', JSON.stringify(savedProducts)); resetForm(); renderSaved();
         }
-
-        function renderSaved() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const list = document.getElementById('saved-list');
-            list.innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `
-                <div class="item-list-row">
-                    <div><strong>${p.name}</strong><br><small>$${p.total}</small></div>
-                    <div style="display:flex; gap:5px;">
-                        <button onclick="duplicateProduct(${p.id})" style="font-size:10px; padding:5px;">Copy</button>
-                        <button onclick="editProduct(${p.id})" style="font-size:10px; padding:5px;">Edit</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        /* --- ORDERS LOGIC --- */
-        function updateOrderDropdown() {
-            const select = document.getElementById('orderProductSelect');
-            select.innerHTML = savedProducts.map(p => `<option value="${p.id}">${p.name} ($${p.total})</option>`).join('');
-        }
-
+        function renderSaved() { const term = document.getElementById('searchInput').value.toLowerCase(); document.getElementById('saved-list').innerHTML = savedProducts.filter(p=>p.name.toLowerCase().includes(term)).map(p=>`<div class="list-row"><div><strong>${p.name}</strong><br><small>$${p.total}</small></div><div style="display:flex;gap:5px;"><button class="btn-small" onclick="duplicateProduct(${p.id})">Copy</button><button class="btn-small" onclick="editProduct(${p.id})">Edit</button></div></div>`).join(''); }
+        function updateOrderDropdown() { document.getElementById('orderProductSelect').innerHTML = savedProducts.map(p=>`<option value="${p.id}">${p.name} ($${p.total})</option>`).join(''); }
         function saveOrder() {
-            const productId = document.getElementById('orderProductSelect').value;
-            const product = savedProducts.find(p => p.id == productId);
-            if(!product) return alert("Select a product first!");
-
-            const orderData = {
-                id: Date.now(),
-                customer: document.getElementById('custName').value || "Guest",
-                productName: product.name,
-                qty: document.getElementById('orderQty').value,
-                totalPrice: (product.total * document.getElementById('orderQty').value).toFixed(2),
-                status: 'pending'
-            };
-
-            savedOrders.unshift(orderData);
-            localStorage.setItem('myOrders', JSON.stringify(savedOrders));
-            renderOrders();
-            document.getElementById('custName').value = '';
+            const p = savedProducts.find(x => x.id == document.getElementById('orderProductSelect').value);
+            if(!p) return;
+            savedOrders.unshift({ id: Date.now(), customer: document.getElementById('custName').value || "Guest", productName: p.name, qty: document.getElementById('orderQty').value, totalPrice: (p.total * document.getElementById('orderQty').value).toFixed(2), status: 'pending' });
+            localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders(); document.getElementById('custName').value = '';
         }
-
-        function toggleOrderStatus(id) {
-            const order = savedOrders.find(o => o.id == id);
-            order.status = (order.status === 'pending') ? 'done' : 'pending';
-            localStorage.setItem('myOrders', JSON.stringify(savedOrders));
-            renderOrders();
-        }
-
-        function renderOrders() {
-            const list = document.getElementById('order-list');
-            list.innerHTML = savedOrders.map(o => `
-                <div class="item-list-row">
-                    <div>
-                        <strong>${o.customer}</strong><br>
-                        <small>${o.qty}x ${o.productName} - $${o.totalPrice}</small>
-                    </div>
-                    <div>
-                        <span class="badge badge-${o.status}" onclick="toggleOrderStatus(${o.id})">${o.status}</span>
-                        <button onclick="deleteOrder(${o.id})" style="border:none; background:none; color:red; margin-left:10px;">✕</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function deleteOrder(id) {
-            if(confirm("Remove order?")) {
-                savedOrders = savedOrders.filter(o => o.id !== id);
-                localStorage.setItem('myOrders', JSON.stringify(savedOrders));
-                renderOrders();
-            }
-        }
-
-        /* Helpers */
+        function renderOrders() { document.getElementById('order-list').innerHTML = savedOrders.map(o => `<div class="list-row"><div><strong>${o.customer}</strong><br><small>${o.qty}x ${o.productName} - $${o.totalPrice}</small></div><div><button class="btn-small" onclick="toggleOrderStatus(${o.id})">${o.status}</button><button onclick="deleteOrder(${o.id})" style="border:none; color:red; margin-left:10px;">✕</button></div></div>`).join(''); }
+        function toggleOrderStatus(id) { const o = savedOrders.find(x=>x.id==id); o.status = (o.status==='pending')?'done':'pending'; localStorage.setItem('myOrders', JSON.stringify(savedOrders)); renderOrders(); }
+        function deleteOrder(id) { if(confirm("Del?")) { savedOrders = savedOrders.filter(x=>x.id!==id); localStorage.setItem('myOrders',JSON.stringify(savedOrders)); renderOrders(); } }
         function resetForm() { editingId = null; document.getElementById('prodName').value = ''; document.getElementById('material-list').innerHTML = ''; addMaterialRow(); }
-        function editProduct(id) { const p = savedProducts.find(x => x.id === id); editingId = id; document.getElementById('prodName').value = p.name; document.getElementById('laborMinutes').value = p.labor; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m => addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); }
-        function duplicateProduct(id) { const p = savedProducts.find(x => x.id === id); editingId = null; document.getElementById('prodName').value = p.name + " (Copy)"; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m => addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); calculate(); }
+        function editProduct(id) { const p = savedProducts.find(x=>x.id===id); editingId = id; document.getElementById('prodName').value = p.name; document.getElementById('laborMinutes').value = p.labor; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m=>addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); }
+        function duplicateProduct(id) { const p = savedProducts.find(x=>x.id===id); editingId = null; document.getElementById('prodName').value = p.name+" (Copy)"; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m=>addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); calculate(); }
 
-        // Init
-        addMaterialRow();
-        renderSaved();
-        renderOrders();
+        addMaterialRow(); renderSaved(); renderOrders(); renderInventory();
     </script>
 </body>
 </html>
