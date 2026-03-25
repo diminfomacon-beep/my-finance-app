@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MakerBiz Pro</title>
     <style>
-        :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; }
+        :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --warn: #f59e0b; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 100px; }
         
-        /* Navigation Tabs */
         .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .nav-item { flex: 1; text-align: center; padding: 15px 5px; font-size: 12px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-item { flex: 1; text-align: center; padding: 15px 5px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
 
         .container { padding: 15px; }
@@ -18,7 +17,7 @@
         .page.active { display: block; }
 
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        h3 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; }
         label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
         
@@ -26,8 +25,10 @@
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
         .btn-add { background: #f8fafc; color: var(--primary); border: 2px dashed var(--primary); padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         
-        .saved-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-action { padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
+        .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; color: white; }
+        .badge-pending { background: var(--warn); }
+        .badge-done { background: var(--accent); }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 20px 20px 0 0; z-index: 100; }
     </style>
@@ -35,7 +36,7 @@
 <body>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('calc', this)">CALCULATOR</div>
+        <div class="nav-item active" onclick="showPage('calc', this)">PRICING</div>
         <div class="nav-item" onclick="showPage('orders', this)">ORDERS</div>
         <div class="nav-item" onclick="showPage('inventory', this)">INVENTORY</div>
     </div>
@@ -66,24 +67,36 @@
 
         <div id="orders" class="page">
             <div class="card">
-                <h3>Current Orders</h3>
-                <p style="color:#64748b; font-size: 14px;">This section will track customer names, due dates, and items ordered.</p>
-                <button class="btn-primary" onclick="alert('Order Logic Coming Soon!')">+ New Order</button>
+                <h3>New Order</h3>
+                <label>Customer Name</label>
+                <input type="text" id="custName" placeholder="John Doe">
+                
+                <label>Select Product Template</label>
+                <select id="orderProductSelect"></select>
+                
+                <label>Quantity</label>
+                <input type="number" id="orderQty" value="1">
+                
+                <button class="btn-primary" onclick="saveOrder()">Create Order</button>
+            </div>
+
+            <div class="card">
+                <h3>Active Orders</h3>
+                <div id="order-list"></div>
             </div>
         </div>
 
         <div id="inventory" class="page">
             <div class="card">
-                <h3>Supply Stock</h3>
-                <p style="color:#64748b; font-size: 14px;">Track your physical stock here (e.g., 5 Adult XL Shirts remaining).</p>
-                <button class="btn-primary" onclick="alert('Inventory Logic Coming Soon!')">Update Stock</button>
+                <h3>Inventory Management</h3>
+                <p>Tracking for vinyl rolls and blank stock coming soon.</p>
             </div>
         </div>
     </div>
 
     <div class="bottom-bar" id="calc-footer">
         <div style="display:flex; justify-content:space-between; font-size: 20px; font-weight: bold;">
-            <span>Price:</span> <span id="out-total">$0.00</span>
+            <span>Est. Price:</span> <span id="out-total">$0.00</span>
         </div>
     </div>
 
@@ -94,7 +107,9 @@
             "AdultCottonShirt": 15.99, "KidsCottonShirt": 10.99 
         };
         const HOURLY_LABOR = 30, HOURLY_OVERHEAD = 2;
+        
         let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
+        let savedOrders = JSON.parse(localStorage.getItem('myOrders')) || [];
         let editingId = null;
 
         function showPage(pageId, navEl) {
@@ -102,11 +117,11 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             navEl.classList.add('active');
-            
-            // Hide footer if not on calculator
             document.getElementById('calc-footer').style.display = (pageId === 'calc') ? 'block' : 'none';
+            if(pageId === 'orders') updateOrderDropdown();
         }
 
+        /* --- CALCULATOR LOGIC --- */
         function addMaterialRow(type = "SubPaper", qty = 1) {
             const container = document.getElementById('material-list');
             const div = document.createElement('div');
@@ -129,8 +144,7 @@
             });
             const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
             const subtotal = matTotal + ((mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD));
-            const final = subtotal * (parseFloat(document.getElementById('markup').value) || 1);
-            const total = final * 1.07; // 7% tax baked in
+            const total = (subtotal * (parseFloat(document.getElementById('markup').value) || 1)) * 1.07;
             document.getElementById('out-total').innerText = `$${total.toFixed(2)}`;
             return total.toFixed(2);
         }
@@ -148,8 +162,8 @@
                 total: calculate()
             };
             if (editingId) {
-                const index = savedProducts.findIndex(p => p.id === editingId);
-                savedProducts[index] = productData;
+                const idx = savedProducts.findIndex(p => p.id === editingId);
+                savedProducts[idx] = productData;
             } else { savedProducts.unshift(productData); }
             localStorage.setItem('myProducts', JSON.stringify(savedProducts));
             resetForm(); renderSaved();
@@ -159,50 +173,82 @@
             const term = document.getElementById('searchInput').value.toLowerCase();
             const list = document.getElementById('saved-list');
             list.innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `
-                <div class="saved-item">
+                <div class="item-list-row">
                     <div><strong>${p.name}</strong><br><small>$${p.total}</small></div>
                     <div style="display:flex; gap:5px;">
-                        <button class="btn-action" style="background:#e0f2fe; color:#0369a1;" onclick="duplicateProduct(${p.id})">Copy</button>
-                        <button class="btn-action" style="background:#dcfce7; color:#166534;" onclick="editProduct(${p.id})">Edit</button>
-                        <button class="btn-action" style="background:#fee2e2; color:#ef4444;" onclick="deleteProduct(${p.id})">Del</button>
+                        <button onclick="duplicateProduct(${p.id})" style="font-size:10px; padding:5px;">Copy</button>
+                        <button onclick="editProduct(${p.id})" style="font-size:10px; padding:5px;">Edit</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function deleteProduct(id) {
-            if(confirm("Delete?")) {
-                savedProducts = savedProducts.filter(p => p.id !== id);
-                localStorage.setItem('myProducts', JSON.stringify(savedProducts));
-                renderSaved();
+        /* --- ORDERS LOGIC --- */
+        function updateOrderDropdown() {
+            const select = document.getElementById('orderProductSelect');
+            select.innerHTML = savedProducts.map(p => `<option value="${p.id}">${p.name} ($${p.total})</option>`).join('');
+        }
+
+        function saveOrder() {
+            const productId = document.getElementById('orderProductSelect').value;
+            const product = savedProducts.find(p => p.id == productId);
+            if(!product) return alert("Select a product first!");
+
+            const orderData = {
+                id: Date.now(),
+                customer: document.getElementById('custName').value || "Guest",
+                productName: product.name,
+                qty: document.getElementById('orderQty').value,
+                totalPrice: (product.total * document.getElementById('orderQty').value).toFixed(2),
+                status: 'pending'
+            };
+
+            savedOrders.unshift(orderData);
+            localStorage.setItem('myOrders', JSON.stringify(savedOrders));
+            renderOrders();
+            document.getElementById('custName').value = '';
+        }
+
+        function toggleOrderStatus(id) {
+            const order = savedOrders.find(o => o.id == id);
+            order.status = (order.status === 'pending') ? 'done' : 'pending';
+            localStorage.setItem('myOrders', JSON.stringify(savedOrders));
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const list = document.getElementById('order-list');
+            list.innerHTML = savedOrders.map(o => `
+                <div class="item-list-row">
+                    <div>
+                        <strong>${o.customer}</strong><br>
+                        <small>${o.qty}x ${o.productName} - $${o.totalPrice}</small>
+                    </div>
+                    <div>
+                        <span class="badge badge-${o.status}" onclick="toggleOrderStatus(${o.id})">${o.status}</span>
+                        <button onclick="deleteOrder(${o.id})" style="border:none; background:none; color:red; margin-left:10px;">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteOrder(id) {
+            if(confirm("Remove order?")) {
+                savedOrders = savedOrders.filter(o => o.id !== id);
+                localStorage.setItem('myOrders', JSON.stringify(savedOrders));
+                renderOrders();
             }
         }
 
-        function duplicateProduct(id) {
-            const p = savedProducts.find(prod => prod.id === id);
-            editingId = null;
-            document.getElementById('prodName').value = p.name + " (Copy)";
-            document.getElementById('laborMinutes').value = p.labor;
-            document.getElementById('material-list').innerHTML = '';
-            p.materials.forEach(m => addMaterialRow(m.type, m.qty));
-            window.scrollTo({top:0, behavior:'smooth'});
-            calculate();
-        }
-
-        function editProduct(id) {
-            const p = savedProducts.find(prod => prod.id === id);
-            editingId = id;
-            document.getElementById('prodName').value = p.name;
-            document.getElementById('laborMinutes').value = p.labor;
-            document.getElementById('material-list').innerHTML = '';
-            p.materials.forEach(m => addMaterialRow(m.type, m.qty));
-            window.scrollTo({top:0, behavior:'smooth'});
-        }
-
+        /* Helpers */
         function resetForm() { editingId = null; document.getElementById('prodName').value = ''; document.getElementById('material-list').innerHTML = ''; addMaterialRow(); }
+        function editProduct(id) { const p = savedProducts.find(x => x.id === id); editingId = id; document.getElementById('prodName').value = p.name; document.getElementById('laborMinutes').value = p.labor; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m => addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); }
+        function duplicateProduct(id) { const p = savedProducts.find(x => x.id === id); editingId = null; document.getElementById('prodName').value = p.name + " (Copy)"; document.getElementById('material-list').innerHTML = ''; p.materials.forEach(m => addMaterialRow(m.type, m.qty)); window.scrollTo(0,0); calculate(); }
 
+        // Init
         addMaterialRow();
         renderSaved();
+        renderOrders();
     </script>
 </body>
 </html>
