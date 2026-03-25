@@ -6,11 +6,10 @@
     <title>MakerBiz Pro</title>
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
         
-        /* Navigation */
-        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
-        .nav-item { flex: 0 0 auto; min-width: 80px; text-align: center; padding: 15px 10px; font-size: 10px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; white-space: nowrap; }
+        .nav-item { flex: 0 0 auto; padding: 15px 20px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
 
         .container { padding: 15px; }
@@ -20,15 +19,19 @@
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
         h3 { margin-top: 0; font-size: 15px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
         label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
         
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-small { padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 11px; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
+        .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 12px; font-weight: bold; }
         
-        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-        .material-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px; }
+        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #eee; }
 
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; }
+        /* Modal for Spec Picker */
+        #specModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
+        .modal-content { background:white; width:90%; max-height:80%; border-radius:15px; padding:20px; overflow-y:auto; }
+
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; z-index:1000;}
     </style>
 </head>
 <body>
@@ -43,17 +46,17 @@
     <div class="container">
         <div id="calc" class="page active">
             <div class="card">
-                <h3>Template Setup</h3>
-                <label>Product Name</label><input type="text" id="prodName" placeholder="e.g. XL Shirt - Full Wrap">
+                <h3>Product Template</h3>
+                <label>Template Name</label><input type="text" id="prodName" placeholder="e.g. 20oz Tumbler - Full Wrap">
                 <div id="material-list"></div>
-                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); margin-bottom:10px;" onclick="addMaterialRow()">+ Add Material</button>
+                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); margin-top:10px;" onclick="addMaterialRow()">+ Add Material</button>
             </div>
             <div class="card">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div><label>Labor (Mins)</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
-                    <div><label>Markup</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
+                    <div><label>Markup (x)</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
                 </div>
-                <button class="btn-primary" onclick="saveProduct()">Save Product Template</button>
+                <button class="btn-primary" onclick="saveProduct()">Save Product</button>
             </div>
             <div class="card"><div id="saved-list"></div></div>
         </div>
@@ -61,8 +64,8 @@
         <div id="orders" class="page">
             <div class="card">
                 <h3>New Order</h3>
-                <label>Customer</label><input type="text" id="custName" placeholder="Name">
-                <label>Template</label><select id="orderProductSelect"></select>
+                <label>Customer Name</label><input type="text" id="custName" placeholder="John Smith">
+                <label>Product Template</label><select id="orderProductSelect"></select>
                 <label>Quantity</label><input type="number" id="orderQty" value="1">
                 <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
@@ -71,32 +74,39 @@
 
         <div id="inventory" class="page">
             <div class="card">
-                <h3>Add Stock</h3>
-                <label>Blank Item</label><input type="text" id="invItemName" placeholder="e.g. 20oz Skinny Tumbler">
-                <label>Qty</label><input type="number" id="invCount" value="0">
-                <button class="btn-primary" onclick="saveInventoryItem()">Add to Inventory</button>
+                <h3>Add New Stock</h3>
+                <label>Blank Item</label><input type="text" id="invItemName" placeholder="e.g. White XL Poly Shirt">
+                <label>Stock Count</label><input type="number" id="invCount" value="0">
+                <button class="btn-primary" onclick="saveInventoryItem()">Save Blank</button>
             </div>
-            <div class="card"><div id="inventory-list"></div></div>
+            <div class="card"><h3>Inventory Status</h3><div id="inventory-list"></div></div>
         </div>
 
         <div id="specs" class="page">
             <div class="card">
-                <h3>Save Print Area</h3>
-                <label>Product/Style Name</label><input type="text" id="specName" placeholder="e.g. T-Shirt Full Front">
-                <label>Dimensions (Inches)</label>
+                <h3>New Dimension Spec</h3>
+                <label>Preset Name</label><input type="text" id="specName" placeholder="e.g. Tumbler Full Wrap">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="number" id="specW" placeholder="Width">
-                    <input type="number" id="specH" placeholder="Height">
+                    <div><label>Width (In)</label><input type="number" id="specW" placeholder="9.3"></div>
+                    <div><label>Height (In)</label><input type="number" id="specH" placeholder="8.2"></div>
                 </div>
-                <button class="btn-primary" onclick="saveSpec()">Save Dimension</button>
+                <button class="btn-primary" onclick="saveSpec()">Save Size</button>
             </div>
-            <div class="card"><h3>Saved Sizes</h3><div id="specs-list"></div></div>
+            <div class="card"><h3>My Sizes</h3><div id="specs-list"></div></div>
+        </div>
+    </div>
+
+    <div id="specModal">
+        <div class="modal-content">
+            <h3>Select Print Size</h3>
+            <div id="modal-options"></div>
+            <button class="btn-primary" style="margin-top:15px; background:#64748b;" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
     <div class="bottom-bar" id="calc-footer">
         <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>Price:</span> <span id="out-total">$0.00</span>
+            <span>Calculated Price:</span> <span id="out-total">$0.00</span>
         </div>
     </div>
 
@@ -107,6 +117,7 @@
         let inventory = JSON.parse(localStorage.getItem('myInventory')) || [];
         let specs = JSON.parse(localStorage.getItem('mySpecs')) || [];
         let editingId = null;
+        let activeRowForSpec = null;
 
         function showPage(pId, el) {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
@@ -115,23 +126,50 @@
             if(pId === 'orders') updateOrderDropdown();
             if(pId === 'inventory') renderInventory();
             if(pId === 'specs') renderSpecs();
+            if(pId === 'calc') renderSaved();
         }
+
+        /* --- SPEC MODAL LOGIC --- */
+        function openSpecPicker(btn) {
+            activeRowForSpec = btn.closest('.material-row').querySelector('.mat-qty');
+            const modal = document.getElementById('specModal');
+            const options = document.getElementById('modal-options');
+            modal.style.display = 'flex';
+            
+            if(specs.length === 0) {
+                options.innerHTML = "<p>No specs saved yet. Go to PRINT SPECS tab to add one!</p>";
+                return;
+            }
+
+            options.innerHTML = specs.map(s => `
+                <div class="list-row" onclick="applySpec(${s.w}, ${s.h})">
+                    <div><strong>${s.name}</strong><br><small>${s.w}" x ${s.h}"</small></div>
+                    <span style="color:var(--primary); font-weight:bold;">Apply</span>
+                </div>
+            `).join('');
+        }
+
+        function applySpec(w, h) {
+            const sqFt = ((w * h) / 144).toFixed(2);
+            activeRowForSpec.value = sqFt;
+            closeModal();
+            calculate();
+        }
+
+        function closeModal() { document.getElementById('specModal').style.display = 'none'; }
 
         /* --- PRINT SPECS LOGIC --- */
         function saveSpec() {
-            const name = document.getElementById('specName').value;
-            const w = document.getElementById('specW').value;
-            const h = document.getElementById('specH').value;
+            const name = document.getElementById('specName').value, w = document.getElementById('specW').value, h = document.getElementById('specH').value;
             if(!name || !w || !h) return;
             specs.push({ id: Date.now(), name, w, h });
             localStorage.setItem('mySpecs', JSON.stringify(specs));
-            document.getElementById('specName').value = ''; 
-            renderSpecs();
+            document.getElementById('specName').value = ''; renderSpecs();
         }
         function renderSpecs() {
             document.getElementById('specs-list').innerHTML = specs.map(s => `
                 <div class="list-row">
-                    <div><strong>${s.name}</strong><br><small>${s.w}" x ${s.h}"</small></div>
+                    <div><strong>${s.name}</strong><br><small>${s.w}" x ${s.h}" (${((s.w*s.h)/144).toFixed(2)} sq ft)</small></div>
                     <button onclick="deleteSpec(${s.id})" style="border:none; color:red;">✕</button>
                 </div>`).join('');
         }
@@ -139,37 +177,35 @@
 
         /* --- INVENTORY LOGIC --- */
         function saveInventoryItem() {
-            const name = document.getElementById('invItemName').value;
-            const count = parseInt(document.getElementById('invCount').value) || 0;
+            const name = document.getElementById('invItemName').value, count = parseInt(document.getElementById('invCount').value) || 0;
             if(!name) return;
             inventory.push({ id: Date.now(), name, count });
             localStorage.setItem('myInventory', JSON.stringify(inventory));
-            renderInventory();
+            document.getElementById('invItemName').value = ''; renderInventory();
         }
         function adjustStock(id, amt) {
             const item = inventory.find(x => x.id === id);
             item.count = Math.max(0, item.count + amt);
-            localStorage.setItem('myInventory', JSON.stringify(inventory));
-            renderInventory();
+            localStorage.setItem('myInventory', JSON.stringify(inventory)); renderInventory();
         }
         function renderInventory() {
             document.getElementById('inventory-list').innerHTML = inventory.map(item => `
                 <div class="list-row">
                     <strong>${item.name}</strong>
-                    <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
                         <button class="btn-small" onclick="adjustStock(${item.id}, -1)">-</button>
-                        <span>${item.count}</span>
+                        <span style="min-width:25px; text-align:center;">${item.count}</span>
                         <button class="btn-small" onclick="adjustStock(${item.id}, 1)">+</button>
                     </div>
                 </div>`).join('');
         }
 
-        /* --- CALCULATOR/ORDERS --- */
+        /* --- PRICING & ORDERS --- */
         function addMaterialRow(type="SubPaper", qty=1) {
             const div = document.createElement('div'); div.className = 'material-row';
-            div.innerHTML = `<div><select class="mat-type" onchange="calculate()">${Object.keys(PRICES).map(k=>`<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}</select></div>
-                <div><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
-                <button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red;">✕</button>`;
+            div.innerHTML = `<div><label>Type</label><select class="mat-type" onchange="calculate()">${Object.keys(PRICES).map(k=>`<option value="${k}" ${type===k?'selected':''}>${k}</option>`).join('')}</select></div>
+                <div><label>Qty/SqFt <span onclick="openSpecPicker(this)" style="cursor:pointer;">📏</span></label><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
+                <button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red; padding-bottom:10px;">✕</button>`;
             document.getElementById('material-list').appendChild(div); calculate();
         }
         function calculate() {
