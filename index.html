@@ -17,10 +17,9 @@
         .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
         .btn-remove { background: #fee2e2; color: #ef4444; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
         
-        /* Saved Items List */
         .saved-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .saved-item:last-child { border-bottom: none; }
-        .btn-edit { background: #dcfce7; color: #166534; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 5px;}
+        .btn-edit { background: #dcfce7; color: #166534; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .btn-copy { background: #e0f2fe; color: #0369a1; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 20px 20px 0 0; z-index: 100; }
         .total-line { display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; }
@@ -43,137 +42,88 @@
         <input type="number" id="laborMinutes" value="15" oninput="calculate()">
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-                <label>Markup (x)</label>
-                <input type="number" id="markup" value="2" step="0.1" oninput="calculate()">
-            </div>
-            <div>
-                <label>Tax (%)</label>
-                <input type="number" id="taxRate" value="7" oninput="calculate()">
-            </div>
+            <div><label>Markup (x)</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
+            <div><label>Tax (%)</label><input type="number" id="taxRate" value="7" oninput="calculate()"></div>
         </div>
         <button class="btn-save" onclick="saveProduct()">Save Product</button>
     </div>
 
     <div class="card">
-        <h3>Saved Products</h3>
+        <h3>Search Saved Products</h3>
+        <input type="text" id="searchInput" placeholder="Search by name..." oninput="renderSaved()">
         <div id="saved-list"></div>
     </div>
 
-    <div class="bottom-bar">
-        <div class="total-line"><span>Total:</span> <span id="out-total">$0.00</span></div>
-    </div>
+    <div class="bottom-bar"><div class="total-line"><span>Total:</span> <span id="out-total">$0.00</span></div></div>
 
     <script>
-      // Updated price list to match your new dropdown options
-    const PRICES = { 
-        "SubPaper": 1.00, 
-        "HTVPaper": 1.00, 
-        "IronOn": 3.00, 
-        "PermVinyl": 2.00,
-        "PolyesterFabric": 2.00,
-        "ButtonBase": 3.00,
-        "PolyesterShirt": 15.99,
-        "AdultCottonShirt": 15.99,
-        "KidsCottonShirt": 10.99
-    };
+        const PRICES = { 
+            "SubPaper": 1.00, "HTVPaper": 1.00, "IronOn": 3.00, "PermVinyl": 2.00,
+            "PolyesterFabric": 2.00, "ButtonBase": 3.00, "PolyesterShirt": 15.99,
+            "AdultCottonShirt": 15.99, "KidsCottonShirt": 10.99 
+        };
+        const HOURLY_LABOR = 30, HOURLY_OVERHEAD = 2;
+        let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
+        let editingId = null;
 
-    const HOURLY_LABOR = 30;
-    const HOURLY_OVERHEAD = 2;
-    
-    let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
-    let editingId = null;
-
-    // Pro-Tip: I've added a "Safety Check" to the calculate function below 
-    // so it never shows NaN again, even if you add a material you forgot to price.
-
-    function calculate() {
-        let matTotal = 0;
-        document.querySelectorAll('.material-row').forEach(row => {
-            const type = row.querySelector('.mat-type').value;
-            const qty = parseFloat(row.querySelector('.mat-qty').value) || 0;
-            
-            // The (PRICES[type] || 0) ensures that if a price is missing, 
-            // it uses 0 instead of breaking the math.
-            const unitPrice = PRICES[type] || 0;
-            matTotal += (unitPrice * qty);
-        });
-
-        const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-        const laborPlusOverhead = (mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD);
-        const subtotal = matTotal + laborPlusOverhead;
-        
-        const markup = parseFloat(document.getElementById('markup').value) || 1;
-        const tax = parseFloat(document.getElementById('taxRate').value) || 0;
-        
-        const final = (subtotal * markup) * (1 + (tax / 100));
-        
-        const output = isNaN(final) ? "0.00" : final.toFixed(2);
-        document.getElementById('out-total').innerText = `$${output}`;
-        return output;
-    }
-    
         function addMaterialRow(type = "SubPaper", qty = 1) {
             const container = document.getElementById('material-list');
             const div = document.createElement('div');
             div.className = 'material-row';
             div.innerHTML = `
-                <div class="card">
-                    <h3>Search Saved Products</h3>
-                    <input type="text" id="searchInput" placeholder="Search by name..." oninput="renderSaved()">
-                </div>
-                <div>
-                    <label>Type</label>
-                    <select class="mat-type" onchange="calculate()">
-                        <option value="SubPaper" ${type==='SubPaper'?'selected':''}>Sub. Paper ($1)</option>
-                        <option value="HTVPaper" ${type==='HTVPaper'?'selected':''}>HTV Paper ($1)</option>
-                        <option value="IronOn" ${type==='IronOn'?'selected':''}>Iron-On ($3)</option>
-                        <option value="PermVinyl" ${type==='PermVinyl'?'selected':''}>Perm Vinyl ($2)</option>
-                        <option value="PolyesterFabric" ${type==='PolyesterFabric'?'selected':''}>Fabric ($2)</option>
-                        <option value="ButtonBase" ${type==='ButtonBase'?'selected':''}>Button-3" ($3)</option>
-                        <option value="PolyesterShirt" ${type==='PolyesterShirt'?'selected':''}>Adult Poly Shirt ($15.99)</option>
-                        <option value="AdultCottonShirt" ${type==='AdultCottonShirt'?'selected':''}>Adult Cotton Shirt ($15.99)</option>
-                        <option value="KidsCottonShirt" ${type==='KidsCottonShirt'?'selected':''}>Kids Cotton Shirt ($10.99)</option>
-
-                    </select>
-                </div>
-                <div>
-                    <label>Qty/SqFt</label>
-                    <input type="number" class="mat-qty" value="${qty}" oninput="calculate()">
-                </div>
+                <div><label>Type</label><select class="mat-type" onchange="calculate()">
+                    ${Object.keys(PRICES).map(k => `<option value="${k}" ${type===k?'selected':''}>${k} ($${PRICES[k]})</option>`).join('')}
+                </select></div>
+                <div><label>Qty</label><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div>
                 <button class="btn-remove" onclick="this.parentElement.remove(); calculate();">✕</button>
             `;
             container.appendChild(div);
             calculate();
         }
 
-        function saveProduct() {
-            const name = document.getElementById('prodName').value || "Unnamed Product";
-            const materials = Array.from(document.querySelectorAll('.material-row')).map(row => ({
-                type: row.querySelector('.mat-type').value,
-                qty: row.querySelector('.mat-qty').value
-            }));
+        function calculate() {
+            let matTotal = 0;
+            document.querySelectorAll('.material-row').forEach(row => {
+                matTotal += (PRICES[row.querySelector('.mat-type').value] || 0) * (parseFloat(row.querySelector('.mat-qty').value) || 0);
+            });
+            const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
+            const subtotal = matTotal + ((mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD));
+            const final = (subtotal * (parseFloat(document.getElementById('markup').value) || 1)) * (1 + (parseFloat(document.getElementById('taxRate').value) || 0) / 100);
+            document.getElementById('out-total').innerText = `$${final.toFixed(2)}`;
+            return final.toFixed(2);
+        }
 
+        function saveProduct() {
             const productData = {
                 id: editingId || Date.now(),
-                name: name,
-                materials: materials,
+                name: document.getElementById('prodName').value || "Unnamed",
+                materials: Array.from(document.querySelectorAll('.material-row')).map(row => ({
+                    type: row.querySelector('.mat-type').value,
+                    qty: row.querySelector('.mat-qty').value
+                })),
                 labor: document.getElementById('laborMinutes').value,
                 markup: document.getElementById('markup').value,
                 tax: document.getElementById('taxRate').value,
                 total: calculate()
             };
-
             if (editingId) {
                 const index = savedProducts.findIndex(p => p.id === editingId);
                 savedProducts[index] = productData;
-            } else {
-                savedProducts.unshift(productData);
-            }
-
+            } else { savedProducts.unshift(productData); }
             localStorage.setItem('myProducts', JSON.stringify(savedProducts));
-            resetForm();
-            renderSaved();
+            resetForm(); renderSaved();
+        }
+
+        function duplicateProduct(id) {
+            const p = savedProducts.find(prod => prod.id === id);
+            if(!p) return;
+            editingId = null; // Forces save as new
+            document.getElementById('prodName').value = p.name + " (Copy)";
+            document.getElementById('laborMinutes').value = p.labor;
+            document.getElementById('material-list').innerHTML = '';
+            p.materials.forEach(m => addMaterialRow(m.type, m.qty));
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            calculate();
         }
 
         function editProduct(id) {
@@ -181,80 +131,19 @@
             editingId = id;
             document.getElementById('prodName').value = p.name;
             document.getElementById('laborMinutes').value = p.labor;
-            document.getElementById('markup').value = p.markup;
-            document.getElementById('taxRate').value = p.tax;
-            
             document.getElementById('material-list').innerHTML = '';
             p.materials.forEach(m => addMaterialRow(m.type, m.qty));
-            window.scrollTo(0,0);
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        function resetForm() {
-            editingId = null;
-            document.getElementById('prodName').value = '';
-            document.getElementById('material-list').innerHTML = '';
-            addMaterialRow();
-        }
-
-       function renderSaved() {
-    const list = document.getElementById('saved-list');
-    const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
-    
-    const filtered = savedProducts.filter(p => 
-        p.name.toLowerCase().includes(searchTerm)
-    );
-
-    if (filtered.length === 0) {
-        list.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">No products found</div>';
-        return;
-    }
-
-    list.innerHTML = filtered.map(p => `
-        <div class="saved-item" style="border-bottom: 1px solid #eee; padding: 15px 0;">
-            <div style="flex: 1;">
-                <strong style="font-size: 15px;">${p.name}</strong><br>
-                <small style="color:var(--primary); font-weight:bold; font-size: 14px;">$${p.total}</small>
-            </div>
-            <div style="display: flex; gap: 5px;">
-                <button class="btn-edit" style="background:#e0f2fe; color:#0369a1;" onclick="duplicateProduct(${p.id})">Copy</button>
-                <button class="btn-edit" onclick="editProduct(${p.id})">Edit</button>
-                <button class="btn-edit" style="background:#fee2e2; color:#ef4444;" onclick="deleteProduct(${p.id})">Del</button>
-            </div>
-        </div>
-    `).join('');
-}
-function duplicateProduct(id) {
-    const p = savedProducts.find(prod => prod.id === id);
-    if(!p) return;
-
-    // 1. Clear the editing ID so it saves as a NEW product
-    editingId = null; 
-
-    // 2. Load the data into the form fields
-    document.getElementById('prodName').value = p.name + " (Copy)";
-    document.getElementById('laborMinutes').value = p.labor;
-    document.getElementById('markup').value = p.markup;
-    document.getElementById('taxRate').value = p.tax;
-    
-    // 3. Rebuild the material rows
-    document.getElementById('material-list').innerHTML = '';
-    p.materials.forEach(m => addMaterialRow(m.type, m.qty));
-
-    // 4. Scroll to top so you can see it's loaded
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // 5. Run calculation for the new "Total" display
-    calculate();
-}
-        
-            list.innerHTML = filtered.map(p => `
+        function renderSaved() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const list = document.getElementById('saved-list');
+            list.innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `
                 <div class="saved-item">
-                    <div>
-                        <strong>${p.name}</strong><br>
-                        <small style="color:var(--primary); font-weight:bold;">$${p.total}</small>
-                    </div>
-                    <div>
+                    <div><strong>${p.name}</strong><br><small>$${p.total}</small></div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-copy" onclick="duplicateProduct(${p.id})">Copy</button>
                         <button class="btn-edit" onclick="editProduct(${p.id})">Edit</button>
                         <button class="btn-edit" style="background:#fee2e2; color:#ef4444;" onclick="deleteProduct(${p.id})">Del</button>
                     </div>
@@ -263,10 +152,14 @@ function duplicateProduct(id) {
         }
 
         function deleteProduct(id) {
-            savedProducts = savedProducts.filter(p => p.id !== id);
-            localStorage.setItem('myProducts', JSON.stringify(savedProducts));
-            renderSaved();
+            if(confirm("Delete this product?")) {
+                savedProducts = savedProducts.filter(p => p.id !== id);
+                localStorage.setItem('myProducts', JSON.stringify(savedProducts));
+                renderSaved();
+            }
         }
+
+        function resetForm() { editingId = null; document.getElementById('prodName').value = ''; document.getElementById('material-list').innerHTML = ''; addMaterialRow(); }
 
         addMaterialRow();
         renderSaved();
