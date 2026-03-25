@@ -65,13 +65,55 @@
     </div>
 
     <script>
-        const PRICES = { "SubPaper": 1.00, "HTVPaper": 1.00, "IronOn": 3.00, "PermVinyl": 2.00 };
-        const HOURLY_LABOR = 30;
-        const HOURLY_OVERHEAD = 2;
-        
-        let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
-        let editingId = null;
+       <script>
+    // Updated price list to match your new dropdown options
+    const PRICES = { 
+        "SubPaper": 1.00, 
+        "HTVPaper": 1.00, 
+        "IronOn": 3.00, 
+        "PermVinyl": 2.00,
+        "PolyesterFabric": 2.00,
+        "ButtonBase": 3.00,
+        "PolyesterShirt": 15.99,
+        "AdultCottonShirt": 15.99,
+        "KidsCottonShirt": 10.99
+    };
 
+    const HOURLY_LABOR = 30;
+    const HOURLY_OVERHEAD = 2;
+    
+    let savedProducts = JSON.parse(localStorage.getItem('myProducts')) || [];
+    let editingId = null;
+
+    // Pro-Tip: I've added a "Safety Check" to the calculate function below 
+    // so it never shows NaN again, even if you add a material you forgot to price.
+
+    function calculate() {
+        let matTotal = 0;
+        document.querySelectorAll('.material-row').forEach(row => {
+            const type = row.querySelector('.mat-type').value;
+            const qty = parseFloat(row.querySelector('.mat-qty').value) || 0;
+            
+            // The (PRICES[type] || 0) ensures that if a price is missing, 
+            // it uses 0 instead of breaking the math.
+            const unitPrice = PRICES[type] || 0;
+            matTotal += (unitPrice * qty);
+        });
+
+        const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
+        const laborPlusOverhead = (mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD);
+        const subtotal = matTotal + laborPlusOverhead;
+        
+        const markup = parseFloat(document.getElementById('markup').value) || 1;
+        const tax = parseFloat(document.getElementById('taxRate').value) || 0;
+        
+        const final = (subtotal * markup) * (1 + (tax / 100));
+        
+        const output = isNaN(final) ? "0.00" : final.toFixed(2);
+        document.getElementById('out-total').innerText = `$${output}`;
+        return output;
+    }
+    
         function addMaterialRow(type = "SubPaper", qty = 1) {
             const container = document.getElementById('material-list');
             const div = document.createElement('div');
@@ -100,19 +142,6 @@
             `;
             container.appendChild(div);
             calculate();
-        }
-
-        function calculate() {
-            let matTotal = 0;
-            document.querySelectorAll('.material-row').forEach(row => {
-                matTotal += (PRICES[row.querySelector('.mat-type').value] * (parseFloat(row.querySelector('.mat-qty').value) || 0));
-            });
-            const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-            const laborPlusOverhead = (mins / 60) * (HOURLY_LABOR + HOURLY_OVERHEAD);
-            const subtotal = matTotal + laborPlusOverhead;
-            const final = (subtotal * (parseFloat(document.getElementById('markup').value) || 1)) * (1 + (parseFloat(document.getElementById('taxRate').value) || 0) / 100);
-            document.getElementById('out-total').innerText = `$${final.toFixed(2)}`;
-            return final.toFixed(2);
         }
 
         function saveProduct() {
