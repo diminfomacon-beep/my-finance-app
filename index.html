@@ -66,12 +66,14 @@
             <div id="order-list"></div>
         </div>
 
-        <div id="pricing" class="page">
-            <div class="card">
-                <h3>Price Calculator</h3>
-                <input type="text" id="calcProdName" placeholder="Product Name">
-                <div id="active-materials"></div>
-                <button class="btn-action" onclick="editObj('${tab==='catalog'?'mat':tab==='inventory'?'inv':'order'}','${i.id}')">&#9998;</button>                
+       <div id="pricing" class="page">
+        <div class="card">
+            <h3>Price Calculator</h3>
+            <input type="text" id="calcProdName" placeholder="Product Name">
+            
+            <div id="active-materials"></div>
+            
+            <button class="btn-primary" style="margin-bottom:15px; background: #e2e8f0; color: #2F6B64;" onclick="addCalcRow()">+</button>            
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div><label>Labor (Mins)</label><input type="number" id="lMins" value="15" oninput="runCalc()"></div>
                     <div><label>Labor $/hr</label><input type="number" id="lRate" value="32" oninput="saveBizSettings()"></div>
