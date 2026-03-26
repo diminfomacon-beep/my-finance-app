@@ -182,6 +182,7 @@
         onSnapshot(collection(db, "inventory"), (s) => { store.inventory = s.docs.map(d=>({id:d.id,...d.data()})); render('inventory'); });
         onSnapshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); render('masterCosts'); updateOrderDrop(); });
         onSnapshot(collection(db, "specs"), (s) => { store.specs = s.docs.map(d=>({id:d.id,...d.data()})); render('specs'); });
+        onSnapshot(collection(db, "specs"), (s) => { store.specs = s.docs.map(d=>({id:d.id,...d.data()})); render('specs'); });
 
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
 
@@ -250,17 +251,6 @@
                 document.getElementById('invName').value=i.name; document.getElementById('invQty').value=i.qty; 
                 activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
             }
-          if(type==='spec'){
-              const s = store.specs.find(x=>x.id===id);
-              document.getElementById('sName').value = s.name;
-              document.getElementById('sSize').value = s.size;
-              document.getElementById('sStyle').value = s.style;
-              document.getElementById('sTemp').value = s.temp;
-              document.getElementById('sTime').value = s.time;
-              activeEdits.spec = id;
-              document.getElementById('specBtn').innerText = "Update Specs";
-              if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
-          }
             window.scrollTo(0,0);
         };
 
@@ -326,10 +316,38 @@
     
     applySearch();
 };
-       
+        window.saveSpec = async () => {
+    const p = { 
+        name: document.getElementById('sName').value, 
+        size: document.getElementById('sSize').value, 
+        style: document.getElementById('sStyle').value, 
+        temp: document.getElementById('sTemp').value, 
+        time: document.getElementById('sTime').value 
+    };
+    if(!p.name) return;
+    if(activeEdits.spec) { 
+        await updateDoc(doc(db,"specs",activeEdits.spec), p); 
+        activeEdits.spec = null; 
+        document.getElementById('specBtn').innerText="Save Specs"; 
+    } else { 
+        await addDoc(collection(db,"specs"), p); 
+    }
+    ['sName','sTemp','sTime'].forEach(i=>document.getElementById(i).value='');
+    toggleForm('spec-form');
+};
 
 // Update your existing editObj function to include 'spec'
-
+if(type==='spec'){
+    const s = store.specs.find(x=>x.id===id);
+    document.getElementById('sName').value = s.name;
+    document.getElementById('sSize').value = s.size;
+    document.getElementById('sStyle').value = s.style;
+    document.getElementById('sTemp').value = s.temp;
+    document.getElementById('sTime').value = s.time;
+    activeEdits.spec = id;
+    document.getElementById('specBtn').innerText = "Update Specs";
+    if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
+}
 
         window.applySearch = () => {
             const q = document.getElementById('tabSearch').value.toLowerCase();
