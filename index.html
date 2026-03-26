@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DIM Bright Ideas LLC | MakerBiz</title>
+    <title>DIM Bright Ideas LLC | Business Manager</title>
     <style>
-        :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
+        :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; --warning: #eab308; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
         
         .header { background: white; padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); }
@@ -19,16 +19,23 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
         h3 { margin-top: 0; font-size: 15px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
         label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
         
-        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
         .search-bar { background: #fff; border: 2px solid #e2e8f0; margin-bottom: 15px; padding-left: 35px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'); background-repeat: no-repeat; background-position: 10px center; }
         
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 11px; font-weight: bold; }
         
+        .status-pill { padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: inline-block; margin-bottom: 5px; }
+        .status-pending { background: #fee2e2; color: #ef4444; }
+        .status-designing { background: #fef9c3; color: #a16207; }
+        .status-production { background: #dcfce7; color: #16a34a; }
+        .status-ready { background: #dbeafe; color: #2563eb; }
+        .status-shipped { background: #f1f5f9; color: #64748b; }
+
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; }
 
@@ -62,7 +69,7 @@
                     <div><label>Labor (Mins)</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
                     <div><label>Markup (x)</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
                 </div>
-                <button class="btn-primary" onclick="saveProduct()">Save Template</button>
+                <button class="btn-primary" onclick="saveProduct()">Save to Cloud</button>
             </div>
             <div class="card">
                 <input type="text" class="search-bar" id="searchCalc" placeholder="Search templates..." oninput="renderSaved()">
@@ -73,36 +80,35 @@
         <div id="orders" class="page">
             <div class="card">
                 <h3>New Order Details</h3>
-                <label>Customer Name</label><input type="text" id="custName" placeholder="John Doe">
+                <label>Customer Name</label><input type="text" id="custName" placeholder="Full Name">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Phone</label><input type="tel" id="custPhone" placeholder="555-0123"></div>
-                    <div><label>Email</label><input type="email" id="custEmail" placeholder="john@example.com"></div>
+                    <div><label>Phone</label><input type="tel" id="custPhone" placeholder="Phone"></div>
+                    <div><label>Email</label><input type="email" id="custEmail" placeholder="Email"></div>
                 </div>
-                <label>Shipping/Pickup Address</label>
-                <input type="text" id="custAddress" placeholder="123 Main St, City, ST">
+                <label>Address</label><input type="text" id="custAddress" placeholder="Full Address">
                 
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px;">
-                    <div><label>Product Template</label><select id="orderProductSelect"></select></div>
+                    <div><label>Product</label><select id="orderProductSelect"></select></div>
                     <div><label>Qty</label><input type="number" id="orderQty" value="1"></div>
                 </div>
 
-                <label>Design Specifications & Notes</label>
-                <textarea id="designSpecs" style="width:100%; height:80px; border-radius:8px; border:1px solid #e2e8f0; padding:10px; font-family:inherit; margin-bottom:10px;" placeholder="e.g. Blue glitter vinyl, Font: Arial, 2-sided..."></textarea>
+                <label>Design Specs & Notes</label>
+                <textarea id="designSpecs" style="height:80px;" placeholder="Colors, fonts, custom text..."></textarea>
                 
                 <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
             <div class="card">
-                <input type="text" class="search-bar" id="searchOrders" placeholder="Search by name, phone, or design..." oninput="renderOrders()">
+                <input type="text" class="search-bar" id="searchOrders" placeholder="Search orders..." oninput="renderOrders()">
                 <div id="order-list">Loading...</div>
             </div>
         </div>
 
         <div id="inventory" class="page">
             <div class="card">
-                <h3>Add New Stock</h3>
-                <label>Blank Item</label><input type="text" id="invItemName" placeholder="e.g. XL Shirt">
-                <label>Stock Count</label><input type="number" id="invCount" value="0">
-                <button class="btn-primary" onclick="saveInventoryItem()">Save Blank</button>
+                <h3>Inventory Management</h3>
+                <label>Item Name</label><input type="text" id="invItemName" placeholder="e.g. Gildan XL Black">
+                <label>Current Stock</label><input type="number" id="invCount" value="0">
+                <button class="btn-primary" onclick="saveInventoryItem()">Add to Inventory</button>
             </div>
             <div class="card">
                 <input type="text" class="search-bar" id="searchInv" placeholder="Search inventory..." oninput="renderInventory()">
@@ -112,13 +118,13 @@
 
         <div id="specs" class="page">
             <div class="card">
-                <h3>New Dimension Spec</h3>
-                <label>Preset Name</label><input type="text" id="specName" placeholder="e.g. Full Wrap">
+                <h3>Template Sizes</h3>
+                <label>Preset Name</label><input type="text" id="specName" placeholder="e.g. 20oz Skinny Wrap">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Width (In)</label><input type="number" id="specW" placeholder="0"></div>
-                    <div><label>Height (In)</label><input type="number" id="specH" placeholder="0"></div>
+                    <div><label>Width (In)</label><input type="number" id="specW"></div>
+                    <div><label>Height (In)</label><input type="number" id="specH"></div>
                 </div>
-                <button class="btn-primary" onclick="saveSpec()">Save Size</button>
+                <button class="btn-primary" onclick="saveSpec()">Save Dimensions</button>
             </div>
             <div class="card">
                 <input type="text" class="search-bar" id="searchSpecs" placeholder="Search sizes..." oninput="renderSpecs()">
@@ -134,7 +140,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIG (Your existing config)
         const firebaseConfig = {
             apiKey: "AIzaSyB1nxrTvgy8Z8queZ4eW2KsObizBmFSbEY",
             authDomain: "dim-accounting-app.firebaseapp.com",
@@ -182,7 +187,6 @@
             resetForm();
         };
 
-        // UPDATED SAVE ORDER FUNCTION
         window.saveOrder = async () => {
             const p = savedProducts.find(x => x.id == document.getElementById('orderProductSelect').value);
             if(p) {
@@ -192,15 +196,16 @@
                     email: document.getElementById('custEmail').value || "",
                     address: document.getElementById('custAddress').value || "",
                     designNotes: document.getElementById('designSpecs').value || "",
-                    productName: p.name, 
-                    qty: document.getElementById('orderQty').value, 
+                    productName: p.name, qty: document.getElementById('orderQty').value, 
                     totalPrice: (p.total * document.getElementById('orderQty').value).toFixed(2), 
-                    status: 'pending', 
-                    timestamp: Date.now() 
+                    status: 'pending', timestamp: Date.now() 
                 });
-                // Reset form
-                ['custName', 'custPhone', 'custEmail', 'custAddress', 'designSpecs'].forEach(id => document.getElementById(id).value = '');
+                ['custName','custPhone','custEmail','custAddress','designSpecs'].forEach(id => document.getElementById(id).value = '');
             }
+        };
+
+        window.updateStatus = async (id, newStatus) => {
+            await updateDoc(doc(db, "orders", id), { status: newStatus });
         };
 
         window.saveInventoryItem = async () => {
@@ -220,44 +225,51 @@
             await updateDoc(doc(db, "inventory", id), { count: Math.max(0, i.count + amt) });
         };
 
-        window.toggleOrderStatus = async (id) => {
-            const o = savedOrders.find(x=>x.id===id);
-            await updateDoc(doc(db, "orders", id), { status: o.status === 'pending' ? 'done' : 'pending' });
-        };
-
-        window.deleteItem = async (col, id) => { if(confirm("Delete?")) await deleteDoc(doc(db, col, id)); };
+        window.deleteItem = async (col, id) => { if(confirm("Delete this item?")) await deleteDoc(doc(db, col, id)); };
 
         window.renderSaved = () => {
             const term = document.getElementById('searchCalc').value.toLowerCase();
             document.getElementById('saved-list').innerHTML = savedProducts.filter(p => p.name.toLowerCase().includes(term)).map(p => `<div class="list-row"><div><strong>${p.name}</strong><br><small>$${p.total}</small></div><div style="display:flex; gap:5px;"><button class="btn-small" onclick="editProduct('${p.id}')">Edit</button><button class="btn-small" style="color:red;" onclick="deleteItem('products', '${p.id}')">✕</button></div></div>`).join('');
         };
 
-        // UPDATED RENDER ORDERS
         window.renderOrders = () => {
             const term = document.getElementById('searchOrders').value.toLowerCase();
             document.getElementById('order-list').innerHTML = savedOrders
-                .filter(o => o.customer.toLowerCase().includes(term) || o.phone.includes(term) || o.designNotes.toLowerCase().includes(term))
+                .filter(o => o.customer.toLowerCase().includes(term) || o.productName.toLowerCase().includes(term))
                 .sort((a,b) => b.timestamp - a.timestamp)
                 .map(o => `
-                <div class="card" style="margin-bottom:10px; border-left: 5px solid ${o.status==='done'?'#22c55e':'#eab308'};">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>${o.customer}</strong>
-                        <span>$${o.totalPrice}</span>
+                <div class="card" style="border-left: 6px solid ${getStatusColor(o.status)};">
+                    <div class="status-pill status-${o.status}">${o.status}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <strong>${o.customer}</strong><br>
+                            <small>${o.qty}x ${o.productName} - $${o.totalPrice}</small>
+                        </div>
                     </div>
-                    <div style="font-size:12px; color:#64748b; margin: 5px 0;">
-                        ${o.qty}x ${o.productName}<br>
-                        ${o.phone ? '📞 '+o.phone : ''} ${o.email ? ' | ✉️ '+o.email : ''}<br>
+                    <div style="font-size:11px; color:#64748b; margin-top:8px;">
+                        ${o.phone ? '📞 '+o.phone+' | ' : ''} ${o.email ? '✉️ '+o.email : ''}<br>
                         ${o.address ? '📍 '+o.address : ''}
                     </div>
-                    <div style="background:#f8fafc; padding:8px; border-radius:4px; font-size:12px; margin: 5px 0;">
-                        <strong>Notes:</strong> ${o.designNotes || 'None'}
+                    <div style="background:#f8fafc; padding:10px; border-radius:6px; font-size:11px; margin: 10px 0;">
+                        <strong>Design Specs:</strong> ${o.designNotes || 'No notes.'}
                     </div>
-                    <div style="display:flex; gap:5px; margin-top:10px;">
-                        <button class="btn-small" style="flex:1" onclick="toggleOrderStatus('${o.id}')">${o.status.toUpperCase()}</button>
-                        <button class="btn-small" style="color:red;" onclick="deleteItem('orders', '${o.id}')">✕ Delete</button>
+                    <div style="display:flex; gap:5px;">
+                        <select style="flex:2; margin-bottom:0; font-size:12px; padding:5px;" onchange="updateStatus('${o.id}', this.value)">
+                            <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+                            <option value="designing" ${o.status==='designing'?'selected':''}>Designing</option>
+                            <option value="production" ${o.status==='production'?'selected':''}>In Production</option>
+                            <option value="ready" ${o.status==='ready'?'selected':''}>Ready</option>
+                            <option value="shipped" ${o.status==='shipped'?'selected':''}>Shipped/Done</option>
+                        </select>
+                        <button class="btn-small" style="color:red;" onclick="deleteItem('orders', '${o.id}')">✕</button>
                     </div>
                 </div>`).join('');
         };
+
+        function getStatusColor(s) {
+            const colors = { pending: '#ef4444', designing: '#eab308', production: '#22c55e', ready: '#2563eb', shipped: '#64748b' };
+            return colors[s] || '#64748b';
+        }
 
         window.renderInventory = () => {
             const term = document.getElementById('searchInv').value.toLowerCase();
