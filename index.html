@@ -7,32 +7,22 @@
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; --warning: #eab308; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
-        
         .header { background: white; padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); }
         .logo { font-weight: 900; color: var(--primary); font-size: 20px; letter-spacing: -0.5px; text-transform: uppercase; }
-
         .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; white-space: nowrap; }
         .nav-item { flex: 0 0 auto; padding: 15px 20px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-
         .container { padding: 15px; }
         .page { display: none; }
         .page.active { display: block; }
-
-        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
-        h3 { margin-top: 0; font-size: 15px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
+        .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        h3 { margin-top: 0; font-size: 14px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; }
         label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
-        
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
         .btn-small { padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 11px; font-weight: bold; }
-        
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; }
-        
-        .status-pill { padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: inline-block; margin-bottom: 5px; }
-        .status-pending { background: #fee2e2; color: #ef4444; }
-        .order-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; border: 1px solid #ddd; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; z-index:1000;}
     </style>
 </head>
@@ -42,69 +32,70 @@
 
     <div class="nav-bar">
         <div class="nav-item active" onclick="showPage('calc', this)">PRICING</div>
-        <div class="nav-item" onclick="showPage('materials', this)">MAT. LIST</div>
         <div class="nav-item" onclick="showPage('orders', this)">ORDERS</div>
-        <div class="nav-item" onclick="showPage('inventory', this)">INVENTORY</div>
-        <div class="nav-item" onclick="showPage('specs', this)">PRINT SPECS</div>
+        <div class="nav-item" onclick="showPage('catalog', this)">MATERIALS</div>
+        <div class="nav-item" onclick="showPage('settings', this)">⚙️ SETTINGS</div>
     </div>
 
     <div class="container">
         <div id="calc" class="page active">
             <div class="card">
-                <h3>Product Template</h3>
-                <label>Template Name</label><input type="text" id="prodName" placeholder="e.g. 20oz Tumbler">
+                <h3>Product Quote</h3>
+                <label>Item Description</label><input type="text" id="prodName" placeholder="e.g. 20oz Glitter Tumbler">
                 <div id="material-list"></div>
-                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); margin-top:10px;" onclick="addMaterialRow()">+ Add Material to Project</button>
+                <button class="btn-small" style="width:100%; border:2px dashed var(--primary); margin-top:10px;" onclick="addMaterialRow()">+ Add Material</button>
             </div>
             <div class="card">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div><label>Labor (Mins)</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
                     <div><label>Markup (x)</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
                 </div>
-                <button class="btn-primary" onclick="saveProduct()">Save Product Template</button>
             </div>
-            <div class="card">
-                <div id="saved-list">Loading products...</div>
-            </div>
-        </div>
-
-        <div id="materials" class="page">
-            <div class="card">
-                <h3>Add New Material Type</h3>
-                <label>Material Name</label><input type="text" id="newMatName" placeholder="e.g. UV DTF Film">
-                <label>Cost per Unit</label><input type="number" id="newMatCost" step="0.01" placeholder="0.00">
-                <button class="btn-primary" onclick="saveNewMaterialType()">Add to Catalog</button>
-            </div>
-            <div class="card">
-                <h3>Material Catalog</h3>
-                <div id="catalog-list">Loading...</div>
-            </div>
+            <div id="saved-list"></div>
         </div>
 
         <div id="orders" class="page">
             <div class="card">
-                <h3>New Order</h3>
-                <label>Customer</label><input type="text" id="custName">
-                <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px;">
-                    <div><label>Product</label><select id="orderProductSelect"></select></div>
-                    <div><label>Qty</label><input type="number" id="orderQty" value="1"></div>
-                </div>
-                <label>Design Notes</label>
-                <textarea id="designSpecs" style="height:60px;"></textarea>
+                <h3>New Customer Order</h3>
+                <label>Customer Name</label><input type="text" id="custName">
+                <label>Design Specs</label><textarea id="designSpecs" style="height:60px;"></textarea>
                 <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
             <div id="order-list"></div>
         </div>
 
-        <div id="inventory" class="page">... (Inventory Content) ...</div>
-        <div id="specs" class="page">... (Specs Content) ...</div>
+        <div id="catalog" class="page">
+            <div class="card">
+                <h3>Add New Material to Catalog</h3>
+                <label>Name</label><input type="text" id="newMatName" placeholder="e.g. 20oz Skinny Blank">
+                <label>Your Cost ($)</label><input type="number" id="newMatCost" step="0.01">
+                <button class="btn-primary" onclick="saveToCatalog()">Save to Catalog</button>
+            </div>
+            <div class="card">
+                <h3>Your Materials</h3>
+                <div id="catalog-display"></div>
+            </div>
+        </div>
+
+        <div id="settings" class="page">
+            <div class="card">
+                <h3>Business Math Settings</h3>
+                <label>Hourly Labor Rate ($)</label>
+                <input type="number" id="setLabor" value="32.00" onchange="updateSettings()">
+                
+                <label>Sales Tax (%)</label>
+                <input type="number" id="setTax" value="7.0" onchange="updateSettings()">
+                
+                <p style="font-size: 11px; color: #64748b;">These values update your pricing calculator automatically.</p>
+            </div>
+        </div>
     </div>
 
-    <div class="bottom-bar" id="calc-footer"><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>Est. Price:</span> <span id="out-total">$0.00</span></div></div>
+    <div class="bottom-bar" id="calc-footer"><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>Calculated Total:</span> <span id="out-total">$0.00</span></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB1nxrTvgy8Z8queZ4eW2KsObizBmFSbEY",
@@ -118,19 +109,68 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let savedProducts = [], catalog = [];
+        let catalog = [], bizSettings = { labor: 32, tax: 7 };
 
-        // LOAD DATA
-        onSnapshot(collection(db, "material_catalog"), (s) => {
+        // 1. Sync Business Settings
+        onSnapshot(doc(db, "settings", "business"), (d) => {
+            if(d.exists()) {
+                bizSettings = d.data();
+                document.getElementById('setLabor').value = bizSettings.labor;
+                document.getElementById('setTax').value = bizSettings.tax;
+                calculate();
+            }
+        });
+
+        // 2. Sync Material Catalog
+        onSnapshot(collection(db, "catalog"), (s) => {
             catalog = s.docs.map(d => ({id: d.id, ...d.data()}));
             renderCatalog();
-            updateAllMaterialDropdowns();
+            refreshDropdowns();
         });
 
-        onSnapshot(collection(db, "products"), (s) => {
-            savedProducts = s.docs.map(d => ({id: d.id, ...d.data()}));
-            renderSavedProducts();
-        });
+        window.updateSettings = async () => {
+            const labor = parseFloat(document.getElementById('setLabor').value);
+            const tax = parseFloat(document.getElementById('setTax').value);
+            await setDoc(doc(db, "settings", "business"), { labor, tax });
+        };
+
+        window.saveToCatalog = async () => {
+            const name = document.getElementById('newMatName').value;
+            const cost = parseFloat(document.getElementById('newMatCost').value);
+            if(name && cost) {
+                await addDoc(collection(db, "catalog"), { name, cost });
+                document.getElementById('newMatName').value = '';
+                document.getElementById('newMatCost').value = '';
+            }
+        };
+
+        window.addMaterialRow = () => {
+            const div = document.createElement('div');
+            div.className = 'material-row';
+            div.innerHTML = `
+                <div><label>Material</label><select class="mat-select" onchange="calculate()">
+                    ${catalog.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}
+                </select></div>
+                <div><label>Qty</label><input type="number" class="mat-qty" value="1" oninput="calculate()"></div>
+                <button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red; background:none; font-size:18px;">✕</button>`;
+            document.getElementById('material-list').appendChild(div);
+            calculate();
+        };
+
+        window.calculate = () => {
+            let matTotal = 0;
+            document.querySelectorAll('.material-row').forEach(row => {
+                matTotal += (parseFloat(row.querySelector('.mat-select').value) || 0) * (parseFloat(row.querySelector('.mat-qty').value) || 0);
+            });
+            const laborMins = parseFloat(document.getElementById('laborMinutes').value) || 0;
+            const markup = parseFloat(document.getElementById('markup').value) || 1;
+            
+            const laborCost = (laborMins / 60) * bizSettings.labor;
+            const subtotal = (matTotal + laborCost) * markup;
+            const final = subtotal * (1 + (bizSettings.tax / 100));
+            
+            document.getElementById('out-total').innerText = `$${final.toFixed(2)}`;
+        };
 
         window.showPage = (pId, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
@@ -138,62 +178,24 @@
             document.getElementById('calc-footer').style.display = (pId === 'calc') ? 'block' : 'none';
         };
 
-        // SAVE NEW MATERIAL TO CATALOG
-        window.saveNewMaterialType = async () => {
-            const name = document.getElementById('newMatName').value;
-            const cost = parseFloat(document.getElementById('newMatCost').value) || 0;
-            if(name) {
-                await addDoc(collection(db, "material_catalog"), { name, cost });
-                document.getElementById('newMatName').value = '';
-                document.getElementById('newMatCost').value = '';
-            }
-        };
-
         window.renderCatalog = () => {
-            document.getElementById('catalog-list').innerHTML = catalog.map(m => `
+            document.getElementById('catalog-display').innerHTML = catalog.map(m => `
                 <div class="list-row">
-                    <div><strong>${m.name}</strong><br><small>$${m.cost} /unit</small></div>
-                    <button class="btn-small" style="color:red" onclick="deleteItem('material_catalog', '${m.id}')">✕</button>
+                    <span><strong>${m.name}</strong> ($${m.cost})</span>
+                    <button class="btn-small" style="color:red" onclick="deleteItem('catalog', '${m.id}')">✕</button>
                 </div>`).join('');
         };
 
-        window.updateAllMaterialDropdowns = () => {
-            document.querySelectorAll('.mat-type').forEach(select => {
-                const currentVal = select.value;
-                select.innerHTML = catalog.map(m => `<option value="${m.cost}" ${currentVal == m.cost ? 'selected' : ''}>${m.name} ($${m.cost})</option>`).join('');
+        window.refreshDropdowns = () => {
+            document.querySelectorAll('.mat-select').forEach(sel => {
+                const current = sel.value;
+                sel.innerHTML = catalog.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('');
             });
-        };
-
-        window.addMaterialRow = () => {
-            const div = document.createElement('div');
-            div.className = 'material-row';
-            div.innerHTML = `
-                <div><label>Type</label><select class="mat-type" onchange="calculate()">
-                    ${catalog.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}
-                </select></div>
-                <div><label>Qty</label><input type="number" class="mat-qty" value="1" oninput="calculate()"></div>
-                <button onclick="this.parentElement.remove(); calculate();" style="border:none; color:red;">✕</button>`;
-            document.getElementById('material-list').appendChild(div);
-            calculate();
-        };
-
-        window.calculate = () => {
-            let mTotal = 0;
-            document.querySelectorAll('.material-row').forEach(r => {
-                const cost = parseFloat(r.querySelector('.mat-type').value) || 0;
-                const qty = parseFloat(r.querySelector('.mat-qty').value) || 0;
-                mTotal += (cost * qty);
-            });
-            const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-            const markup = parseFloat(document.getElementById('markup').value) || 1;
-            const total = ((mTotal + (mins / 60 * 32)) * markup) * 1.07;
-            document.getElementById('out-total').innerText = `$${total.toFixed(2)}`;
-            return total.toFixed(2);
         };
 
         window.deleteItem = async (col, id) => { if(confirm("Delete?")) await deleteDoc(doc(db, col, id)); };
 
-        // (Other helper functions for Products and Orders go here, keeping same logic as previous versions)
+        addMaterialRow();
     </script>
 </body>
 </html>
