@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DIM Bright Ideas LLC | Business Suite</title>
+    <title>DIM Bright Ideas LLC | Pro</title>
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
         .header { background: white; padding: 15px; text-align: center; border-bottom: 2px solid var(--primary); }
         .logo { font-weight: 900; color: var(--primary); font-size: 18px; text-transform: uppercase; }
-        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .nav-item { flex: 0 0 auto; padding: 15px 12px; font-size: 10px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
+        .nav-item { flex: 0 0 auto; padding: 15px 15px; font-size: 10px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; text-transform: uppercase; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         .container { padding: 15px; }
         .page { display: none; }
         .page.active { display: block; }
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { margin-top: 0; font-size: 13px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; }
-        label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
+        h3 { margin-top: 0; font-size: 12px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; }
+        label { display: block; font-size: 9px; font-weight: 800; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-qty { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
-        .btn-danger { color: var(--danger); background: none; border: none; cursor: pointer; font-weight: bold; }
+        .btn-qty { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-        .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; }
+        .material-row { display: grid; grid-template-columns: 1.2fr 0.8fr 0.5fr auto; gap: 5px; align-items: end; margin-bottom: 10px; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; z-index: 1000; }
-        .edit-btn { background: #e2e8f0; border: none; padding: 5px 10px; border-radius: 4px; font-size: 10px; margin-right: 5px; cursor: pointer; }
+        .small-text { font-size: 11px; color: #64748b; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -33,74 +32,101 @@
     <div class="header"><div class="logo">DIM Bright Ideas LLC</div></div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('orders', this)">ORDERS</div>
-        <div class="nav-item" onclick="showPage('calc', this)">PRICING</div>
-        <div class="nav-item" onclick="showPage('materials', this)">MATERIALS</div>
-        <div class="nav-item" onclick="showPage('inventory', this)">INVENTORY</div>
-        <div class="nav-item" onclick="showPage('catalog', this)">COSTS</div>
+        <div class="nav-item active" onclick="showPage('orders', this)">Orders</div>
+        <div class="nav-item" onclick="showPage('pricing', this)">Pricing</div>
+        <div class="nav-item" onclick="showPage('materials', this)">Materials</div>
+        <div class="nav-item" onclick="showPage('inventory', this)">Inventory</div>
+        <div class="nav-item" onclick="showPage('costs', this)">Costs</div>
     </div>
 
     <div class="container">
         <div id="orders" class="page active">
             <div class="card">
-                <h3 id="orderHead">New Customer Order</h3>
-                <input type="text" id="custName" placeholder="Customer Name">
-                <textarea id="designSpecs" placeholder="Design Notes..."></textarea>
-                <button class="btn-primary" id="orderSubmit" onclick="saveOrder()">Save Order</button>
+                <h3>New Order Entry</h3>
+                <input type="text" id="oName" placeholder="Customer Name">
+                <input type="text" id="oAddr" placeholder="Shipping Address">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="email" id="oEmail" placeholder="Email">
+                    <input type="tel" id="oPhone" placeholder="Phone">
+                </div>
+                <input type="text" id="oProd" placeholder="Product (e.g. 20oz Tumbler)">
+                <input type="number" id="oQty" placeholder="Quantity" value="1">
+                <textarea id="oDesc" placeholder="Description/Design Notes" style="height:80px;"></textarea>
+                <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
-            <div id="order-display"></div>
+            <div id="order-list"></div>
         </div>
 
-        <div id="calc" class="page">
+        <div id="pricing" class="page">
             <div class="card">
-                <h3>Product Quote Settings</h3>
+                <h3>Pricing Calculator</h3>
+                <label>Product Name</label><input type="text" id="calcProdName" placeholder="e.g. Custom Hoodie">
+                
+                <div id="calc-materials-container">
+                    <label>Materials from Catalog</label>
+                    <div id="active-materials"></div>
+                    <button class="btn-qty" style="width:100%; margin-bottom:15px;" onclick="addRow()">+ Add Material</button>
+                </div>
+
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Labor (Mins)</label><input type="number" id="laborMinutes" value="15" oninput="calculate()"></div>
-                    <div><label>Markup (x)</label><input type="number" id="markup" value="2" step="0.1" oninput="calculate()"></div>
+                    <div><label>Labor (Mins)</label><input type="number" id="lMins" value="15" oninput="runCalc()"></div>
+                    <div><label>Labor $/hr</label><input type="number" id="lRate" value="32" oninput="runCalc()"></div>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Labor Rate ($/hr)</label><input type="number" id="setLabor" value="32" onchange="updateSettings()"></div>
-                    <div><label>Tax (%)</label><input type="number" id="setTax" value="7" onchange="updateSettings()"></div>
+                    <div><label>Markup (x)</label><input type="number" id="mUp" value="2" step="0.1" oninput="runCalc()"></div>
+                    <div><label>Tax (%)</label><input type="number" id="tRate" value="7" oninput="runCalc()"></div>
                 </div>
+                <button class="btn-primary" onclick="saveToMasterCosts()">Save to Master Costs</button>
             </div>
         </div>
 
         <div id="materials" class="page">
             <div class="card">
-                <h3>Build This Project</h3>
-                <div id="material-list"></div>
-                <button class="btn-qty" style="width:100%; margin-top:10px;" onclick="addMaterialRow()">+ Add Item From Catalog</button>
+                <h3>Define Raw Materials</h3>
+                <input type="text" id="matName" placeholder="Material Name (e.g. Vinyl)">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="number" id="matCost" step="0.01" placeholder="Cost per Unit">
+                    <select id="matUnit">
+                        <option value="qty">Quantity (ea)</option>
+                        <option value="sqft">Sq. Feet</option>
+                        <option value="sqin">Sq. Inches</option>
+                        <option value="page">Pages</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="saveMaterial()">Add Material</button>
             </div>
+            <div id="mat-list-display"></div>
         </div>
 
         <div id="inventory" class="page">
             <div class="card">
-                <h3 id="invHead">Shelf Stock</h3>
+                <h3>Finished Goods/Blanks</h3>
                 <input type="text" id="invName" placeholder="Item Name">
-                <input type="number" id="invQty" placeholder="Qty">
-                <button class="btn-primary" id="invSubmit" onclick="saveInventory()">Add to Inventory</button>
+                <input type="number" id="invQty" placeholder="Quantity on Hand">
+                <button class="btn-primary" onclick="saveInv()">Update Shelf</button>
             </div>
-            <div id="inventory-display"></div>
+            <div id="inv-list-display"></div>
         </div>
 
-        <div id="catalog" class="page">
+        <div id="costs" class="page">
             <div class="card">
-                <h3 id="costHead">Catalog Pricing</h3>
-                <input type="text" id="costName" placeholder="Item Name">
-                <input type="number" id="costAmount" step="0.01" placeholder="Cost ($)">
-                <button class="btn-primary" id="costSubmit" onclick="saveCost()">Save to Catalog</button>
+                <h3>Master Product Pricing</h3>
+                <p class="small-text">Calculated totals saved from your Pricing tab appear here.</p>
             </div>
-            <div id="catalog-display"></div>
+            <div id="master-costs-display"></div>
         </div>
     </div>
 
-    <div class="bottom-bar" id="calc-footer" style="display:none;">
-        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>Total Quote:</span> <span id="out-total">$0.00</span></div>
+    <div class="bottom-bar" id="price-bar" style="display:none;">
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>ESTIMATED TOTAL:</span>
+            <span id="final-price-out">$0.00</span>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB1nxrTvgy8Z8queZ4eW2KsObizBmFSbEY",
@@ -114,78 +140,89 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let catalog = [], inventory = [], orders = [], bizSettings = { labor: 32, tax: 7 };
-        let editId = { order: null, inv: null, cost: null };
+        let materials = [], inventory = [], orders = [], masterCosts = [];
 
-        // SYNC
-        onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()) { bizSettings = d.data(); document.getElementById('setLabor').value = bizSettings.labor; document.getElementById('setTax').value = bizSettings.tax; calculate(); } });
-        onSnapshot(collection(db, "catalog"), (s) => { catalog = s.docs.map(d => ({id: d.id, ...d.data()})); renderCatalog(); updateDropdowns(); });
-        onSnapshot(collection(db, "inventory"), (s) => { inventory = s.docs.map(d => ({id: d.id, ...d.data()})); renderInventory(); });
-        onSnapshot(collection(db, "orders"), (s) => { orders = s.docs.map(d => ({id: d.id, ...d.data()})); renderOrders(); });
+        // LIVE SYNC
+        onSnapshot(collection(db, "materials"), (s) => { materials = s.docs.map(d => ({id:d.id, ...d.data()})); renderMats(); refreshPricingDrops(); });
+        onSnapshot(collection(db, "inventory"), (s) => { inventory = s.docs.map(d => ({id:d.id, ...d.data()})); renderInv(); });
+        onSnapshot(collection(db, "orders"), (s) => { orders = s.docs.map(d => ({id:d.id, ...d.data()})); renderOrders(); });
+        onSnapshot(collection(db, "masterCosts"), (s) => { masterCosts = s.docs.map(d => ({id:d.id, ...d.data()})); renderMasterCosts(); });
 
-        window.updateSettings = async () => { const l = parseFloat(document.getElementById('setLabor').value); const t = parseFloat(document.getElementById('setTax').value); await setDoc(doc(db, "settings", "business"), { labor: l, tax: t }); };
-
-        // ORDERS
+        // TAB 1: ORDERS
         window.saveOrder = async () => {
-            const data = { customer: document.getElementById('custName').value, notes: document.getElementById('designSpecs').value, timestamp: Date.now() };
-            if(!data.customer) return;
-            if(editId.order) { await updateDoc(doc(db, "orders", editId.order), data); editId.order = null; document.getElementById('orderSubmit').innerText = "Save Order"; document.getElementById('orderHead').innerText = "New Customer Order"; }
-            else { await addDoc(collection(db, "orders"), data); }
-            document.getElementById('custName').value=''; document.getElementById('designSpecs').value='';
+            const data = { name: document.getElementById('oName').value, addr: document.getElementById('oAddr').value, email: document.getElementById('oEmail').value, phone: document.getElementById('oPhone').value, prod: document.getElementById('oProd').value, qty: document.getElementById('oQty').value, desc: document.getElementById('oDesc').value, ts: Date.now() };
+            if(data.name) await addDoc(collection(db, "orders"), data);
+            ['oName','oAddr','oEmail','oPhone','oProd','oQty','oDesc'].forEach(id => document.getElementById(id).value='');
         };
-        window.editOrder = (id) => { const o = orders.find(x => x.id === id); document.getElementById('custName').value = o.customer; document.getElementById('designSpecs').value = o.notes; editId.order = id; document.getElementById('orderSubmit').innerText = "Update Order"; document.getElementById('orderHead').innerText = "Editing Order"; };
 
-        // INVENTORY
-        window.saveInventory = async () => {
-            const data = { name: document.getElementById('invName').value, qty: parseInt(document.getElementById('invQty').value)||0 };
-            if(!data.name) return;
-            if(editId.inv) { await updateDoc(doc(db, "inventory", editId.inv), data); editId.inv = null; document.getElementById('invSubmit').innerText = "Add Stock"; }
-            else { await addDoc(collection(db, "inventory"), data); }
+        window.renderOrders = () => {
+            document.getElementById('order-list').innerHTML = orders.sort((a,b)=>b.ts-a.ts).map(o => `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;"><strong>${o.name}</strong> <button class="btn-danger" onclick="del('orders','${o.id}')">✕</button></div>
+                    <div class="small-text">${o.prod} (Qty: ${o.qty})<br>${o.addr}<br>${o.phone} | ${o.email}</div>
+                    <p style="font-size:12px; background:#f8fafc; padding:8px; border-radius:4px; margin-top:8px;">${o.desc}</p>
+                </div>`).join('');
+        };
+
+        // TAB 2: PRICING
+        window.addRow = () => {
+            const div = document.createElement('div'); div.className = 'material-row';
+            div.innerHTML = `
+                <select class="p-mat-sel" onchange="runCalc()">${materials.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}</select>
+                <input type="number" class="p-mat-qty" value="1" oninput="runCalc()">
+                <span class="small-text">qty</span>
+                <button class="btn-danger" onclick="this.parentElement.remove(); runCalc();">✕</button>`;
+            document.getElementById('active-materials').appendChild(div); runCalc();
+        };
+
+        window.runCalc = () => {
+            let mSum = 0; document.querySelectorAll('.material-row').forEach(r => { mSum += (parseFloat(r.querySelector('.p-mat-sel').value)||0) * (parseFloat(r.querySelector('.p-mat-qty').value)||0); });
+            const labor = (parseFloat(document.getElementById('lMins').value)/60) * parseFloat(document.getElementById('lRate').value);
+            const subtotal = (mSum + labor) * parseFloat(document.getElementById('mUp').value);
+            const total = subtotal * (1 + (parseFloat(document.getElementById('tRate').value)/100));
+            document.getElementById('final-price-out').innerText = `$${total.toFixed(2)}`;
+            return total.toFixed(2);
+        };
+
+        window.saveToMasterCosts = async () => {
+            const name = document.getElementById('calcProdName').value;
+            const price = document.getElementById('final-price-out').innerText;
+            if(name) await addDoc(collection(db, "masterCosts"), { name, price });
+            document.getElementById('calcProdName').value = '';
+        };
+
+        // TAB 3: MATERIALS
+        window.saveMaterial = async () => {
+            const name = document.getElementById('matName').value;
+            const cost = parseFloat(document.getElementById('matCost').value);
+            const unit = document.getElementById('matUnit').value;
+            if(name && cost) await addDoc(collection(db, "materials"), { name, cost, unit });
+            document.getElementById('matName').value=''; document.getElementById('matCost').value='';
+        };
+        window.renderMats = () => { document.getElementById('mat-list-display').innerHTML = materials.map(m => `<div class="card list-row"><span><strong>${m.name}</strong> ($${m.cost}/${m.unit})</span> <button class="btn-danger" onclick="del('materials','${m.id}')">✕</button></div>`).join(''); };
+
+        // TAB 4: INVENTORY
+        window.saveInv = async () => {
+            const name = document.getElementById('invName').value;
+            const qty = parseInt(document.getElementById('invQty').value);
+            if(name) await addDoc(collection(db, "inventory"), { name, qty });
             document.getElementById('invName').value=''; document.getElementById('invQty').value='';
         };
-        window.editInventory = (id) => { const i = inventory.find(x => x.id === id); document.getElementById('invName').value = i.name; document.getElementById('invQty').value = i.qty; editId.inv = id; document.getElementById('invSubmit').innerText = "Update Stock"; };
+        window.renderInv = () => { document.getElementById('inv-list-display').innerHTML = inventory.map(i => `<div class="card list-row"><span><strong>${i.name}</strong> (${i.qty})</span> <button class="btn-danger" onclick="del('inventory','${i.id}')">✕</button></div>`).join(''); };
 
-        // COSTS
-        window.saveCost = async () => {
-            const data = { name: document.getElementById('costName').value, cost: parseFloat(document.getElementById('costAmount').value)||0 };
-            if(!data.name) return;
-            if(editId.cost) { await updateDoc(doc(db, "catalog", editId.cost), data); editId.cost = null; document.getElementById('costSubmit').innerText = "Save to Catalog"; }
-            else { await addDoc(collection(db, "catalog"), data); }
-            document.getElementById('costName').value=''; document.getElementById('costAmount').value='';
-        };
-        window.editCost = (id) => { const c = catalog.find(x => x.id === id); document.getElementById('costName').value = c.name; document.getElementById('costAmount').value = c.cost; editId.cost = id; document.getElementById('costSubmit').innerText = "Update Catalog Price"; };
+        // TAB 5: COSTS
+        window.renderMasterCosts = () => { document.getElementById('master-costs-display').innerHTML = masterCosts.map(c => `<div class="card list-row"><span><strong>${c.name}</strong></span> <span style="font-weight:bold; color:var(--primary);">${c.price}</span> <button class="btn-danger" onclick="del('masterCosts','${c.id}')">✕</button></div>`).join(''); };
 
-        // RENDERING
-        window.renderOrders = () => { document.getElementById('order-display').innerHTML = orders.sort((a,b)=>b.timestamp-a.timestamp).map(o => `<div class="card"><div><strong>${o.customer}</strong></div><p style="font-size:12px;">${o.notes}</p><button class="edit-btn" onclick="editOrder('${o.id}')">Edit</button><button class="btn-danger" onclick="deleteItem('orders','${o.id}')">✕</button></div>`).join(''); };
-        window.renderInventory = () => { document.getElementById('inventory-display').innerHTML = inventory.map(i => `<div class="card list-row"><div><strong>${i.name}</strong> (${i.qty})</div><div><button class="btn-qty" onclick="adjustStock('${i.id}',-1)">-</button><button class="btn-qty" onclick="adjustStock('${i.id}',1)">+</button><button class="edit-btn" onclick="editInventory('${i.id}')">Edit</button><button class="btn-danger" onclick="deleteItem('inventory','${i.id}')">✕</button></div></div>`).join(''); };
-        window.renderCatalog = () => { document.getElementById('catalog-display').innerHTML = catalog.map(c => `<div class="card list-row"><span><strong>${c.name}</strong> ($${c.cost})</span><div><button class="edit-btn" onclick="editCost('${c.id}')">Edit</button><button class="btn-danger" onclick="deleteItem('catalog','${c.id}')">✕</button></div></div>`).join(''); };
-
-        window.adjustStock = async (id, amt) => { const item = inventory.find(x => x.id === id); await updateDoc(doc(db, "inventory", id), { qty: Math.max(0, item.qty + amt) }); };
-        window.deleteItem = async (col, id) => { if(confirm("Delete?")) await deleteDoc(doc(db, col, id)); };
-
-        // PRICING ENGINE
-        window.addMaterialRow = () => {
-            const div = document.createElement('div'); div.className = 'material-row';
-            div.innerHTML = `<div><label>Item</label><select class="mat-select" onchange="calculate()">${catalog.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}</select></div><div><label>Qty</label><input type="number" class="mat-qty" value="1" oninput="calculate()"></div><button class="btn-qty" style="color:red" onclick="this.parentElement.remove(); calculate();">✕</button>`;
-            document.getElementById('material-list').appendChild(div); calculate();
-        };
-
-        window.updateDropdowns = () => { document.querySelectorAll('.mat-select').forEach(sel => { const v = sel.value; sel.innerHTML = catalog.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join(''); if(v) sel.value = v; }); };
-
-        window.calculate = () => {
-            let mTotal = 0; document.querySelectorAll('.material-row').forEach(r => { mTotal += (parseFloat(r.querySelector('.mat-select').value) || 0) * (parseFloat(r.querySelector('.mat-qty').value) || 0); });
-            const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-            const sub = (mTotal + (mins / 60 * bizSettings.labor)) * (parseFloat(document.getElementById('markup').value) || 1);
-            document.getElementById('out-total').innerText = `$${(sub * (1 + bizSettings.tax/100)).toFixed(2)}`;
-        };
-
+        // HELPERS
+        window.del = async (c, id) => { if(confirm("Delete?")) await deleteDoc(doc(db, c, id)); };
         window.showPage = (id, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById(id).classList.add('active'); el.classList.add('active');
-            document.getElementById('calc-footer').style.display = (id==='calc' || id==='materials') ? 'block' : 'none';
+            document.getElementById('price-bar').style.display = (id==='pricing') ? 'block' : 'none';
         };
+        window.refreshPricingDrops = () => { document.querySelectorAll('.p-mat-sel').forEach(s => { const val = s.value; s.innerHTML = materials.map(m => `<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join(''); s.value = val; }); };
 
-        addMaterialRow();
+        addRow();
     </script>
 </body>
 </html>
