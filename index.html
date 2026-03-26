@@ -10,20 +10,18 @@
         .header { background: white; padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); }
         .logo { font-weight: 900; color: var(--primary); font-size: 20px; text-transform: uppercase; }
         .nav-bar { display: flex; background: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
-        .nav-item { flex: 0 0 auto; padding: 15px 20px; font-size: 11px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-item { flex: 0 0 auto; padding: 15px 15px; font-size: 10px; font-weight: bold; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         .container { padding: 15px; }
         .page { display: none; }
         .page.active { display: block; }
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { margin-top: 0; font-size: 14px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
+        h3 { margin-top: 0; font-size: 13px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase;}
         label { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-edit { background: #e2e8f0; color: var(--text); padding: 6px 10px; border-radius: 6px; border: none; font-size: 11px; cursor: pointer; margin-right: 5px; }
-        .btn-danger { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 14px; }
-        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .material-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 12px; }
+        .btn-qty { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; }
     </style>
 </head>
@@ -34,8 +32,8 @@
     <div class="nav-bar">
         <div class="nav-item active" onclick="showPage('calc', this)">PRICING</div>
         <div class="nav-item" onclick="showPage('orders', this)">ORDERS</div>
-        <div class="nav-item" onclick="showPage('catalog', this)">MATERIALS</div>
-        <div class="nav-item" onclick="showPage('settings', this)">SETTINGS</div>
+        <div class="nav-item" onclick="showPage('inventory', this)">INVENTORY</div>
+        <div class="nav-item" onclick="showPage('catalog', this)">COSTS</div>
     </div>
 
     <div class="container">
@@ -44,7 +42,7 @@
                 <h3>Product Calculator</h3>
                 <label>Template Name</label><input type="text" id="prodName">
                 <div id="material-list"></div>
-                <button class="btn-edit" style="width:100%; margin-top:10px;" onclick="addMaterialRow()">+ Add Material</button>
+                <button class="btn-qty" style="width:100%; margin-top:10px;" onclick="addMaterialRow()">+ Add Material</button>
             </div>
             <div class="card">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -56,30 +54,32 @@
 
         <div id="orders" class="page">
             <div class="card">
-                <h3 id="orderHeader">New Order</h3>
-                <label>Customer Name</label><input type="text" id="custName">
-                <label>Design Specs</label><textarea id="designSpecs" style="height:60px;"></textarea>
-                <button class="btn-primary" id="saveOrderBtn" onclick="saveOrder()">Create Order</button>
+                <h3>New Order</h3>
+                <label>Customer</label><input type="text" id="custName">
+                <label>Design Specs</label><textarea id="designSpecs"></textarea>
+                <button class="btn-primary" onclick="saveOrder()">Create Order</button>
             </div>
             <div id="order-display"></div>
         </div>
 
-        <div id="catalog" class="page">
+        <div id="inventory" class="page">
             <div class="card">
-                <h3 id="catalogHeader">Add Material</h3>
-                <label>Name</label><input type="text" id="newMatName">
-                <label>Cost ($)</label><input type="number" id="newMatCost" step="0.01">
-                <button class="btn-primary" id="catalogBtn" onclick="saveToCatalog()">Add to Catalog</button>
+                <h3>Add Stock Item</h3>
+                <input type="text" id="invName" placeholder="Item Name">
+                <input type="number" id="invQty" placeholder="Starting Quantity">
+                <button class="btn-primary" onclick="saveInventory()">Add to Shelf</button>
             </div>
-            <div id="catalog-display"></div>
+            <div id="inventory-display"></div>
         </div>
 
-        <div id="settings" class="page">
+        <div id="catalog" class="page">
             <div class="card">
-                <h3>Business Rules</h3>
-                <label>Labor Rate ($/hr)</label><input type="number" id="setLabor" onchange="updateSettings()">
-                <label>Sales Tax (%)</label><input type="number" id="setTax" onchange="updateSettings()">
+                <h3>Manage Material Costs</h3>
+                <input type="text" id="costName" placeholder="Material Name">
+                <input type="number" id="costAmount" step="0.01" placeholder="Cost ($)">
+                <button class="btn-primary" onclick="saveCost()">Save Price</button>
             </div>
+            <div id="catalog-display"></div>
         </div>
     </div>
 
@@ -101,71 +101,64 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let catalog = [], orders = [], bizSettings = { labor: 32, tax: 7 };
-        let editingCatalogId = null, editingOrderId = null;
+        let catalog = [], inventory = [], orders = [], bizSettings = { labor: 32, tax: 7 };
 
-        // SYNC DATA
-        onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()) { bizSettings = d.data(); document.getElementById('setLabor').value = bizSettings.labor; document.getElementById('setTax').value = bizSettings.tax; calculate(); } });
+        // SYNC ALL DATA
+        onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()) bizSettings = d.data(); calculate(); });
         onSnapshot(collection(db, "catalog"), (s) => { catalog = s.docs.map(d => ({id: d.id, ...d.data()})); renderCatalog(); });
+        onSnapshot(collection(db, "inventory"), (s) => { inventory = s.docs.map(d => ({id: d.id, ...d.data()})); renderInventory(); });
         onSnapshot(collection(db, "orders"), (s) => { orders = s.docs.map(d => ({id: d.id, ...d.data()})); renderOrders(); });
 
-        window.updateSettings = async () => { await setDoc(doc(db, "settings", "business"), { labor: parseFloat(document.getElementById('setLabor').value), tax: parseFloat(document.getElementById('setTax').value) }); };
-
-        // CATALOG EDIT/SAVE
-        window.saveToCatalog = async () => {
-            const data = { name: document.getElementById('newMatName').value, cost: parseFloat(document.getElementById('newMatCost').value) };
-            if(!data.name) return;
-            if(editingCatalogId) { await updateDoc(doc(db, "catalog", editingCatalogId), data); editingCatalogId = null; document.getElementById('catalogBtn').innerText = "Add to Catalog"; document.getElementById('catalogHeader').innerText = "Add Material"; }
-            else { await addDoc(collection(db, "catalog"), data); }
-            document.getElementById('newMatName').value = ''; document.getElementById('newMatCost').value = '';
+        // INVENTORY LOGIC
+        window.saveInventory = async () => {
+            const name = document.getElementById('invName').value;
+            const qty = parseInt(document.getElementById('invQty').value) || 0;
+            if(name) await addDoc(collection(db, "inventory"), { name, qty });
+            document.getElementById('invName').value = ''; document.getElementById('invQty').value = '';
         };
 
-        window.editCatalog = (id) => {
-            const item = catalog.find(x => x.id === id);
-            editingCatalogId = id;
-            document.getElementById('newMatName').value = item.name;
-            document.getElementById('newMatCost').value = item.cost;
-            document.getElementById('catalogBtn').innerText = "Update Material";
-            document.getElementById('catalogHeader').innerText = "Editing Material";
-            window.scrollTo(0,0);
+        window.adjustStock = async (id, amt) => {
+            const item = inventory.find(x => x.id === id);
+            await updateDoc(doc(db, "inventory", id), { qty: Math.max(0, item.qty + amt) });
         };
 
-        // ORDER EDIT/SAVE
-        window.saveOrder = async () => {
-            const data = { customer: document.getElementById('custName').value, notes: document.getElementById('designSpecs').value, timestamp: Date.now() };
-            if(editingOrderId) { await updateDoc(doc(db, "orders", editingOrderId), data); editingOrderId = null; document.getElementById('saveOrderBtn').innerText = "Create Order"; document.getElementById('orderHeader').innerText = "New Order"; }
-            else { await addDoc(collection(db, "orders"), data); }
-            document.getElementById('custName').value = ''; document.getElementById('designSpecs').value = '';
+        window.renderInventory = () => {
+            document.getElementById('inventory-display').innerHTML = inventory.map(item => `
+                <div class="card list-row">
+                    <div><strong>${item.name}</strong><br><small>${item.qty} in stock</small></div>
+                    <div>
+                        <button class="btn-qty" onclick="adjustStock('${item.id}', -1)">-</button>
+                        <button class="btn-qty" onclick="adjustStock('${item.id}', 1)">+</button>
+                        <button class="btn-qty" style="color:red" onclick="deleteItem('inventory', '${item.id}')">✕</button>
+                    </div>
+                </div>`).join('');
         };
 
-        window.editOrder = (id) => {
-            const order = orders.find(x => x.id === id);
-            editingOrderId = id;
-            document.getElementById('custName').value = order.customer;
-            document.getElementById('designSpecs').value = order.notes;
-            document.getElementById('saveOrderBtn').innerText = "Update Order";
-            document.getElementById('orderHeader').innerText = "Editing Order";
-            window.scrollTo(0,0);
+        // REMAINDER OF LOGIC (Pricing, Costs, Orders)
+        window.saveCost = async () => {
+            const name = document.getElementById('costName').value;
+            const cost = parseFloat(document.getElementById('costAmount').value);
+            if(name && cost) await addDoc(collection(db, "catalog"), { name, cost });
+            document.getElementById('costName').value = ''; document.getElementById('costAmount').value = '';
         };
 
-        // CALCULATION LOGIC
-        window.addMaterialRow = (selectedVal = null, qty = 1) => {
-            const div = document.createElement('div'); div.className = 'material-row';
-            div.innerHTML = `<div><label>Mat</label><select class="mat-select" onchange="calculate()">${catalog.map(m => `<option value="${m.cost}" ${selectedVal == m.cost ? 'selected' : ''}>${m.name}</option>`).join('')}</select></div><div><label>Qty</label><input type="number" class="mat-qty" value="${qty}" oninput="calculate()"></div><button class="btn-danger" onclick="this.parentElement.remove(); calculate();">✕</button>`;
-            document.getElementById('material-list').appendChild(div); calculate();
-        };
-
+        window.renderCatalog = () => { document.getElementById('catalog-display').innerHTML = catalog.map(m => `<div class="card list-row"><span><strong>${m.name}</strong> ($${m.cost})</span><button class="btn-qty" style="color:red" onclick="deleteItem('catalog', '${m.id}')">✕</button></div>`).join(''); };
+        window.renderOrders = () => { document.getElementById('order-display').innerHTML = orders.map(o => `<div class="card"><strong>${o.customer}</strong><p style="font-size:12px;">${o.notes}</p></div>`).join(''); };
+        window.deleteItem = async (col, id) => { if(confirm("Delete?")) await deleteDoc(doc(db, col, id)); };
+        
         window.calculate = () => {
             let mTotal = 0; document.querySelectorAll('.material-row').forEach(r => { mTotal += (parseFloat(r.querySelector('.mat-select').value) || 0) * (parseFloat(r.querySelector('.mat-qty').value) || 0); });
             const mins = parseFloat(document.getElementById('laborMinutes').value) || 0;
-            const markup = parseFloat(document.getElementById('markup').value) || 1;
-            const sub = (mTotal + (mins / 60 * bizSettings.labor)) * markup;
+            const sub = (mTotal + (mins / 60 * bizSettings.labor)) * (parseFloat(document.getElementById('markup').value) || 1);
             document.getElementById('out-total').innerText = `$${(sub * (1 + bizSettings.tax/100)).toFixed(2)}`;
         };
 
-        window.renderCatalog = () => { document.getElementById('catalog-display').innerHTML = catalog.map(m => `<div class="card list-row"><div><strong>${m.name}</strong><br><small>$${m.cost}</small></div><div><button class="btn-edit" onclick="editCatalog('${m.id}')">Edit</button><button class="btn-danger" onclick="deleteItem('catalog', '${m.id}')">✕</button></div></div>`).join(''); };
-        window.renderOrders = () => { document.getElementById('order-display').innerHTML = orders.map(o => `<div class="card"><div style="display:flex; justify-content:space-between;"><strong>${o.customer}</strong><div><button class="btn-edit" onclick="editOrder('${o.id}')">Edit</button><button class="btn-danger" onclick="deleteItem('orders', '${o.id}')">✕</button></div></div><p style="font-size:12px; margin-top:5px;">${o.notes}</p></div>`).join(''); };
-        window.deleteItem = async (col, id) => { if(confirm("Delete permanently?")) await deleteDoc(doc(db, col, id)); };
+        window.addMaterialRow = () => {
+            const div = document.createElement('div'); div.className = 'material-row';
+            div.innerHTML = `<div><label>Mat</label><select class="mat-select" onchange="calculate()">${catalog.map(m => `<option value="${m.cost}">${m.name}</option>`).join('')}</select></div><div><label>Qty</label><input type="number" class="mat-qty" value="1" oninput="calculate()"></div><button class="btn-qty" style="color:red" onclick="this.parentElement.remove(); calculate();">✕</button>`;
+            document.getElementById('material-list').appendChild(div);
+        };
+
         window.showPage = (id, el) => { document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); el.classList.add('active'); document.getElementById('calc-footer').style.display = (id==='calc'?'block':'none'); };
 
         addMaterialRow();
