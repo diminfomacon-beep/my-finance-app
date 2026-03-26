@@ -197,173 +197,84 @@
             toggleForm('order-form');
         };
 
-        window.saveMaterial = async () => {
-            const p = { name:document.getElementById('matName').value, cost:document.getElementById('matCost').value, unit:document.getElementById('matUnit').value };
-            if(!p.name) return;
-            if(activeEdits.mat) { await updateDoc(doc(db,"catalog",activeEdits.mat), p); activeEdits.mat=null; document.getElementById('matBtn').innerText="Save Material"; }
-            else { await addDoc(collection(db,"catalog"), p); }
-            document.getElementById('matName').value=''; document.getElementById('matCost').value='';
-            toggleForm('mat-form');
-        };
+        window.saveOrder = async () => {
+            const p = { name:document.getElementById('oName').value, addr:document.getElementById('oAddr').value, email:document.getElementById('oEmail').value, phone:document.getElementById('oPhone').value, prod:document.getElementById('oProdDrop').value, qty:document.getElementById('oQty').value, desc:document.getElementById('oDesc').value };
+            if(!p.name) return;
+            if(activeEdits.order) { await updateDoc(doc(db,"orders",activeEdits.order), p); activeEdits.order=null; document.getElementById('orderBtn').innerText="Save Order"; }
+            else { await addDoc(collection(db,"orders"), p); }
+            ['oName','oAddr','oEmail','oPhone','oQty','oDesc'].forEach(i=>document.getElementById(i).value='');
+            toggleForm('order-form');
+        };
 
-        window.saveInventory = async () => {
-            const p = { name:document.getElementById('invName').value, qty:document.getElementById('invQty').value };
-            if(!p.name) return;
-            if(activeEdits.inv) { await updateDoc(doc(db,"inventory",activeEdits.inv), p); activeEdits.inv=null; document.getElementById('invBtn').innerText="Save Stock"; }
-            else { await addDoc(collection(db,"inventory"), p); }
-            document.getElementById('invName').value=''; document.getElementById('invQty').value='';
-            toggleForm('inv-form');
-        };
-        window.saveSpec = async () => {
-            const p = { 
-                name: document.getElementById('sName').value, 
-                size: document.getElementById('sSize').value, 
-                style: document.getElementById('sStyle').value, 
-                temp: document.getElementById('sTemp').value, 
-                time: document.getElementById('sTime').value, 
-                notes: document.getElementById('sNotes').value 
-            };
-            if(!p.name) return;
-            if(activeEdits.spec) { 
-                await updateDoc(doc(db,"specs",activeEdits.spec), p); 
-                activeEdits.spec=null; 
-                document.getElementById('specBtn').innerText="Save Specs"; 
-            } else { 
-                await addDoc(collection(db,"specs"), p); 
-            }
-            ['sName','sTemp','sTime','sNotes'].forEach(i=>document.getElementById(i).value='');
-            toggleForm('spec-form');
-        };
+        window.saveMaterial = async () => {
+            const p = { name:document.getElementById('matName').value, cost:document.getElementById('matCost').value, unit:document.getElementById('matUnit').value };
+            if(!p.name) return;
+            if(activeEdits.mat) { await updateDoc(doc(db,"catalog",activeEdits.mat), p); activeEdits.mat=null; document.getElementById('matBtn').innerText="Save Material"; }
+            else { await addDoc(collection(db,"catalog"), p); }
+            document.getElementById('matName').value=''; document.getElementById('matCost').value='';
+            toggleForm('mat-form');
+        };
 
-        window.editObj = (type, id) => {
-            if(type==='order'){ 
-                const o=store.orders.find(x=>x.id===id); 
-                document.getElementById('oName').value=o.name; document.getElementById('oAddr').value=o.addr; document.getElementById('oEmail').value=o.email; document.getElementById('oPhone').value=o.phone; document.getElementById('oProdDrop').value=o.prod; document.getElementById('oQty').value=o.qty; document.getElementById('oDesc').value=o.desc; 
-                activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
-            }
-            if(type==='mat'){ 
-                const m=store.catalog.find(x=>x.id===id); 
-                document.getElementById('matName').value=m.name; document.getElementById('matCost').value=m.cost; document.getElementById('matUnit').value=m.unit; 
-                activeEdits.mat=id; document.getElementById('matBtn').innerText="Update Material"; if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
-            }
-            if(type==='inv'){ 
-                const i=store.inventory.find(x=>x.id===id); 
-                document.getElementById('invName').value=i.name; document.getElementById('invQty').value=i.qty; 
-                activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
-            }
-            window.scrollTo(0,0);
-        };
+        window.saveInventory = async () => {
+            const p = { name:document.getElementById('invName').value, qty:document.getElementById('invQty').value };
+            if(!p.name) return;
+            if(activeEdits.inv) { await updateDoc(doc(db,"inventory",activeEdits.inv), p); activeEdits.inv=null; document.getElementById('invBtn').innerText="Save Stock"; }
+            else { await addDoc(collection(db,"inventory"), p); }
+            document.getElementById('invName').value=''; document.getElementById('invQty').value='';
+            toggleForm('inv-form');
+        };
 
-        window.addCalcRow = () => {
-            const d = document.createElement('div'); d.className='material-row';
-            d.innerHTML = `<select class="calc-sel" onchange="runCalc()">${store.catalog.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}</select><input type="number" class="calc-qty" value="1" oninput="runCalc()"><button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>`;
-            document.getElementById('active-materials').appendChild(d); runCalc();
-        };
+        window.saveSpec = async () => {
+            const p = { 
+                name: document.getElementById('sName').value, 
+                size: document.getElementById('sSize').value, 
+                style: document.getElementById('sStyle').value, 
+                temp: document.getElementById('sTemp').value, 
+                time: document.getElementById('sTime').value, 
+                notes: document.getElementById('sNotes').value 
+            };
+            if(!p.name) return;
+            if(activeEdits.spec) { 
+                await updateDoc(doc(db,"specs",activeEdits.spec), p); 
+                activeEdits.spec=null; 
+                document.getElementById('specBtn').innerText="Save Specs"; 
+            } else { 
+                await addDoc(collection(db,"specs"), p); 
+            }
+            ['sName','sTemp','sTime','sNotes'].forEach(i=>document.getElementById(i).value='');
+            toggleForm('spec-form');
+        };
 
-        window.runCalc = () => {
-            let mTotal = 0; document.querySelectorAll('.material-row').forEach(r=>{ mTotal += (parseFloat(r.querySelector('.calc-sel').value)||0) * (parseFloat(r.querySelector('.calc-qty').value)||0); });
-            const labor = (parseFloat(document.getElementById('lMins').value)/60) * parseFloat(document.getElementById('lRate').value);
-            const total = (mTotal + labor) * parseFloat(document.getElementById('mUp').value) * (1 + (parseFloat(document.getElementById('tRate').value)/100));
-            document.getElementById('grand-total').innerText = `$${total.toFixed(2)}`;
-        };
-
-        window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
-
-       window.render = (tab) => {
-    // 1. Map the Firebase collection name to the correct HTML ID
-    const containerId = 
-        tab === 'orders' ? 'order-list' : 
-        tab === 'catalog' ? 'mat-list' : 
-        tab === 'inventory' ? 'inv-list' :
-        tab === 'specs' ? 'spec-list' :
-        'cost-list';
-
-    const container = document.getElementById(containerId);
-    if (!container) return; 
-
-    const items = store[tab] || [];
-    container.innerHTML = items.map(i => {
-        // 2. Determine what label to show for the Pencil (editObj)
-        const editLabel = tab === 'catalog' ? 'mat' : 
-                          tab === 'inventory' ? 'inv' : 
-                          tab === 'specs' ? 'spec' : 'order';
-
-        return `
-        <div class="card list-item-card">
-            <div class="list-row">
-                <strong>${i.name}</strong> 
-                <span style="font-size: 11px; text-align: right;">
-                    ${tab === 'specs' ? 
-                        `${i.style}<br>${i.temp || 0}°F - ${i.time || 0}s` : 
-                        (i.price || i.qty || '$' + (i.cost || 0))}
-                </span>
-            </div>
-
-            ${tab === 'specs' && i.notes ? 
-                `<p style="font-size:10px; color:#64748b; margin:5px 0 0 0; font-style:italic; line-height:1.2;">
-                    Note: ${i.notes}
-                </p>` : ''}
-
-            <div style="margin-top:10px;">
-                ${tab !== 'masterCosts' ? `
-                    <button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>
-                ` : ''}
-                
-                <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006;</button>
-            </div>
-        </div>`;
-    }).join('');
-    
-    applySearch();
-};
-        window.saveSpec = async () => {
-    const p = { 
-        name: document.getElementById('sName').value, 
-        size: document.getElementById('sSize').value, 
-        style: document.getElementById('sStyle').value, 
-        temp: document.getElementById('sTemp').value, 
-        time: document.getElementById('sTime').value 
-    };
-    if(!p.name) return;
-    if(activeEdits.spec) { 
-        await updateDoc(doc(db,"specs",activeEdits.spec), p); 
-        activeEdits.spec = null; 
-        document.getElementById('specBtn').innerText="Save Specs"; 
-    } else { 
-        await addDoc(collection(db,"specs"), p); 
-    }
-    ['sName','sTemp','sTime'].forEach(i=>document.getElementById(i).value='');
-    toggleForm('spec-form');
-};
-
-// Update your existing editObj function to include 'spec'
-if(type==='spec'){
-    const s = store.specs.find(x=>x.id===id);
-    document.getElementById('sName').value = s.name;
-    document.getElementById('sSize').value = s.size;
-    document.getElementById('sStyle').value = s.style;
-    document.getElementById('sTemp').value = s.temp;
-    document.getElementById('sTime').value = s.time;
-    activeEdits.spec = id;
-    document.getElementById('specBtn').innerText = "Update Specs";
-    if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
-}
-
-        window.applySearch = () => {
-            const q = document.getElementById('tabSearch').value.toLowerCase();
-            document.querySelectorAll('.list-item-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
-        };
-
-        window.remove = async (c, id) => { if(confirm("Delete permanently?")) await deleteDoc(doc(db, c, id)); };
-        window.updateOrderDrop = () => { document.getElementById('oProdDrop').innerHTML = store.masterCosts.map(c=>`<option value="${c.name}">${c.name} (${c.price})</option>`).join(''); };
-        window.updateCalcDrops = () => { document.querySelectorAll('.calc-sel').forEach(s => { const v=s.value; s.innerHTML = store.catalog.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join(''); s.value=v; }); };
-        
-        window.showPage = (id, el) => {
-            document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
-            document.getElementById(id).classList.add('active'); el.classList.add('active');
-            document.getElementById('calc-footer').style.display = (id==='pricing') ? 'block' : 'none';
-            document.getElementById('tabSearch').value = ''; applySearch();
-        };
+        window.editObj = (type, id) => {
+            if(type==='order'){ 
+                const o=store.orders.find(x=>x.id===id); 
+                document.getElementById('oName').value=o.name; document.getElementById('oAddr').value=o.addr; document.getElementById('oEmail').value=o.email; document.getElementById('oPhone').value=o.phone; document.getElementById('oProdDrop').value=o.prod; document.getElementById('oQty').value=o.qty; document.getElementById('oDesc').value=o.desc; 
+                activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
+            }
+            if(type==='mat'){ 
+                const m=store.catalog.find(x=>x.id===id); 
+                document.getElementById('matName').value=m.name; document.getElementById('matCost').value=m.cost; document.getElementById('matUnit').value=m.unit; 
+                activeEdits.mat=id; document.getElementById('matBtn').innerText="Update Material"; if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
+            }
+            if(type==='inv'){ 
+                const i=store.inventory.find(x=>x.id===id); 
+                document.getElementById('invName').value=i.name; document.getElementById('invQty').value=i.qty; 
+                activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
+            }
+            if(type==='spec'){
+                const s = store.specs.find(x=>x.id===id);
+                document.getElementById('sName').value = s.name;
+                document.getElementById('sSize').value = s.size;
+                document.getElementById('sStyle').value = s.style;
+                document.getElementById('sTemp').value = s.temp;
+                document.getElementById('sTime').value = s.time;
+                document.getElementById('sNotes').value = s.notes || '';
+                activeEdits.spec = id;
+                document.getElementById('specBtn').innerText = "Update Specs";
+                if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
+            }
+            window.scrollTo(0,0);
+        };
 
         addCalcRow();
     </script>
