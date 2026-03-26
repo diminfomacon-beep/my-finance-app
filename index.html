@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DIM Bright Ideas LLC | Master Suite</title>
+    <title>DIM Bright Ideas LLC | Pro Suite</title>
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
@@ -16,16 +16,20 @@
         .page { display: none; }
         .page.active { display: block; }
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { margin-top: 0; font-size: 12px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; }
+        .collapsible-content { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+        .collapsible-content.open { display: block; }
+        h3 { margin: 0; font-size: 12px; color: var(--primary); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         label { display: block; font-size: 9px; font-weight: 800; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
-        .search-input { border: 2px solid var(--primary); background: #fff; margin-bottom: 15px; }
+        .search-input { border: 2px solid var(--primary); background: #fff; margin-bottom: 15px; position: sticky; top: 55px; z-index: 999; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
         .btn-action { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; font-size: 11px; cursor: pointer; margin-right: 5px; }
         .btn-danger { color: var(--danger); border: none; background: none; font-weight: bold; cursor: pointer; }
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .material-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 10px; align-items: end; }
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; font-weight: bold; text-align: center; }
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; font-weight: bold; text-align: center; z-index: 1001; }
+        .toggle-icon { font-size: 18px; transition: transform 0.3s; }
+        .open .toggle-icon { transform: rotate(45deg); }
     </style>
 </head>
 <body>
@@ -41,20 +45,22 @@
     </div>
 
     <div class="container">
-        <input type="text" id="tabSearch" class="search-input" placeholder="Search current tab..." oninput="applySearch()">
+        <input type="text" id="tabSearch" class="search-input" placeholder="Search this tab..." oninput="applySearch()">
 
         <div id="orders" class="page active">
-            <div class="card">
-                <h3 id="orderHeader">New Order</h3>
-                <input type="text" id="oName" placeholder="Customer Name">
-                <input type="text" id="oAddr" placeholder="Address">
-                <input type="email" id="oEmail" placeholder="Email">
-                <input type="tel" id="oPhone" placeholder="Phone">
-                <label>Product Selection</label>
-                <select id="oProdDrop"></select>
-                <input type="number" id="oQty" placeholder="Quantity" value="1">
-                <textarea id="oDesc" placeholder="Order Description"></textarea>
-                <button class="btn-primary" id="orderBtn" onclick="saveOrder()">Create Order</button>
+            <div class="card" onclick="toggleForm('order-form')">
+                <h3 id="orderHeader"><span>+ Add New Order</span> <span class="toggle-icon">+</span></h3>
+                <div id="order-form" class="collapsible-content" onclick="event.stopPropagation()">
+                    <input type="text" id="oName" placeholder="Customer Name">
+                    <input type="text" id="oAddr" placeholder="Address">
+                    <input type="email" id="oEmail" placeholder="Email">
+                    <input type="tel" id="oPhone" placeholder="Phone">
+                    <label>Product Selection</label>
+                    <select id="oProdDrop"></select>
+                    <input type="number" id="oQty" placeholder="Quantity" value="1">
+                    <textarea id="oDesc" placeholder="Order Description"></textarea>
+                    <button class="btn-primary" id="orderBtn" onclick="saveOrder()">Save Order</button>
+                </div>
             </div>
             <div id="order-list"></div>
         </div>
@@ -62,7 +68,7 @@
         <div id="pricing" class="page">
             <div class="card">
                 <h3>Price Calculator</h3>
-                <input type="text" id="calcProdName" placeholder="Product Name (e.g. XL Shirt)">
+                <input type="text" id="calcProdName" placeholder="Product Name">
                 <div id="active-materials"></div>
                 <button class="btn-action" style="width:100%; margin-bottom:15px;" onclick="addCalcRow()">+ Add Material</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -73,32 +79,36 @@
                     <div><label>Markup (x)</label><input type="number" id="mUp" value="2" oninput="saveBizSettings()"></div>
                     <div><label>Tax (%)</label><input type="number" id="tRate" value="7" oninput="saveBizSettings()"></div>
                 </div>
-                <button class="btn-primary" onclick="saveToCosts()">Save to Master Costs</button>
+                <button class="btn-primary" onclick="saveToMasterCosts()">Save to Master Costs</button>
             </div>
         </div>
 
         <div id="materials" class="page">
-            <div class="card">
-                <h3 id="matHeader">Add Material</h3>
-                <input type="text" id="matName" placeholder="Material Name">
-                <input type="number" id="matCost" step="0.01" placeholder="Cost">
-                <select id="matUnit">
-                    <option value="ea">Each/Qty</option>
-                    <option value="sqft">Sq Ft</option>
-                    <option value="sqin">Sq In</option>
-                    <option value="page">Page</option>
-                </select>
-                <button class="btn-primary" id="matBtn" onclick="saveMaterial()">Save Material</button>
+            <div class="card" onclick="toggleForm('mat-form')">
+                <h3 id="matHeader"><span>+ Add Raw Material</span> <span class="toggle-icon">+</span></h3>
+                <div id="mat-form" class="collapsible-content" onclick="event.stopPropagation()">
+                    <input type="text" id="matName" placeholder="Material Name">
+                    <input type="number" id="matCost" step="0.01" placeholder="Cost per unit">
+                    <select id="matUnit">
+                        <option value="ea">Quantity (ea)</option>
+                        <option value="sqft">Sq Ft</option>
+                        <option value="sqin">Sq In</option>
+                        <option value="page">Page</option>
+                    </select>
+                    <button class="btn-primary" id="matBtn" onclick="saveMaterial()">Save Material</button>
+                </div>
             </div>
             <div id="mat-list"></div>
         </div>
 
         <div id="inventory" class="page">
-            <div class="card">
-                <h3 id="invHeader">Add Inventory</h3>
-                <input type="text" id="invName" placeholder="Item Name">
-                <input type="number" id="invQty" placeholder="Qty">
-                <button class="btn-primary" id="invBtn" onclick="saveInventory()">Save Stock</button>
+            <div class="card" onclick="toggleForm('inv-form')">
+                <h3 id="invHeader"><span>+ Add Inventory Item</span> <span class="toggle-icon">+</span></h3>
+                <div id="inv-form" class="collapsible-content" onclick="event.stopPropagation()">
+                    <input type="text" id="invName" placeholder="Item Name">
+                    <input type="number" id="invQty" placeholder="Qty">
+                    <button class="btn-primary" id="invBtn" onclick="saveInventory()">Save Stock</button>
+                </div>
             </div>
             <div id="inv-list"></div>
         </div>
@@ -117,7 +127,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // !!! PASTE YOUR KEYS FROM PREVIOUS VERSION HERE !!!
         const firebaseConfig = {
             apiKey: "AIzaSyB1nxrTvgy8Z8queZ4eW2KsObizBmFSbEY",
             authDomain: "dim-accounting-app.firebaseapp.com",
@@ -130,80 +139,93 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let store = { orders:[], mats:[], inv:[], costs:[] };
+        let store = { orders:[], catalog:[], inventory:[], masterCosts:[] };
         let activeEdits = { order:null, mat:null, inv:null };
 
-        // SYNC SETTINGS & DATA
-        onSnapshot(doc(db, "config", "biz"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.l; document.getElementById('mUp').value=s.m; document.getElementById('tRate').value=s.t; runCalc(); }});
+        // FIREBASE SYNC
+        onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
         onSnapshot(collection(db, "orders"), (s) => { store.orders = s.docs.map(d=>({id:d.id,...d.data()})); render('orders'); });
-        onSnapshot(collection(db, "mats"), (s) => { store.mats = s.docs.map(d=>({id:d.id,...d.data()})); render('mats'); updateCalcDrops(); });
-        onSnapshot(collection(db, "inv"), (s) => { store.inv = s.docs.map(d=>({id:d.id,...d.data()})); render('inv'); });
-        onSnapshot(collection(db, "costs"), (s) => { store.costs = s.docs.map(d=>({id:d.id,...d.data()})); render('costs'); updateOrderDrop(); });
+        onSnapshot(collection(db, "catalog"), (s) => { store.catalog = s.docs.map(d=>({id:d.id,...d.data()})); render('catalog'); updateCalcDrops(); });
+        onSnapshot(collection(db, "inventory"), (s) => { store.inventory = s.docs.map(d=>({id:d.id,...d.data()})); render('inventory'); });
+        onSnapshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); render('masterCosts'); updateOrderDrop(); });
 
-        window.saveBizSettings = async () => { await setDoc(doc(db,"config","biz"), { l:document.getElementById('lRate').value, m:document.getElementById('mUp').value, t:document.getElementById('tRate').value }); runCalc(); };
+        window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
 
-        // SHARED SAVE LOGIC
+        window.saveBizSettings = async () => { await setDoc(doc(db,"settings","business"), { labor:document.getElementById('lRate').value, markup:document.getElementById('mUp').value, tax:document.getElementById('tRate').value }); runCalc(); };
+
         window.saveOrder = async () => {
             const p = { name:document.getElementById('oName').value, addr:document.getElementById('oAddr').value, email:document.getElementById('oEmail').value, phone:document.getElementById('oPhone').value, prod:document.getElementById('oProdDrop').value, qty:document.getElementById('oQty').value, desc:document.getElementById('oDesc').value };
             if(!p.name) return;
-            if(activeEdits.order) { await updateDoc(doc(db,"orders",activeEdits.order), p); activeEdits.order=null; document.getElementById('orderBtn').innerText="Create Order"; }
+            if(activeEdits.order) { await updateDoc(doc(db,"orders",activeEdits.order), p); activeEdits.order=null; document.getElementById('orderBtn').innerText="Save Order"; }
             else { await addDoc(collection(db,"orders"), p); }
             ['oName','oAddr','oEmail','oPhone','oQty','oDesc'].forEach(i=>document.getElementById(i).value='');
+            toggleForm('order-form');
         };
 
         window.saveMaterial = async () => {
             const p = { name:document.getElementById('matName').value, cost:document.getElementById('matCost').value, unit:document.getElementById('matUnit').value };
             if(!p.name) return;
-            if(activeEdits.mat) { await updateDoc(doc(db,"mats",activeEdits.mat), p); activeEdits.mat=null; document.getElementById('matBtn').innerText="Save Material"; }
-            else { await addDoc(collection(db,"mats"), p); }
+            if(activeEdits.mat) { await updateDoc(doc(db,"catalog",activeEdits.mat), p); activeEdits.mat=null; document.getElementById('matBtn').innerText="Save Material"; }
+            else { await addDoc(collection(db,"catalog"), p); }
             document.getElementById('matName').value=''; document.getElementById('matCost').value='';
+            toggleForm('mat-form');
         };
 
         window.saveInventory = async () => {
             const p = { name:document.getElementById('invName').value, qty:document.getElementById('invQty').value };
             if(!p.name) return;
-            if(activeEdits.inv) { await updateDoc(doc(db,"inv",activeEdits.inv), p); activeEdits.inv=null; document.getElementById('invBtn').innerText="Save Stock"; }
-            else { await addDoc(collection(db,"inv"), p); }
+            if(activeEdits.inv) { await updateDoc(doc(db,"inventory",activeEdits.inv), p); activeEdits.inv=null; document.getElementById('invBtn').innerText="Save Stock"; }
+            else { await addDoc(collection(db,"inventory"), p); }
             document.getElementById('invName').value=''; document.getElementById('invQty').value='';
+            toggleForm('inv-form');
         };
 
-        // EDITING
         window.editObj = (type, id) => {
-            if(type==='order'){ const o=store.orders.find(x=>x.id===id); document.getElementById('oName').value=o.name; document.getElementById('oAddr').value=o.addr; document.getElementById('oEmail').value=o.email; document.getElementById('oPhone').value=o.phone; document.getElementById('oProdDrop').value=o.prod; document.getElementById('oQty').value=o.qty; document.getElementById('oDesc').value=o.desc; activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; }
-            if(type==='mat'){ const m=store.mats.find(x=>x.id===id); document.getElementById('matName').value=m.name; document.getElementById('matCost').value=m.cost; document.getElementById('matUnit').value=m.unit; activeEdits.mat=id; document.getElementById('matBtn').innerText="Update Material"; }
-            if(type==='inv'){ const i=store.inv.find(x=>x.id===id); document.getElementById('invName').value=i.name; document.getElementById('invQty').value=i.qty; activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; }
+            if(type==='order'){ 
+                const o=store.orders.find(x=>x.id===id); 
+                document.getElementById('oName').value=o.name; document.getElementById('oAddr').value=o.addr; document.getElementById('oEmail').value=o.email; document.getElementById('oPhone').value=o.phone; document.getElementById('oProdDrop').value=o.prod; document.getElementById('oQty').value=o.qty; document.getElementById('oDesc').value=o.desc; 
+                activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
+            }
+            if(type==='mat'){ 
+                const m=store.catalog.find(x=>x.id===id); 
+                document.getElementById('matName').value=m.name; document.getElementById('matCost').value=m.cost; document.getElementById('matUnit').value=m.unit; 
+                activeEdits.mat=id; document.getElementById('matBtn').innerText="Update Material"; if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
+            }
+            if(type==='inv'){ 
+                const i=store.inventory.find(x=>x.id===id); 
+                document.getElementById('invName').value=i.name; document.getElementById('invQty').value=i.qty; 
+                activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
+            }
             window.scrollTo(0,0);
         };
 
-        // CALC
         window.addCalcRow = () => {
             const d = document.createElement('div'); d.className='material-row';
-            d.innerHTML = `<select class="calc-sel" onchange="runCalc()">${store.mats.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}</select><input type="number" class="calc-qty" value="1" oninput="runCalc()"><button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>`;
+            d.innerHTML = `<select class="calc-sel" onchange="runCalc()">${store.catalog.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}</select><input type="number" class="calc-qty" value="1" oninput="runCalc()"><button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>`;
             document.getElementById('active-materials').appendChild(d); runCalc();
         };
+
         window.runCalc = () => {
             let mTotal = 0; document.querySelectorAll('.material-row').forEach(r=>{ mTotal += (parseFloat(r.querySelector('.calc-sel').value)||0) * (parseFloat(r.querySelector('.calc-qty').value)||0); });
             const labor = (parseFloat(document.getElementById('lMins').value)/60) * parseFloat(document.getElementById('lRate').value);
             const total = (mTotal + labor) * parseFloat(document.getElementById('mUp').value) * (1 + (parseFloat(document.getElementById('tRate').value)/100));
             document.getElementById('grand-total').innerText = `$${total.toFixed(2)}`;
         };
-        window.saveToCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"costs"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
-        // RENDER & SEARCH
+        window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
+
         window.render = (tab) => {
-            const container = document.getElementById(tab === 'orders' ? 'order-list' : tab === 'mats' ? 'mat-list' : tab === 'inv' ? 'inv-list' : 'cost-list');
+            const container = document.getElementById(tab === 'orders' ? 'order-list' : tab === 'catalog' ? 'mat-list' : tab === 'inventory' ? 'inv-list' : 'cost-list');
             const items = store[tab];
             container.innerHTML = items.map(i => `
                 <div class="card list-item-card">
-                    <div class="list-row">
-                        <strong>${i.name}</strong>
-                        <span>${i.price || i.qty || '$'+i.cost}</span>
-                    </div>
+                    <div class="list-row"><strong>${i.name}</strong> <span>${i.price || i.qty || '$'+i.cost}</span></div>
                     <div style="margin-top:5px;">
-                        ${tab !== 'costs' ? `<button class="btn-action" onclick="editObj('${tab.slice(0,-1)}','${i.id}')">EDIT</button>` : ''}
+                        ${tab !== 'masterCosts' ? `<button class="btn-action" onclick="editObj('${tab==='catalog'?'mat':tab==='inventory'?'inv':'order'}','${i.id}')">EDIT</button>` : ''}
                         <button class="btn-danger" onclick="remove('${tab}','${i.id}')">DELETE</button>
                     </div>
                 </div>`).join('');
+            applySearch();
         };
 
         window.applySearch = () => {
@@ -212,8 +234,8 @@
         };
 
         window.remove = async (c, id) => { if(confirm("Delete permanently?")) await deleteDoc(doc(db, c, id)); };
-        window.updateOrderDrop = () => { document.getElementById('oProdDrop').innerHTML = store.costs.map(c=>`<option value="${c.name}">${c.name} (${c.price})</option>`).join(''); };
-        window.updateCalcDrops = () => { document.querySelectorAll('.calc-sel').forEach(s => { const v=s.value; s.innerHTML = store.mats.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join(''); s.value=v; }); };
+        window.updateOrderDrop = () => { document.getElementById('oProdDrop').innerHTML = store.masterCosts.map(c=>`<option value="${c.name}">${c.name} (${c.price})</option>`).join(''); };
+        window.updateCalcDrops = () => { document.querySelectorAll('.calc-sel').forEach(s => { const v=s.value; s.innerHTML = store.catalog.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join(''); s.value=v; }); };
         
         window.showPage = (id, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
