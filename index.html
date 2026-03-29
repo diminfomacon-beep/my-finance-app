@@ -178,30 +178,46 @@
     <script type="module">
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
 
-        window.handleAuth = () => {
-            if (auth.currentUser) {
-                signOut(auth);
-            } else {
-                signInWithPopup(auth, provider);
-            }
-        };
+            // IMPORTANT: This 'window.' prefix makes the function visible to your HTML button
+            window.handleAuth = async () => {
+                console.log("Login button clicked!"); 
+                try {
+                    if (auth.currentUser) {
+                        console.log("Logging out...");
+                        await signOut(auth);
+                    } else {
+                        console.log("Opening Google Popup...");
+                        await signInWithPopup(auth, provider);
+                    }
+                } catch (error) {
+                    console.error("Auth Error:", error.code, error.message);
+                    // This will alert you if the domain isn't authorized!
+                    alert("Error: " + error.code); 
+                }
+            };
 
-        onAuthStateChanged(auth, (user) => {
-            const btn = document.getElementById('login-btn');
-            const emailDisp = document.getElementById('user-email');
-            if (user) {
-                btn.innerText = "Logout";
-                emailDisp.innerText = user.email;
-                // The app will now automatically load data because request.auth is no longer null!
-            } else {
-                btn.innerText = "Login";
-                emailDisp.innerText = "Logged Out";
-                // Clear store or show message
-            }
-        });
+            onAuthStateChanged(auth, (user) => {
+                const btn = document.getElementById('login-btn');
+                const emailDisp = document.getElementById('user-email');
+                
+                if (user) {
+                    console.log("User is logged in:", user.email);
+                    btn.innerText = "Logout";
+                    emailDisp.innerText = user.email;
+                    // Re-render the current tab now that we have permission
+                    const activeTab = document.querySelector('.nav-item.active').innerText.toLowerCase();
+                    render(activeTab); 
+                } else {
+                    console.log("User is logged out.");
+                    btn.innerText = "Login";
+                    emailDisp.innerText = "Logged Out";
+                    // Optional: Clear the lists so unauthorized people can't see them
+                    document.getElementById('order-list').innerHTML = "Please login to view data.";
+                }
+            });
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
