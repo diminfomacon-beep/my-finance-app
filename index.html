@@ -237,8 +237,7 @@
         // FIREBASE SYNC
         onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
         onSnapshot(collection(db, "orders"), (s) => { store.orders = s.docs.map(d=>({id:d.id,...d.data()})); render('orders'); });
-        onSnapshot(collection(db, "catalog"), (s) => { store.catalog = s.docs.map(d=>({id:d.id,...d.data()})); render('catalog'); updateCalcDrops(); });
-        onSnapshot(collection(db, "inventory"), (s) => { store.inventory = s.docs.map(d=>({id:d.id,...d.data()})); render('inventory'); });
+        onSnapshot(collection(db, "materials"), (s) => { store.materials = s.docs.map(d=>({id:d.id,...d.data()})); render('materials'); updateCalcDrops(); });        onSnapshot(collection(db, "inventory"), (s) => { store.inventory = s.docs.map(d=>({id:d.id,...d.data()})); render('inventory'); });
         onSnapshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); render('masterCosts'); updateOrderDrop(); });
         onSnapshot(collection(db, "specs"), (s) => { store.specs = s.docs.map(d=>({id:d.id,...d.data()})); render('specs'); });
 
@@ -280,9 +279,19 @@
         window.saveMaterial = async () => {
             const p = { name:document.getElementById('matName').value, cost:document.getElementById('matCost').value, unit:document.getElementById('matUnit').value };
             if(!p.name) return;
-            if(activeEdits.mat) { await updateDoc(doc(db,"catalog",activeEdits.mat), p); activeEdits.mat=null; document.getElementById('matBtn').innerText="Save Material"; }
-            else { await addDoc(collection(db,"catalog"), p); }
-            document.getElementById('matName').value=''; document.getElementById('matCost').value='';
+            
+            // Change "catalog" to "materials" in both lines below
+            if(activeEdits.mat) { 
+                await updateDoc(doc(db,"materials",activeEdits.mat), p); 
+                activeEdits.mat=null; 
+                document.getElementById('matBtn').innerText="Save Material"; 
+            }
+            else { 
+                await addDoc(collection(db,"materials"), p); 
+            }
+            
+            document.getElementById('matName').value=''; 
+            document.getElementById('matCost').value='';
             toggleForm('mat-form');
         };
 
@@ -365,13 +374,25 @@
 
        window.render = (tab) => {
             // 1. Setup container and data
-            const targets = { 'orders': 'order-list', 'catalog': 'mat-list', 'inventory': 'inv-list', 'specs': 'spec-list', 'masterCosts': 'cost-list' };
+            const targets = { 
+                'orders': 'order-list', 
+                'materials': 'mat-list', // Change 'catalog' to 'materials'
+                'inventory': 'inv-list', 
+                'specs': 'spec-list', 
+                'masterCosts': 'cost-list' 
+            };
+
+            const labels = { 
+                'materials': 'mat', // Change 'catalog' to 'materials'
+                'inventory': 'inv', 
+                'specs': 'spec', 
+                'orders': 'order' 
+            };            
             const container = document.getElementById(targets[tab]);
-            if (!container) return;
+                if (!container) return;
 
             const items = store[tab] || [];
 // Change 'order' to 'orders' (or whatever your editObj function uses)
-            const labels = { 'catalog': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order' };
             const editLabel = labels[tab];
 
             // 2. Special Case: Orders (Grouped by Status)
