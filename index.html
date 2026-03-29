@@ -208,12 +208,10 @@
         };
 
         window.editObj = (type, id) => {
-            if(type==='order'){ 
-                const o = store.orders.find(x=>x.id===id); 
-                // ... existing fields ...
-                document.getElementById('oStatus').value = o.status || "New"; // Add this line
-                activeEdits.order=id; 
-                // ... rest of function ...
+             if(type==='order'){ 
+                const o=store.orders.find(x=>x.id===id); 
+                document.getElementById('oName').value=o.name; document.getElementById('oAddr').value=o.addr; document.getElementById('oEmail').value=o.email; document.getElementById('oPhone').value=o.phone; document.getElementById('oProdDrop').value=o.prod; document.getElementById('oQty').value=o.qty; document.getElementById('oDesc').value=o.desc; document.getElementById('oStatus').value = o.status || "New";
+                activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
             }
 
             if(type==='mat'){ 
