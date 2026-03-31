@@ -455,9 +455,13 @@
                 }
             }
             if(type==='inv'){ 
-                const i=store.inventory.find(x=>x.id===id); 
-                document.getElementById('invName').value=i.name; document.getElementById('invQty').value=i.qty; 
-                activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
+                const i = store.inventory.find(x => x.id === id); 
+                document.getElementById('invName').value = i.name; 
+                document.getElementById('invQty').value = i.qty; 
+                document.getElementById('invCost').value = i.cost || 0; // ADD THIS LINE
+                activeEdits.inv = id; 
+                document.getElementById('invBtn').innerText = "Update Stock"; 
+                if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
             }
             // Update your existing editObj function to include 'spec'
             if(type === 'spec'){
@@ -477,46 +481,40 @@
             window.scrollTo(0,0);
         };
 
-       window.addCalcRow = () => {
-            const d = document.createElement('div'); 
-            d.className = 'material-row';
-        
-            // Combine both lists so you can select from either
-            const allItems = [...(store.materials || []), ...(store.inventory || [])];
-            
-            // Create the dropdown options using NAME as the value
-            const options = allItems.map(item => 
-                `<option value="${item.name}">${item.name} ($${item.cost || 0})</option>`
-            ).join('');
-        
-            d.innerHTML = `
-                <select class="calc-sel" onchange="runCalc()">
-                    <option value="" disabled selected>Select Item...</option>
-                    ${options}
-                </select>
-                <input type="number" class="calc-qty" value="1" placeholder="Qty" oninput="runCalc()">
-                <button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>
-            `;
-        
-            document.getElementById('active-materials').appendChild(d); 
-            runCalc();
-        };
+      window.addCalcRow = () => {
+    const d = document.createElement('div'); 
+    d.className = 'material-row';
+    const allItems = [...(store.materials || []), ...(store.inventory || [])];
+    
+    // FIX: Added data-cost="${item.cost}" here!
+    const options = allItems.map(item => 
+        `<option value="${item.name}" data-cost="${item.cost || 0}">${item.name} ($${item.cost || 0})</option>`
+    ).join('');
+
+    d.innerHTML = `
+        <select class="calc-sel" onchange="runCalc()">
+            <option value="" disabled selected>Select Item...</option>
+            ${options}
+        </select>
+        <input type="number" class="calc-qty" value="1" placeholder="Qty" oninput="runCalc()">
+        <button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>
+    `;
+
+    document.getElementById('active-materials').appendChild(d); 
+    runCalc();
+};
+
 window.runCalc = () => {
     let mTotal = 0;
-// Inside window.runCalc...
     document.querySelectorAll('#active-materials .material-row').forEach(row => { 
         const sel = row.querySelector('.calc-sel');
-        
-        // GET THE SELECTED OPTION ELEMENT
-        const selectedOption = sel.options[sel.selectedIndex];
-        
-        // PULL THE COST FROM THE DATA ATTRIBUTE
-        const price = selectedOption ? parseFloat(selectedOption.dataset.cost || 0) : 0;
+        const opt = sel.options[sel.selectedIndex];
+        // Now this will correctly find the cost attribute we added above
+        const price = opt ? parseFloat(opt.dataset.cost || 0) : 0;
         const qty = parseFloat(row.querySelector('.calc-qty').value) || 0;
-        
         mTotal += (price * qty); 
     });
-    // ... rest of your labor/markup math ...
+
     const laborRate = parseFloat(document.getElementById('lRate').value) || 0;
     const laborMins = parseFloat(document.getElementById('lMins').value) || 0;
     const laborCost = (laborMins / 60) * laborRate;
@@ -573,48 +571,44 @@ window.runCalc = () => {
 
         // Helper function to keep the main logic clean
        function renderCard(i, tab, editLabel) {
-            // 1. Determine the right-side detail text
-            let detail = "";
+    let detail = "";
 
-            if (tab === 'inventory') {
-                // This combines Qty and Price for the Inventory tab
-                detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
-            } else if (tab === 'specs') {
-                detail = `
-                    <span style="color:var(--primary)">${i.style}</span><br>
-                    Size: ${i.designSize || 'Standard'}<br>
-                    ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'} Pressure
-                `;
-            }
-            } else if (tab === 'orders') {
-                // Check if new "items" array exists, otherwise fallback to old "prod" field
-                if (i.items && i.items.length > 0) {
-                    detail = i.items.map(item => `${item.name} (x${item.qty})`).join('<br>');
-                } else {
-                    detail = `${i.prod || 'No Product'} (x${i.qty || 0})`;
-                }
-            } else {
-                // Default fallback for Materials and Products
-                detail = i.price || (i.cost ? '$' + i.cost : '');
-            }
-
-            // 2. Return the HTML structure
-            return `
-            <div class="card list-item-card">
-                <div class="list-row">
-                    <strong>${i.name}</strong> 
-                    <span style="font-size: 11px; text-align: right; font-weight: bold; color: var(--primary);">${detail}</span>
-                </div>
-                
-                ${(tab === 'specs' && i.notes) ? `<p style="font-size:10px; color:#64748b; margin-top:5px; font-style:italic;">Note: ${i.notes}</p>` : ''}
-                ${(tab === 'orders' && i.desc) ? `<div style="font-size:11px; color:#64748b; margin-bottom:8px;">${i.desc}</div>` : ''}
-
-                <div style="margin-top:10px;">
-                    ${tab !== 'masterCosts' ? `<button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>` : ''}
-                    <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006;</button>
-                </div>
-            </div>`;
+    if (tab === 'inventory') {
+        // Correctly displays Qty and Price for Inventory
+        detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
+    } else if (tab === 'specs') {
+        detail = `
+            <span style="color:var(--primary)">${i.style}</span><br>
+            Size: ${i.designSize || 'Standard'}<br>
+            ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'} Pressure
+        `;
+    } else if (tab === 'orders') {
+        if (i.items && i.items.length > 0) {
+            detail = i.items.map(item => `${item.name} (x${item.qty})`).join('<br>');
+        } else {
+            detail = `${i.prod || 'No Product'} (x${i.qty || 0})`;
         }
+    } else {
+        // Fallback for Materials and Products
+        detail = i.price || (i.cost ? '$' + i.cost : '');
+    }
+
+    return `
+    <div class="card list-item-card">
+        <div class="list-row">
+            <strong>${i.name}</strong> 
+            <span style="font-size: 11px; text-align: right; font-weight: bold; color: var(--primary);">${detail}</span>
+        </div>
+        
+        ${(tab === 'specs' && i.notes) ? `<p style="font-size:10px; color:#64748b; margin-top:5px; font-style:italic;">Note: ${i.notes}</p>` : ''}
+        ${(tab === 'orders' && i.desc) ? `<div style="font-size:11px; color:#64748b; margin-bottom:8px;">${i.desc}</div>` : ''}
+
+        <div style="margin-top:10px;">
+            ${tab !== 'masterCosts' ? `<button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>` : ''}
+            <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006;</button>
+        </div>
+    </div>`;
+}
         window.applySearch = () => {
             const q = document.getElementById('tabSearch').value.toLowerCase();
             document.querySelectorAll('.list-item-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
