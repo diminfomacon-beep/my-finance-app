@@ -160,19 +160,20 @@
             <div id="spec-form" class="collapsible-content">
                 <input type="text" id="sName" placeholder="Product Name (e.g. 20oz Skinny)">
                 
-                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Design Sizes:</label>
-                    <div id="design-size-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 12px;">
-                        <label><input type="checkbox" value="Full Wrap"> Full Wrap</label>
-                        <label><input type="checkbox" value="Small/Pocket"> Small/Pocket</label>
-                        <label><input type="checkbox" value="Center Chest"> Center Chest</label>
-                        <label><input type="checkbox" value="Large Front"> Large Front</label>
-                        <label><input type="checkbox" value="Large Back"> Large Back</label>
-                        <label><input type="checkbox" value="Sleeve"> Sleeve</label>
-                    </div>
+                <div style="margin: 10px 0;">
+                    <label style="font-weight:bold; font-size:12px;">Styles & Sizes:</label>
+                    <div id="spec-styles-container"></div>
+                    <button type="button" class="btn-action" onclick="addSpecStyleRow()" style="margin-top:5px;">+ Add Style/Size</button>
                 </div>
 
-                ...
+                <input type="text" id="sTemp" placeholder="Temperature (°F)">
+                <input type="text" id="sTime" placeholder="Time (seconds)">
+                <select id="sWeight">
+                    <option value="Light">Light Pressure</option>
+                    <option value="Medium">Medium Pressure</option>
+                    <option value="Heavy">Heavy Pressure</option>
+                </select>
+                <textarea id="sNotes" placeholder="Additional Notes..."></textarea>
                 <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
             </div>
 
@@ -376,18 +377,37 @@
             document.getElementById('invCost').value = '';
             toggleForm('inv-form');
         };
+        // Function to add a row for a specific style and its size
+        window.addSpecStyleRow = (data = {style: '', size: ''}) => {
+            const container = document.getElementById('spec-styles-container');
+            const d = document.createElement('div');
+            d.className = 'material-row';
+            d.style.marginBottom = "5px";
+            d.innerHTML = `
+                <select class="spec-style-sel" style="flex:1">
+                    <option value="Sublimation" ${data.style==='Sublimation'?'selected':''}>Sublimation</option>
+                    <option value="DTF" ${data.style==='DTF'?'selected':''}>DTF</option>
+                    <option value="Vinyl" ${data.style==='Vinyl'?'selected':''}>Vinyl</option>
+                    <option value="Laser" ${data.style==='Laser'?'selected':''}>Laser</option>
+                </select>
+                <input type="text" class="spec-size-input" placeholder="Size (e.g. 9.3 x 8.2)" value="${data.size}" style="flex:1">
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(d);
+        };
+
         window.saveSpec = async () => {
-            // Collect all checked design sizes
-            const selectedSizes = [];
-            document.querySelectorAll('#design-size-options input:checked').forEach(cb => {
-                selectedSizes.push(cb.value);
+            const styleEntries = [];
+            document.querySelectorAll('#spec-styles-container .material-row').forEach(row => {
+                styleEntries.push({
+                    style: row.querySelector('.spec-style-sel').value,
+                    size: row.querySelector('.spec-size-input').value
+                });
             });
 
             const p = { 
                 name: document.getElementById('sName').value, 
-                designSizes: selectedSizes, // Saved as an Array now
-                size: document.getElementById('sSize').value, 
-                style: document.getElementById('sStyle').value, 
+                styles: styleEntries, // Array of {style, size}
                 temp: document.getElementById('sTemp').value, 
                 time: document.getElementById('sTime').value, 
                 weight: document.getElementById('sWeight').value,
@@ -397,19 +417,17 @@
             if(!p.name) return;
 
             if(activeEdits.spec) { 
-                await updateDoc(doc(db,"specs",activeEdits.spec), p); 
+                await updateDoc(doc(db, "specs", activeEdits.spec), p); 
                 activeEdits.spec = null; 
-                document.getElementById('specBtn').innerText = "Save Specs"; 
             } else { 
-                await addDoc(collection(db,"specs"), p); 
+                await addDoc(collection(db, "specs"), p); 
             }
 
-            // Reset fields and uncheck boxes
-            ['sName', 'sTemp', 'sTime', 'sWeight', 'sNotes'].forEach(i => document.getElementById(i).value = '');
-            document.querySelectorAll('#design-size-options input').forEach(cb => cb.checked = false);
+            // Reset
+            document.getElementById('spec-styles-container').innerHTML = '';
+            ['sName', 'sTemp', 'sTime', 'sNotes'].forEach(i => document.getElementById(i).value = '');
             toggleForm('spec-form');
         };
-
        window.addOrderItemRow = (data = {name: '', qty: 1}) => {
             const container = document.getElementById('order-items-container');
             const d = document.createElement('div');
@@ -554,29 +572,26 @@ window.runCalc = () => {
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
        window.render = (tab) => {
-            // 1. Setup container and data
             const targets = { 
                 'orders': 'order-list', 
-                'materials': 'mat-list', // Change 'catalog' to 'materials'
+                'materials': 'mat-list', 
                 'inventory': 'inv-list', 
                 'specs': 'spec-list', 
                 'masterCosts': 'cost-list' 
             };
 
-            const labels = { 
-                'materials': 'mat', // Change 'catalog' to 'materials'
-                'inventory': 'inv', 
-                'specs': 'spec', 
-                'orders': 'order' 
-            };            
+            // CRITICAL FIX: Clear only the specific target container
             const container = document.getElementById(targets[tab]);
-                if (!container) return;
+            if (!container) return;
+            
+            // Only proceed if the page containing this list is actually active
+            // This prevents "Specs" from bleeding into "Orders" if they share logic
+            container.innerHTML = ''; 
 
             const items = store[tab] || [];
-// Change 'order' to 'orders' (or whatever your editObj function uses)
+            const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order' };
             const editLabel = labels[tab];
 
-            // 2. Special Case: Orders (Grouped by Status)
             if (tab === 'orders') {
                     const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];                container.innerHTML = statuses.map(status => {
                     const filtered = items.filter(i => (i.status || "New") === status);
@@ -604,17 +619,17 @@ window.runCalc = () => {
         // Correctly displays Qty and Price for Inventory
         detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
     } else if (tab === 'specs') {
-        // 1. Join the array into a readable string (e.g., "Full Wrap, Pocket")
-        // 2. Fallback to 'Standard' if nothing is selected
-        const sizeList = (i.designSizes && Array.isArray(i.designSizes)) 
-            ? i.designSizes.join(', ') 
-            : (i.designSize || 'Standard');
+    const styleInfo = (i.styles || []).map(s => 
+        `<div style="font-size:11px;"><strong>${s.style}:</strong> ${s.size}</div>`
+    ).join('');
 
-        detail = `
-            <span style="color:var(--primary); font-weight:bold;">${i.style}</span><br>
-            <span style="color:#64748b;">Sizes:</span> ${sizeList}<br>
-            <span style="font-size:10px;">${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'} Pressure</span>
-        `;
+    detail = `
+        ${styleInfo}
+        <div style="margin-top:5px; font-size:10px; color:var(--primary);">
+            ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'}
+        </div>
+    `;
+
     } else if (tab === 'orders') {
         if (i.items && i.items.length > 0) {
             detail = i.items.map(item => `${item.name} (x${item.qty})`).join('<br>');
