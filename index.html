@@ -62,9 +62,21 @@
                     <input type="text" id="oAddr" placeholder="Address">
                     <input type="email" id="oEmail" placeholder="Email">
                     <input type="tel" id="oPhone" placeholder="Phone">
-                    <label>Product Selection</label>
-                    <select id="oProdDrop"></select>
-                    <input type="number" id="oQty" placeholder="Quantity" value="1">
+                    <label>Order Items</label>
+                    <div id="order-items-container" style="margin-bottom: 10px;">
+                        </div>
+                    <button type="button" class="btn-primary" style="background:#e2e8f0; color:#2F6B64; margin-bottom:15px; padding: 10px;" onclick="addOrderItemRow()">+ Add Item to Order</button>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <label>Discount %</label>
+                            <input type="number" id="oDiscount" value="0" oninput="calculateOrderTotal()">
+                        </div>
+                        <div>
+                            <label>Order Total</label>
+                            <input type="text" id="oTotal" readonly placeholder="$0.00" style="background: #f8fafc; font-weight: bold;">
+                        </div>
+                    </div>
                     <textarea id="oDesc" placeholder="Order Description"></textarea>
                     <label>Order Status</label>
                     <select id="oStatus">
@@ -254,19 +266,28 @@
         window.saveBizSettings = async () => { await setDoc(doc(db,"settings","business"), { labor:document.getElementById('lRate').value, markup:document.getElementById('mUp').value, tax:document.getElementById('tRate').value }); runCalc(); };
 
         window.saveOrder = async () => {
-            // Get the status from the dropdown, default to "New" if something goes wrong
-            const statusVal = document.getElementById('oStatus') ? document.getElementById('oStatus').value : "New";
+    const items = [];
+    document.querySelectorAll('#order-items-container .material-row').forEach(row => {
+        items.push({
+            name: row.querySelector('.item-sel').value,
+            qty: row.querySelector('.item-qty').value
+        });
+    });
 
-            const p = { 
-                name: document.getElementById('oName').value, 
-                addr: document.getElementById('oAddr').value, 
-                email: document.getElementById('oEmail').value, 
-                phone: document.getElementById('oPhone').value, 
-                prod: document.getElementById('oProdDrop').value, 
-                qty: document.getElementById('oQty').value, 
-                desc: document.getElementById('oDesc').value, 
-                status: statusVal 
-            };
+    const p = {
+        name: document.getElementById('oName').value,
+        items: items, // Saved as an array
+        total: document.getElementById('oTotal').value,
+        discount: document.getElementById('oDiscount').value,
+        status: document.getElementById('oStatus').value,
+        addr: document.getElementById('oAddr').value, 
+        email: document.getElementById('oEmail').value, 
+        phone: document.getElementById('oPhone').value, 
+        prod: document.getElementById('oProdDrop').value, 
+        qty: document.getElementById('oQty').value, 
+        desc: document.getElementById('oDesc').value, 
+        status: statusVal 
+    };
 
             if(!p.name) return;
             
@@ -336,7 +357,34 @@
             toggleForm('spec-form');
         };
 
-        
+        window.addOrderItemRow = (data = {name: '', qty: 1}) => {
+            const d = document.createElement('div');
+            d.className = 'material-row';
+            const productOptions = store.masterCosts.map(c => `<option value="${c.name}" data-price="${c.price.replace('$','')}">${c.name} (${c.price})</option>`).join('');
+            
+            d.innerHTML = `
+                <select class="item-sel" onchange="calculateOrderTotal()">
+                    <option value="">Select Product...</option>
+                    ${productOptions}
+                </select>
+                <input type="number" class="item-qty" value="${data.qty}" oninput="calculateOrderTotal()">
+                <button class="btn-danger" onclick="this.parentElement.remove();calculateOrderTotal();">✕</button>
+            `;
+            document.getElementById('order-items-container').appendChild(d);
+        };
+
+        window.calculateOrderTotal = () => {
+            let subtotal = 0;
+            document.querySelectorAll('#order-items-container .material-row').forEach(row => {
+                const sel = row.querySelector('.item-sel');
+                const price = parseFloat(sel.options[sel.selectedIndex]?.dataset.price) || 0;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                subtotal += (price * qty);
+            });
+            const disc = parseFloat(document.getElementById('oDiscount').value) || 0;
+            const total = subtotal * (1 - (disc / 100));
+            document.getElementById('oTotal').value = `$${total.toFixed(2)}`;
+        };
 
         window.editObj = (type, id) => {
             if(type==='order'){ 
@@ -345,9 +393,16 @@
                 activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
             }
             if(type==='mat'){ 
-                const m=store.catalog.find(x=>x.id===id); 
-                document.getElementById('matName').value=m.name; document.getElementById('matCost').value=m.cost; document.getElementById('matUnit').value=m.unit; 
-                activeEdits.mat=id; document.getElementById('matBtn').innerText="Update Material"; if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
+                // Change store.catalog to store.materials
+                const m = store.materials.find(x => x.id === id); 
+                if(m) {
+                    document.getElementById('matName').value = m.name; 
+                    document.getElementById('matCost').value = m.cost; 
+                    document.getElementById('matUnit').value = m.unit; 
+                    activeEdits.mat = id; 
+                    document.getElementById('matBtn').innerText = "Update Material"; 
+                    if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
+                }
             }
             if(type==='inv'){ 
                 const i=store.inventory.find(x=>x.id===id); 
@@ -525,23 +580,22 @@ window.updateOrderDrop = () => {
 };
 window.updateCalcDrops = () => { 
     document.querySelectorAll('.calc-sel').forEach(s => { 
-        const savedValue = s.value; // Step 1: Save what the user picked
+        const savedValue = s.value; // Save current selection
         
-        // Combine Materials and Inventory into one list
         const allOptions = [
-            ...store.materials.map(m => ({ name: m.name, cost: m.cost, group: 'Materials' })),
-            ...store.inventory.map(i => ({ name: i.name, cost: i.cost || 0, group: 'Inventory' }))
+            ...store.materials.map(m => ({ id: m.id, name: m.name, cost: m.cost })),
+            ...store.inventory.map(i => ({ id: i.id, name: i.name, cost: i.cost || 0 }))
         ];
 
-        s.innerHTML = allOptions.map(opt => 
-            `<option value="${opt.cost}" ${opt.cost == savedValue ? 'selected' : ''}>
+        // Use NAME or ID as the value, NOT the cost.
+        s.innerHTML = `<option value="" disabled>Select Item...</option>` + 
+            allOptions.map(opt => 
+            `<option value="${opt.name}" ${opt.name === savedValue ? 'selected' : ''}>
                 ${opt.name} ($${opt.cost})
             </option>`
         ).join('');
-
-        s.value = savedValue; // Step 2: Force the value back
     }); 
-};  
+};
         window.showPage = (id, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById(id).classList.add('active'); el.classList.add('active');
@@ -550,6 +604,7 @@ window.updateCalcDrops = () => {
         };
 
         addCalcRow();
+        addOrderItemRow();
     </script>
 </body>
 </html>
