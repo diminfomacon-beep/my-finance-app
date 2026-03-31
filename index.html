@@ -157,17 +157,24 @@
     <div id="specs" class="page">
         <div class="card" onclick="toggleForm('spec-form')">
             <h3 id="specHeader"><span>+ Add Product Specs</span> <span class="toggle-icon">+</span></h3>
-            <div id="spec-form" class="collapsible-content" onclick="event.stopPropagation()">
+            <div id="spec-form" class="collapsible-content">
                 <input type="text" id="sName" placeholder="Product Name (e.g. 20oz Skinny)">
                 
-                <label>Design Size</label>
-                <select id="sDesignSize">
-                    <option value="Full Wrap">Full Wrap / Full Design</option>
-                    <option value="Pocket / Small">Pocket / Small Design</option>
-                    <option value="Center Chest">Center Chest</option>
-                    <option value="Large Front/Back">Large Front or Back</option>
-                    <option value="Custom">Custom Size</option>
-                </select>
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Design Sizes:</label>
+                    <div id="design-size-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 12px;">
+                        <label><input type="checkbox" value="Full Wrap"> Full Wrap</label>
+                        <label><input type="checkbox" value="Small/Pocket"> Small/Pocket</label>
+                        <label><input type="checkbox" value="Center Chest"> Center Chest</label>
+                        <label><input type="checkbox" value="Large Front"> Large Front</label>
+                        <label><input type="checkbox" value="Large Back"> Large Back</label>
+                        <label><input type="checkbox" value="Sleeve"> Sleeve</label>
+                    </div>
+                </div>
+
+                ...
+                <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
+            </div>
 
                 <label>Print Size Option (Substrate Compatibility)</label>
                 <select id="sSize">
@@ -369,15 +376,21 @@
             document.getElementById('invCost').value = '';
             toggleForm('inv-form');
         };
-       window.saveSpec = async () => {
+        window.saveSpec = async () => {
+            // Collect all checked design sizes
+            const selectedSizes = [];
+            document.querySelectorAll('#design-size-options input:checked').forEach(cb => {
+                selectedSizes.push(cb.value);
+            });
+
             const p = { 
                 name: document.getElementById('sName').value, 
-                designSize: document.getElementById('sDesignSize').value, // NEW
+                designSizes: selectedSizes, // Saved as an Array now
                 size: document.getElementById('sSize').value, 
                 style: document.getElementById('sStyle').value, 
                 temp: document.getElementById('sTemp').value, 
                 time: document.getElementById('sTime').value, 
-                weight: document.getElementById('sWeight').value, // NEW
+                weight: document.getElementById('sWeight').value,
                 notes: document.getElementById('sNotes').value 
             };
 
@@ -391,8 +404,9 @@
                 await addDoc(collection(db,"specs"), p); 
             }
 
-            // Reset fields
+            // Reset fields and uncheck boxes
             ['sName', 'sTemp', 'sTime', 'sWeight', 'sNotes'].forEach(i => document.getElementById(i).value = '');
+            document.querySelectorAll('#design-size-options input').forEach(cb => cb.checked = false);
             toggleForm('spec-form');
         };
 
@@ -466,14 +480,27 @@
             // Update your existing editObj function to include 'spec'
             if(type === 'spec'){
                 const s = store.specs.find(x => x.id === id);
+                
+                // Fill text and standard dropdowns
                 document.getElementById('sName').value = s.name;
-                document.getElementById('sDesignSize').value = s.designSize || "Full Wrap"; // NEW
                 document.getElementById('sSize').value = s.size;
                 document.getElementById('sStyle').value = s.style;
                 document.getElementById('sTemp').value = s.temp;
                 document.getElementById('sTime').value = s.time;
-                document.getElementById('sWeight').value = s.weight || ""; // NEW
+                document.getElementById('sWeight').value = s.weight || "";
                 document.getElementById('sNotes').value = s.notes || "";
+
+                // --- FIX: Handle Multiple Checkboxes ---
+                // 1. Get all checkboxes in the design-size-options div
+                const checkboxes = document.querySelectorAll('#design-size-options input[type="checkbox"]');
+                
+                // 2. Loop through them and check them ONLY if their value is in our saved array
+                checkboxes.forEach(cb => {
+                    // We use .includes() because s.designSizes is now an array like ["Full Wrap", "Sleeve"]
+                    cb.checked = (s.designSizes || []).includes(cb.value);
+                });
+                // ---------------------------------------
+
                 activeEdits.spec = id;
                 document.getElementById('specBtn').innerText = "Update Specs";
                 if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
@@ -577,10 +604,16 @@ window.runCalc = () => {
         // Correctly displays Qty and Price for Inventory
         detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
     } else if (tab === 'specs') {
+        // 1. Join the array into a readable string (e.g., "Full Wrap, Pocket")
+        // 2. Fallback to 'Standard' if nothing is selected
+        const sizeList = (i.designSizes && Array.isArray(i.designSizes)) 
+            ? i.designSizes.join(', ') 
+            : (i.designSize || 'Standard');
+
         detail = `
-            <span style="color:var(--primary)">${i.style}</span><br>
-            Size: ${i.designSize || 'Standard'}<br>
-            ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'} Pressure
+            <span style="color:var(--primary); font-weight:bold;">${i.style}</span><br>
+            <span style="color:#64748b;">Sizes:</span> ${sizeList}<br>
+            <span style="font-size:10px;">${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'} Pressure</span>
         `;
     } else if (tab === 'orders') {
         if (i.items && i.items.length > 0) {
