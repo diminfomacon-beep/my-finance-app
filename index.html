@@ -157,43 +157,26 @@
     <div id="specs" class="page">
         <div class="card" onclick="toggleForm('spec-form')">
             <h3 id="specHeader"><span>+ Add Product Specs</span> <span class="toggle-icon">+</span></h3>
-            <div id="spec-form" class="collapsible-content">
+            <div id="spec-form" class="collapsible-content" onclick="event.stopPropagation()">
                 <input type="text" id="sName" placeholder="Product Name (e.g. 20oz Skinny)">
                 
-                <div style="margin: 10px 0;">
-                    <label style="font-weight:bold; font-size:12px;">Styles & Sizes:</label>
+                <div style="margin: 10px 0; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                    <label style="font-weight:bold; font-size:12px; color: #475569;">Styles & Sizes:</label>
                     <div id="spec-styles-container"></div>
-                    <button type="button" class="btn-action" onclick="addSpecStyleRow()" style="margin-top:5px;">+ Add Style/Size</button>
+                    <button type="button" class="btn-primary" style="background:#cbd5e1; color:#1e293b; margin-top:5px; font-size: 11px;" onclick="addSpecStyleRow()">+ Add Style/Size</button>
                 </div>
-
-                <input type="text" id="sTemp" placeholder="Temperature (°F)">
-                <input type="text" id="sTime" placeholder="Time (seconds)">
-                <select id="sWeight">
-                    <option value="Light">Light Pressure</option>
-                    <option value="Medium">Medium Pressure</option>
-                    <option value="Heavy">Heavy Pressure</option>
-                </select>
-                <textarea id="sNotes" placeholder="Additional Notes..."></textarea>
-                <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
-            </div>
-
-                <label>Print Size Option (Substrate Compatibility)</label>
-                <select id="sSize">
-                    <option value="Full Wrap / Small Print">Full Wrap & Small Print Options</option>
-                    <option value="Standard/Single">Standard / Single Option</option>
-                </select>
-
-                <label>Print Style</label>
-                <select id="sStyle">
-                    <option value="Sublimation">Sublimation</option>
-                    <option value="Vinyl">Vinyl (HTV)</option>
-                    <option value="Screen Print Transfer">Screen Print Transfer</option>
-                </select>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                     <div><label>Temp (°F)</label><input type="number" id="sTemp" placeholder="385"></div>
                     <div><label>Time (Secs)</label><input type="number" id="sTime" placeholder="60"></div>
-                    <div><label>Weight/Pressure</label><input type="text" id="sWeight" placeholder="Medium"></div>
+                    <div>
+                        <label>Pressure</label>
+                        <select id="sWeight">
+                            <option value="Light">Light</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Heavy">Heavy</option>
+                        </select>
+                    </div>
                 </div>
 
                 <textarea id="sNotes" placeholder="Special Notes (e.g. Mirror image, cool peel)"></textarea>
@@ -377,8 +360,8 @@
             document.getElementById('invCost').value = '';
             toggleForm('inv-form');
         };
-        // Function to add a row for a specific style and its size
-        window.addSpecStyleRow = (data = {style: '', size: ''}) => {
+// Function to add a new Style + Size row
+        window.addSpecStyleRow = (data = {style: 'Sublimation', size: ''}) => {
             const container = document.getElementById('spec-styles-container');
             const d = document.createElement('div');
             d.className = 'material-row';
@@ -389,46 +372,52 @@
                     <option value="DTF" ${data.style==='DTF'?'selected':''}>DTF</option>
                     <option value="Vinyl" ${data.style==='Vinyl'?'selected':''}>Vinyl</option>
                     <option value="Laser" ${data.style==='Laser'?'selected':''}>Laser</option>
+                    <option value="Screen Print" ${data.style==='Screen Print'?'selected':''}>Screen Print</option>
                 </select>
-                <input type="text" class="spec-size-input" placeholder="Size (e.g. 9.3 x 8.2)" value="${data.size}" style="flex:1">
+                <input type="text" class="spec-size-input" placeholder="Size (e.g. 9.3x8.2)" value="${data.size}" style="flex:1.5">
                 <button type="button" class="btn-danger" onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(d);
         };
 
-        window.saveSpec = async () => {
-            const styleEntries = [];
-            document.querySelectorAll('#spec-styles-container .material-row').forEach(row => {
-                styleEntries.push({
-                    style: row.querySelector('.spec-style-sel').value,
-                    size: row.querySelector('.spec-size-input').value
+            // Updated Save Function
+            window.saveSpec = async () => {
+                const styleEntries = [];
+                document.querySelectorAll('#spec-styles-container .material-row').forEach(row => {
+                    styleEntries.push({
+                        style: row.querySelector('.spec-style-sel').value,
+                        size: row.querySelector('.spec-size-input').value
+                    });
                 });
-            });
 
-            const p = { 
-                name: document.getElementById('sName').value, 
-                styles: styleEntries, // Array of {style, size}
-                temp: document.getElementById('sTemp').value, 
-                time: document.getElementById('sTime').value, 
-                weight: document.getElementById('sWeight').value,
-                notes: document.getElementById('sNotes').value 
-            };
+                const p = { 
+                    name: document.getElementById('sName').value, 
+                    styles: styleEntries, 
+                    temp: document.getElementById('sTemp').value, 
+                    time: document.getElementById('sTime').value, 
+                    weight: document.getElementById('sWeight').value,
+                    notes: document.getElementById('sNotes').value 
+                };
 
-            if(!p.name) return;
+                if(!p.name) return;
 
-            if(activeEdits.spec) { 
-                await updateDoc(doc(db, "specs", activeEdits.spec), p); 
-                activeEdits.spec = null; 
-            } else { 
-                await addDoc(collection(db, "specs"), p); 
-            }
+                if(activeEdits.spec) { 
+                    await updateDoc(doc(db, "specs", activeEdits.spec), p); 
+                    activeEdits.spec = null; 
+                    document.getElementById('specBtn').innerText = "Save Specs";
+                } else { 
+                    await addDoc(collection(db, "specs"), p); 
+                }
 
-            // Reset
-            document.getElementById('spec-styles-container').innerHTML = '';
-            ['sName', 'sTemp', 'sTime', 'sNotes'].forEach(i => document.getElementById(i).value = '');
-            toggleForm('spec-form');
-        };
-       window.addOrderItemRow = (data = {name: '', qty: 1}) => {
+                // Reset Form
+                document.getElementById('sName').value = '';
+                document.getElementById('sTemp').value = '';
+                document.getElementById('sTime').value = '';
+                document.getElementById('sNotes').value = '';
+                document.getElementById('spec-styles-container').innerHTML = '';
+                toggleForm('spec-form');
+            };       
+        window.addOrderItemRow = (data = {name: '', qty: 1}) => {
             const container = document.getElementById('order-items-container');
             const d = document.createElement('div');
             d.className = 'material-row';
@@ -498,26 +487,19 @@
             // Update your existing editObj function to include 'spec'
             if(type === 'spec'){
                 const s = store.specs.find(x => x.id === id);
-                
-                // Fill text and standard dropdowns
                 document.getElementById('sName').value = s.name;
-                document.getElementById('sSize').value = s.size;
-                document.getElementById('sStyle').value = s.style;
-                document.getElementById('sTemp').value = s.temp;
-                document.getElementById('sTime').value = s.time;
-                document.getElementById('sWeight').value = s.weight || "";
+                document.getElementById('sTemp').value = s.temp || "";
+                document.getElementById('sTime').value = s.time || "";
+                document.getElementById('sWeight').value = s.weight || "Medium";
                 document.getElementById('sNotes').value = s.notes || "";
-
-                // --- FIX: Handle Multiple Checkboxes ---
-                // 1. Get all checkboxes in the design-size-options div
-                const checkboxes = document.querySelectorAll('#design-size-options input[type="checkbox"]');
                 
-                // 2. Loop through them and check them ONLY if their value is in our saved array
-                checkboxes.forEach(cb => {
-                    // We use .includes() because s.designSizes is now an array like ["Full Wrap", "Sleeve"]
-                    cb.checked = (s.designSizes || []).includes(cb.value);
-                });
-                // ---------------------------------------
+                // Clear and rebuild Style/Size rows
+                document.getElementById('spec-styles-container').innerHTML = '';
+                if(s.styles && s.styles.length > 0) {
+                    s.styles.forEach(item => addSpecStyleRow(item));
+                } else {
+                    addSpecStyleRow(); // Add one blank if none exist
+                }
 
                 activeEdits.spec = id;
                 document.getElementById('specBtn').innerText = "Update Specs";
