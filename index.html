@@ -335,24 +335,28 @@
         };
 
       window.saveInventory = async () => {
+            // 1. Grab all three fields
+            const nameVal = document.getElementById('invName').value;
+            const qtyVal = document.getElementById('invQty').value;
+            const costVal = document.getElementById('invCost').value; // THE PRICE
+
             const p = { 
-                name: document.getElementById('invName').value, 
-                qty: document.getElementById('invQty').value,
-                cost: document.getElementById('invCost').value 
+                name: nameVal, 
+                qty: qtyVal,
+                cost: costVal 
             };
             
             if(!p.name) return;
 
             if(activeEdits.inv) { 
-                // Updates ONLY the specific ID stored in activeEdits
                 await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
-                activeEdits.inv = null; // CRITICAL: Reset this so the next one isn't an edit
+                activeEdits.inv = null; 
                 document.getElementById('invBtn').innerText = "Save Stock"; 
             } else { 
                 await addDoc(collection(db, "inventory"), p); 
             }
             
-            // Clear inputs
+            // 2. Clear all three fields after saving
             document.getElementById('invName').value = '';
             document.getElementById('invQty').value = '';
             document.getElementById('invCost').value = '';
@@ -552,20 +556,33 @@ window.runCalc = () => {
         };
 
         // Helper function to keep the main logic clean
-        function renderCard(i, tab, editLabel) {
-            // Determine the right-side detail text
-            let detail = i.price || i.qty || '$' + (i.cost || 0);
-            if (tab === 'specs') {
+       function renderCard(i, tab, editLabel) {
+            // 1. Determine the right-side detail text
+            let detail = "";
+
+            if (tab === 'inventory') {
+                // This combines Qty and Price for the Inventory tab
+                detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
+            } else if (tab === 'specs') {
                 detail = `${i.style}<br>${i.temp || 0}°F - ${i.time || 0}s`;
             } else if (tab === 'orders') {
-                detail = `${i.prod} (x${i.qty})`;
+                // Check if new "items" array exists, otherwise fallback to old "prod" field
+                if (i.items && i.items.length > 0) {
+                    detail = i.items.map(item => `${item.name} (x${item.qty})`).join('<br>');
+                } else {
+                    detail = `${i.prod || 'No Product'} (x${i.qty || 0})`;
+                }
+            } else {
+                // Default fallback for Materials and Products
+                detail = i.price || (i.cost ? '$' + i.cost : '');
             }
 
+            // 2. Return the HTML structure
             return `
             <div class="card list-item-card">
                 <div class="list-row">
                     <strong>${i.name}</strong> 
-                    <span style="font-size: 11px; text-align: right;">${detail}</span>
+                    <span style="font-size: 11px; text-align: right; font-weight: bold; color: var(--primary);">${detail}</span>
                 </div>
                 
                 ${(tab === 'specs' && i.notes) ? `<p style="font-size:10px; color:#64748b; margin-top:5px; font-style:italic;">Note: ${i.notes}</p>` : ''}
