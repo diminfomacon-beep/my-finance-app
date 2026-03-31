@@ -160,11 +160,18 @@
             <div id="spec-form" class="collapsible-content" onclick="event.stopPropagation()">
                 <input type="text" id="sName" placeholder="Product Name (e.g. 20oz Skinny)">
                 
-                <label>Print Size Option</label>
+                <label>Design Size</label>
+                <select id="sDesignSize">
+                    <option value="Full Wrap">Full Wrap / Full Design</option>
+                    <option value="Pocket / Small">Pocket / Small Design</option>
+                    <option value="Center Chest">Center Chest</option>
+                    <option value="Large Front/Back">Large Front or Back</option>
+                    <option value="Custom">Custom Size</option>
+                </select>
+
+                <label>Print Size Option (Substrate Compatibility)</label>
                 <select id="sSize">
                     <option value="Full Wrap / Small Print">Full Wrap & Small Print Options</option>
-                    <option value="Full Wrap Only">Full Wrap Only</option>
-                    <option value="Small Print Only">Small Print Only</option>
                     <option value="Standard/Single">Standard / Single Option</option>
                 </select>
 
@@ -175,14 +182,14 @@
                     <option value="Screen Print Transfer">Screen Print Transfer</option>
                 </select>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                     <div><label>Temp (°F)</label><input type="number" id="sTemp" placeholder="385"></div>
                     <div><label>Time (Secs)</label><input type="number" id="sTime" placeholder="60"></div>
+                    <div><label>Weight/Pressure</label><input type="text" id="sWeight" placeholder="Medium"></div>
                 </div>
-                <div>
-                    <textarea id="sNotes" placeholder="Special Notes (e.g. Mirror image, cool peel)"></textarea>
-                    <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
-                </div>
+
+                <textarea id="sNotes" placeholder="Special Notes (e.g. Mirror image, cool peel)"></textarea>
+                <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
             </div>
         </div>
         <div id="spec-list"></div>
@@ -362,24 +369,30 @@
             document.getElementById('invCost').value = '';
             toggleForm('inv-form');
         };
-        window.saveSpec = async () => {
+       window.saveSpec = async () => {
             const p = { 
                 name: document.getElementById('sName').value, 
+                designSize: document.getElementById('sDesignSize').value, // NEW
                 size: document.getElementById('sSize').value, 
                 style: document.getElementById('sStyle').value, 
                 temp: document.getElementById('sTemp').value, 
                 time: document.getElementById('sTime').value, 
+                weight: document.getElementById('sWeight').value, // NEW
                 notes: document.getElementById('sNotes').value 
             };
+
             if(!p.name) return;
+
             if(activeEdits.spec) { 
                 await updateDoc(doc(db,"specs",activeEdits.spec), p); 
-                activeEdits.spec=null; 
-                document.getElementById('specBtn').innerText="Save Specs"; 
+                activeEdits.spec = null; 
+                document.getElementById('specBtn').innerText = "Save Specs"; 
             } else { 
                 await addDoc(collection(db,"specs"), p); 
             }
-            ['sName','sTemp','sTime','sNotes'].forEach(i=>document.getElementById(i).value='');
+
+            // Reset fields
+            ['sName', 'sTemp', 'sTime', 'sWeight', 'sNotes'].forEach(i => document.getElementById(i).value = '');
             toggleForm('spec-form');
         };
 
@@ -447,13 +460,16 @@
                 activeEdits.inv=id; document.getElementById('invBtn').innerText="Update Stock"; if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
             }
             // Update your existing editObj function to include 'spec'
-            if(type==='spec'){
-                const s = store.specs.find(x=>x.id===id);
+            if(type === 'spec'){
+                const s = store.specs.find(x => x.id === id);
                 document.getElementById('sName').value = s.name;
+                document.getElementById('sDesignSize').value = s.designSize || "Full Wrap"; // NEW
                 document.getElementById('sSize').value = s.size;
                 document.getElementById('sStyle').value = s.style;
                 document.getElementById('sTemp').value = s.temp;
                 document.getElementById('sTime').value = s.time;
+                document.getElementById('sWeight').value = s.weight || ""; // NEW
+                document.getElementById('sNotes').value = s.notes || "";
                 activeEdits.spec = id;
                 document.getElementById('specBtn').innerText = "Update Specs";
                 if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
@@ -564,7 +580,12 @@ window.runCalc = () => {
                 // This combines Qty and Price for the Inventory tab
                 detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
             } else if (tab === 'specs') {
-                detail = `${i.style}<br>${i.temp || 0}°F - ${i.time || 0}s`;
+                detail = `
+                    <span style="color:var(--primary)">${i.style}</span><br>
+                    Size: ${i.designSize || 'Standard'}<br>
+                    ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'} Pressure
+                `;
+            }
             } else if (tab === 'orders') {
                 // Check if new "items" array exists, otherwise fallback to old "prod" field
                 if (i.items && i.items.length > 0) {
