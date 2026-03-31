@@ -479,27 +479,23 @@ window.updateOrderDrop = () => {
 };
 window.updateCalcDrops = () => { 
     document.querySelectorAll('.calc-sel').forEach(s => { 
-        const currentValue = s.value; 
+        const savedValue = s.value; // Step 1: Save what the user picked
         
-        const matOptions = store.materials.map(m => 
-            `<option value="${m.cost}">${m.name} ($${m.cost})</option>`
+        // Combine Materials and Inventory into one list
+        const allOptions = [
+            ...store.materials.map(m => ({ name: m.name, cost: m.cost, group: 'Materials' })),
+            ...store.inventory.map(i => ({ name: i.name, cost: i.cost || 0, group: 'Inventory' }))
+        ];
+
+        s.innerHTML = allOptions.map(opt => 
+            `<option value="${opt.cost}" ${opt.cost == savedValue ? 'selected' : ''}>
+                ${opt.name} ($${opt.cost})
+            </option>`
         ).join('');
 
-        const invOptions = store.inventory.map(i => 
-            `<option value="${i.cost || 0}">${i.name} (In Stock)</option>`
-        ).join('');
-
-        s.innerHTML = `
-            <optgroup label="Raw Materials">
-                ${matOptions}
-            </optgroup>
-            <optgroup label="Inventory Items">
-                ${invOptions}
-            </optgroup>
-        `; 
-        s.value = currentValue; 
+        s.value = savedValue; // Step 2: Force the value back
     }); 
-};        
+};  
         window.showPage = (id, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById(id).classList.add('active'); el.classList.add('active');
