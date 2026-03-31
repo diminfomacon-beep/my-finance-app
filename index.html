@@ -369,19 +369,65 @@
             window.scrollTo(0,0);
         };
 
-        window.addCalcRow = () => {
-            const d = document.createElement('div'); d.className='material-row';
-            d.innerHTML = `<select class="calc-sel" onchange="runCalc()">${store.catalog.map(m=>`<option value="${m.cost}">${m.name} ($${m.cost})</option>`).join('')}</select><input type="number" class="calc-qty" value="1" oninput="runCalc()"><button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>`;
-            document.getElementById('active-materials').appendChild(d); runCalc();
+       window.addCalcRow = () => {
+            const d = document.createElement('div'); 
+            d.className = 'material-row';
+        
+            // Combine both lists so you can select from either
+            const allItems = [...(store.materials || []), ...(store.inventory || [])];
+            
+            // Create the dropdown options using NAME as the value
+            const options = allItems.map(item => 
+                `<option value="${item.name}">${item.name} ($${item.cost || 0})</option>`
+            ).join('');
+        
+            d.innerHTML = `
+                <select class="calc-sel" onchange="runCalc()">
+                    <option value="" disabled selected>Select Item...</option>
+                    ${options}
+                </select>
+                <input type="number" class="calc-qty" value="1" placeholder="Qty" oninput="runCalc()">
+                <button class="btn-danger" onclick="this.parentElement.remove();runCalc();">✕</button>
+            `;
+        
+            document.getElementById('active-materials').appendChild(d); 
+            runCalc();
         };
+window.runCalc = () => {
+    let mTotal = 0;
+    const allItems = [...(store.materials || []), ...(store.inventory || [])];
+    
+    // Loop through every row individually
+    document.querySelectorAll('.material-row').forEach(row => { 
+        const selectedName = row.querySelector('.calc-sel').value;
+        const qty = parseFloat(row.querySelector('.calc-qty').value) || 0;
+        
+        // Find the actual item object to get its specific cost
+        const itemData = allItems.find(it => it.name === selectedName);
+        const price = itemData ? parseFloat(itemData.cost || 0) : 0;
+        
+        mTotal += (price * qty); 
+    });
 
-        window.runCalc = () => {
-            let mTotal = 0; document.querySelectorAll('.material-row').forEach(r=>{ mTotal += (parseFloat(r.querySelector('.calc-sel').value)||0) * (parseFloat(r.querySelector('.calc-qty').value)||0); });
-            const labor = (parseFloat(document.getElementById('lMins').value)/60) * parseFloat(document.getElementById('lRate').value);
-            const total = (mTotal + labor) * parseFloat(document.getElementById('mUp').value) * (1 + (parseFloat(document.getElementById('tRate').value)/100));
-            document.getElementById('grand-total').innerText = `$${total.toFixed(2)}`;
-        };
+    // Labor Calculations
+    const laborRate = parseFloat(document.getElementById('lRate').value) || 0;
+    const laborMins = parseFloat(document.getElementById('lMins').value) || 0;
+    const laborCost = (laborMins / 60) * laborRate;
+    
+    // Business Logic (Markup and Tax)
+    const markup = parseFloat(document.getElementById('mUp').value) || 1;
+    const taxRate = parseFloat(document.getElementById('tRate').value) || 0;
+    const taxMultiplier = 1 + (taxRate / 100);
 
+    // Final Calculation
+    const grandTotal = (mTotal + laborCost) * markup * taxMultiplier;
+    
+    // Update UI
+    const totalDisp = document.getElementById('grand-total');
+    if (totalDisp) {
+        totalDisp.innerText = `$${grandTotal.toFixed(2)}`;
+    }
+};
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
        window.render = (tab) => {
