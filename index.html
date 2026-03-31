@@ -258,7 +258,19 @@
             updateOrderDrop();
             updateCalcDrops();
         });
-        onSnapshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); render('masterCosts'); updateOrderDrop(); });
+        onSnaonSnapshot(collection(db, "masterCosts"), (s) => { 
+            store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); 
+            render('masterCosts'); 
+            
+            // This ensures that if you are looking at the Orders tab, 
+            // the dropdowns refresh once the products arrive from Firebase.
+            if(document.getElementById('orders').classList.contains('active')) {
+                // Clear and re-add a row to refresh the list
+                document.getElementById('order-items-container').innerHTML = '';
+                addOrderItemRow(); 
+            }
+        });
+pshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); render('masterCosts'); updateOrderDrop(); });
         onSnapshot(collection(db, "specs"), (s) => { store.specs = s.docs.map(d=>({id:d.id,...d.data()})); render('specs'); });
 
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
@@ -357,20 +369,31 @@
             toggleForm('spec-form');
         };
 
-        window.addOrderItemRow = (data = {name: '', qty: 1}) => {
+       window.addOrderItemRow = (data = {name: '', qty: 1}) => {
+            const container = document.getElementById('order-items-container');
             const d = document.createElement('div');
             d.className = 'material-row';
-            const productOptions = store.masterCosts.map(c => `<option value="${c.name}" data-price="${c.price.replace('$','')}">${c.name} (${c.price})</option>`).join('');
             
+            // Safety check: if masterCosts hasn't loaded yet, use an empty array
+            const products = store.masterCosts || [];
+            
+            const productOptions = products.map(c => {
+                // Clean the price string (remove $ and commas) so math works
+                const cleanPrice = c.price ? c.price.toString().replace(/[$,]/g, '') : "0";
+                const isSelected = (c.name === data.name) ? 'selected' : '';
+                return `<option value="${c.name}" data-price="${cleanPrice}" ${isSelected}>${c.name} (${c.price})</option>`;
+            }).join('');
+
             d.innerHTML = `
                 <select class="item-sel" onchange="calculateOrderTotal()">
-                    <option value="">Select Product...</option>
+                    <option value="" disabled ${!data.name ? 'selected' : ''}>Select Product...</option>
                     ${productOptions}
                 </select>
-                <input type="number" class="item-qty" value="${data.qty}" oninput="calculateOrderTotal()">
-                <button class="btn-danger" onclick="this.parentElement.remove();calculateOrderTotal();">✕</button>
+                <input type="number" class="item-qty" value="${data.qty}" min="1" oninput="calculateOrderTotal()">
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove();calculateOrderTotal();">✕</button>
             `;
-            document.getElementById('order-items-container').appendChild(d);
+            container.appendChild(d);
+            calculateOrderTotal();
         };
 
         window.calculateOrderTotal = () => {
@@ -454,12 +477,10 @@ window.runCalc = () => {
     
     // Loop through every row individually
     document.querySelectorAll('.material-row').forEach(row => { 
-        const selectedName = row.querySelector('.calc-sel').value;
+        const sel = row.querySelector('.calc-sel');
+        const selectedOption = sel.options[sel.selectedIndex];
+        const price = selectedOption ? parseFloat(selectedOption.dataset.cost || 0) : 0;
         const qty = parseFloat(row.querySelector('.calc-qty').value) || 0;
-        
-        // Find the actual item object to get its specific cost
-        const itemData = allItems.find(it => it.name === selectedName);
-        const price = itemData ? parseFloat(itemData.cost || 0) : 0;
         
         mTotal += (price * qty); 
     });
@@ -580,20 +601,26 @@ window.updateOrderDrop = () => {
 };
 window.updateCalcDrops = () => { 
     document.querySelectorAll('.calc-sel').forEach(s => { 
-        const savedValue = s.value; // Save current selection
+        const savedName = s.dataset.selectedName || s.value; // Store the NAME, not the price
         
         const allOptions = [
-            ...store.materials.map(m => ({ id: m.id, name: m.name, cost: m.cost })),
-            ...store.inventory.map(i => ({ id: i.id, name: i.name, cost: i.cost || 0 }))
+            ...(store.materials || []).map(m => ({ name: m.name, cost: m.cost })),
+            ...(store.inventory || []).map(i => ({ name: i.name, cost: i.cost || 0 }))
         ];
 
-        // Use NAME or ID as the value, NOT the cost.
         s.innerHTML = `<option value="" disabled>Select Item...</option>` + 
-            allOptions.map(opt => 
-            `<option value="${opt.name}" ${opt.name === savedValue ? 'selected' : ''}>
-                ${opt.name} ($${opt.cost})
-            </option>`
-        ).join('');
+            allOptions.map(opt => {
+                // Use the NAME as the value to keep items unique
+                return `<option value="${opt.name}" data-cost="${opt.cost}" ${opt.name === savedName ? 'selected' : ''}>
+                    ${opt.name} ($${opt.cost})
+                </option>`;
+            }).join('');
+        
+        // Save the selection to a data attribute so it survives the next refresh
+        s.onchange = (e) => {
+            s.dataset.selectedName = e.target.value;
+            runCalc();
+        };
     }); 
 };
         window.showPage = (id, el) => {
