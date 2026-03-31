@@ -250,27 +250,25 @@
         // FIREBASE SYNC
         onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
         onSnapshot(collection(db, "orders"), (s) => { store.orders = s.docs.map(d=>({id:d.id,...d.data()})); render('orders'); });
-        onSnapshot(collection(db, "materials"), (s) => { store.materials = s.docs.map(d=>({id:d.id,...d.data()})); render('materials'); updateCalcDrops(); });       
+       // --- FIX: Corrected Listeners ---
+        onSnapshot(collection(db, "materials"), (s) => { 
+            store.materials = s.docs.map(d=>({id:d.id,...d.data()})); 
+            render('materials'); 
+            updateCalcDrops(); 
+        });
+
         onSnapshot(collection(db, "inventory"), (s) => { 
             store.inventory = s.docs.map(d => ({id: d.id, ...d.data()})); 
             render('inventory'); 
-            // Add these two lines to refresh your dropdowns when stock changes
-            updateOrderDrop();
-            updateCalcDrops();
+            updateCalcDrops(); 
         });
-        onSnaonSnapshot(collection(db, "masterCosts"), (s) => { 
+
+        onSnapshot(collection(db, "masterCosts"), (s) => { 
             store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); 
             render('masterCosts'); 
-            
-            // This ensures that if you are looking at the Orders tab, 
-            // the dropdowns refresh once the products arrive from Firebase.
-            if(document.getElementById('orders').classList.contains('active')) {
-                // Clear and re-add a row to refresh the list
-                document.getElementById('order-items-container').innerHTML = '';
-                addOrderItemRow(); 
-            }
+            // This is the line you were missing to make Products show in Orders:
+            updateOrderDrops(); 
         });
-pshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); render('masterCosts'); updateOrderDrop(); });
         onSnapshot(collection(db, "specs"), (s) => { store.specs = s.docs.map(d=>({id:d.id,...d.data()})); render('specs'); });
 
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
@@ -473,11 +471,10 @@ pshot(collection(db, "masterCosts"), (s) => { store.masterCosts = s.docs.map(d=>
         };
 window.runCalc = () => {
     let mTotal = 0;
-    const allItems = [...(store.materials || []), ...(store.inventory || [])];
-    
-    // Loop through every row individually
-    document.querySelectorAll('.material-row').forEach(row => { 
+    // Target only the rows inside the Calculator (active-materials)
+    document.querySelectorAll('#active-materials .material-row').forEach(row => { 
         const sel = row.querySelector('.calc-sel');
+        // FIX: Get price from the 'data-cost' of the SELECTED option only
         const selectedOption = sel.options[sel.selectedIndex];
         const price = selectedOption ? parseFloat(selectedOption.dataset.cost || 0) : 0;
         const qty = parseFloat(row.querySelector('.calc-qty').value) || 0;
@@ -485,24 +482,15 @@ window.runCalc = () => {
         mTotal += (price * qty); 
     });
 
-    // Labor Calculations
+    // ... rest of your labor/markup math ...
     const laborRate = parseFloat(document.getElementById('lRate').value) || 0;
     const laborMins = parseFloat(document.getElementById('lMins').value) || 0;
     const laborCost = (laborMins / 60) * laborRate;
-    
-    // Business Logic (Markup and Tax)
     const markup = parseFloat(document.getElementById('mUp').value) || 1;
     const taxRate = parseFloat(document.getElementById('tRate').value) || 0;
-    const taxMultiplier = 1 + (taxRate / 100);
 
-    // Final Calculation
-    const grandTotal = (mTotal + laborCost) * markup * taxMultiplier;
-    
-    // Update UI
-    const totalDisp = document.getElementById('grand-total');
-    if (totalDisp) {
-        totalDisp.innerText = `$${grandTotal.toFixed(2)}`;
-    }
+    const grandTotal = (mTotal + laborCost) * markup * (1 + (taxRate / 100));
+    document.getElementById('grand-total').innerText = `$${grandTotal.toFixed(2)}`;
 };
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
@@ -581,23 +569,16 @@ window.runCalc = () => {
         };
 
         window.remove = async (c, id) => { if(confirm("Delete permanently?")) await deleteDoc(doc(db, c, id)); };
-window.updateOrderDrop = () => { 
-    const productOptions = store.masterCosts.map(c => 
-        `<option value="${c.name}">${c.name} (${c.price})</option>`
-    ).join('');
-
-    const inventoryOptions = store.inventory.map(i => 
-        `<option value="${i.name}">Stock: ${i.name} (${i.qty} left)</option>`
-    ).join('');
-
-    document.getElementById('oProdDrop').innerHTML = `
-        <optgroup label="Finished Products">
-            ${productOptions}
-        </optgroup>
-        <optgroup label="Raw Inventory/Blanks">
-            ${inventoryOptions}
-        </optgroup>
-    `; 
+window.updateOrderDrops = () => {
+    document.querySelectorAll('.item-sel').forEach(sel => {
+        const currentVal = sel.value; // Remember what was selected
+        const options = store.masterCosts.map(c => {
+            const cleanPrice = c.price ? c.price.toString().replace(/[$,]/g, '') : "0";
+            return `<option value="${c.name}" data-price="${cleanPrice}" ${c.name === currentVal ? 'selected' : ''}>${c.name} (${c.price})</option>`;
+        }).join('');
+        
+        sel.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Product...</option>` + options;
+    });
 };
 window.updateCalcDrops = () => { 
     document.querySelectorAll('.calc-sel').forEach(s => { 
