@@ -334,16 +334,28 @@
             toggleForm('mat-form');
         };
 
-       window.saveInventory = async () => {
+      window.saveInventory = async () => {
             const p = { 
                 name: document.getElementById('invName').value, 
                 qty: document.getElementById('invQty').value,
-                cost: document.getElementById('invCost').value // Add this
+                cost: document.getElementById('invCost').value 
             };
+            
             if(!p.name) return;
-            if(activeEdits.inv) { await updateDoc(doc(db,"inventory",activeEdits.inv), p); activeEdits.inv=null; document.getElementById('invBtn').innerText="Save Stock"; }
-            else { await addDoc(collection(db,"inventory"), p); }
-            document.getElementById('invName').value=''; document.getElementById('invQty').value='';
+
+            if(activeEdits.inv) { 
+                // Updates ONLY the specific ID stored in activeEdits
+                await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
+                activeEdits.inv = null; // CRITICAL: Reset this so the next one isn't an edit
+                document.getElementById('invBtn').innerText = "Save Stock"; 
+            } else { 
+                await addDoc(collection(db, "inventory"), p); 
+            }
+            
+            // Clear inputs
+            document.getElementById('invName').value = '';
+            document.getElementById('invQty').value = '';
+            document.getElementById('invCost').value = '';
             toggleForm('inv-form');
         };
         window.saveSpec = async () => {
@@ -471,17 +483,19 @@
         };
 window.runCalc = () => {
     let mTotal = 0;
-    // Target only the rows inside the Calculator (active-materials)
+// Inside window.runCalc...
     document.querySelectorAll('#active-materials .material-row').forEach(row => { 
         const sel = row.querySelector('.calc-sel');
-        // FIX: Get price from the 'data-cost' of the SELECTED option only
+        
+        // GET THE SELECTED OPTION ELEMENT
         const selectedOption = sel.options[sel.selectedIndex];
+        
+        // PULL THE COST FROM THE DATA ATTRIBUTE
         const price = selectedOption ? parseFloat(selectedOption.dataset.cost || 0) : 0;
         const qty = parseFloat(row.querySelector('.calc-qty').value) || 0;
         
         mTotal += (price * qty); 
     });
-
     // ... rest of your labor/markup math ...
     const laborRate = parseFloat(document.getElementById('lRate').value) || 0;
     const laborMins = parseFloat(document.getElementById('lMins').value) || 0;
@@ -580,29 +594,24 @@ window.updateOrderDrops = () => {
         sel.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Product...</option>` + options;
     });
 };
-window.updateCalcDrops = () => { 
-    document.querySelectorAll('.calc-sel').forEach(s => { 
-        const savedName = s.dataset.selectedName || s.value; // Store the NAME, not the price
+window.updateCalcDrops = () => {
+    document.querySelectorAll('.calc-sel').forEach(s => {
+        const savedName = s.value; // Keep track of what was already selected
         
         const allOptions = [
-            ...(store.materials || []).map(m => ({ name: m.name, cost: m.cost })),
-            ...(store.inventory || []).map(i => ({ name: i.name, cost: i.cost || 0 }))
+            ...(store.materials || []),
+            ...(store.inventory || [])
         ];
 
         s.innerHTML = `<option value="" disabled>Select Item...</option>` + 
             allOptions.map(opt => {
-                // Use the NAME as the value to keep items unique
-                return `<option value="${opt.name}" data-cost="${opt.cost}" ${opt.name === savedName ? 'selected' : ''}>
-                    ${opt.name} ($${opt.cost})
+                // Use NAME as the value so each row is unique
+                // Use data-cost to store the math value
+                return `<option value="${opt.name}" data-cost="${opt.cost || 0}" ${opt.name === savedName ? 'selected' : ''}>
+                    ${opt.name} ($${opt.cost || 0})
                 </option>`;
             }).join('');
-        
-        // Save the selection to a data attribute so it survives the next refresh
-        s.onchange = (e) => {
-            s.dataset.selectedName = e.target.value;
-            runCalc();
-        };
-    }); 
+    });
 };
         window.showPage = (id, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
