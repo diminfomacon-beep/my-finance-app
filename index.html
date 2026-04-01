@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DIM Bright Ideas LLC | Pro Suite</title>
@@ -300,12 +301,11 @@
             const items = [];
             document.querySelectorAll('#order-items-container .material-row').forEach(row => {
                 const sel = row.querySelector('.item-sel');
-                const qtyInp = row.querySelector('.item-qty');
                 if (sel && sel.value) {
-                  items.push({
+                    items.push({
                         name: sel.value,
                         qty: row.querySelector('.item-qty').value,
-                        free: row.querySelector('.item-free').checked // <--- Add this
+                        free: row.querySelector('.item-free').checked 
                     });
                 }
             });
@@ -316,8 +316,7 @@
                 return;
             }
 
-            // 2. Build the data object carefully
-            // We remove fields like 'oProdDrop' and 'oQty' if they aren't in your HTML anymore
+            // 2. Build the data object
             const orderData = {
                 name: nameVal,
                 items: items,
@@ -333,7 +332,19 @@
 
             try {
                 if (activeEdits.order) { 
+                    // --- STATUS CHANGE CHECK ---
+                    const oldOrder = store.orders.find(x => x.id === activeEdits.order);
+                    const hasStatusChanged = oldOrder && oldOrder.status !== orderData.status;
+
                     await updateDoc(doc(db, "orders", activeEdits.order), orderData); 
+
+                    // Trigger Formspree ONLY if status changed
+                    if (hasStatusChanged && orderData.email) {
+                        if (confirm(`Status updated to ${orderData.status}. Send email notification?`)) {
+                            window.sendOrderEmail(orderData);
+                        }
+                    }
+
                     activeEdits.order = null; 
                     document.getElementById('orderBtn').innerText = "Save Order"; 
                 } else { 
@@ -350,13 +361,34 @@
                 document.getElementById('oTotal').value = '$0.00';
                 
                 document.getElementById('order-items-container').innerHTML = '';
-                addOrderItemRow(); // Re-add one empty row
+                addOrderItemRow(); 
                 toggleForm('order-form');
                 
             } catch (err) {
                 console.error("Detailed Save Error:", err);
                 alert("Firebase Error: " + err.message);
             }
+        };
+
+        // 4. The Formspree Function
+        window.sendOrderEmail = (order) => {
+            const details = (order.items || []).map(i => `${i.name} (x${i.qty})${i.free ? ' [FREE]' : ''}`).join(", ");
+            
+            const payload = {
+                to: order.email, // Formspree will show this in the submission
+                subject: `Order Update for ${order.name}`,
+                message: `Your order status has changed to: ${order.status}.\n\nItems: ${details}\nTotal: ${order.total}\n\nThank you!`
+            };
+
+            fetch("https://formspree.io/f/mdapdnrj", {
+                method: "POST",
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+            })
+            .then(res => {
+                if (res.ok) console.log("Formspree notification sent.");
+            })
+            .catch(err => console.error("Formspree Error:", err));
         };
    
         window.saveMaterial = async () => {
@@ -824,7 +856,54 @@ function renderCard(i, tab, editLabel) {
             document.getElementById('calc-footer').style.display = (id==='pricing') ? 'block' : 'none';
             document.getElementById('tabSearch').value = ''; applySearch();
         };
+        window.sendOrderEmail = (order) => {
+            if (!order.email) {
+                alert("Customer has no email address saved!");
+                return;
+            }
 
+            const statusMessages = {
+                "New": "We've received your order and will begin processing it soon.",
+                "Processing": "We're currently crafting your items! Quality takes time.",
+                "Ready for Pick up": "Good news! Your order is finished and ready for collection.",
+                "Ready to Ship": "Your order is packed and waiting for the carrier.",
+                "Shipped": "Your order has been handed off to the shipping carrier!",
+                "Delivered": "Our records show your order has been delivered. Enjoy!",
+                "Picked up": "Thank you for stopping by to pick up your order!"
+            };
+
+            const msg = statusMessages[order.status] || "Your order status has been updated.";
+            const details = (order.items || []).map(item => `${item.name} (x${item.qty})`).join(", ");
+
+            // Formspree likes simple Key:Value pairs
+            const formData = {
+                customer_email: order.email,
+                subject: `Update: Order for ${order.name} is now ${order.status}`,
+                message: `Hi ${order.name},\n\n${msg}\n\nOrder Details: ${details}\nTotal: ${order.total}\n\nThank you, Dim Accounting & Prints.`
+            };
+
+            // Replace 'YOUR_FORM_ID' with the actual ID from Formspree
+            fetch("https://formspree.io/f/mdapdnrj", {
+                method: "POST",
+                body: JSON.stringify(formData),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Formspree success!");
+                    alert(`Notification sent to ${order.name}`);
+                } else {
+                    alert("Formspree error. Check your Form ID.");
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                alert("Failed to connect to Formspree.");
+            });
+        };
         addCalcRow();
         addOrderItemRow();
         addSpecStyleRow();
