@@ -248,7 +248,7 @@
             }
         };
 
-        let store = { orders:[], catalog:[], inventory:[], masterCosts:[], specs:[] };
+        let store = { orders:[], materials:[], inventory:[], masterCosts:[], specs:[] };
         let activeEdits = { order:null, mat:null, inv:null, spec:null };
         // Add or remove styles here; everything else updates automatically!
         const PRINT_STYLES = ["Sublimation Full", "Sublimation Small", "T-Shirt Left Chest", "T-Shirt Center Chest", "T-Shirt Full Front", "T-Shirt Oversize Front/Back","T-Shirt Back Collar","T-Shirt Upper Back","T-Shirt Full Back","T-Shirt Sleeve"];
@@ -309,17 +309,16 @@
 
     const p = {
         name: document.getElementById('oName').value,
-        items: items, // Saved as an array
+        items: items,
         total: document.getElementById('oTotal').value,
         discount: document.getElementById('oDiscount').value,
-        status: document.getElementById('oStatus').value,
+        status: document.getElementById('oStatus').value, // Use the actual element value
         addr: document.getElementById('oAddr').value, 
         email: document.getElementById('oEmail').value, 
         phone: document.getElementById('oPhone').value, 
         prod: document.getElementById('oProdDrop').value, 
         qty: document.getElementById('oQty').value, 
-        desc: document.getElementById('oDesc').value, 
-        status: statusVal 
+        desc: document.getElementById('oDesc').value
     };
 
             if(!p.name) return;
@@ -580,60 +579,41 @@ window.runCalc = () => {
 };
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
-     window.render = (tab) => {
+    window.render = (tab) => {
     const targets = { 
         'orders': 'order-list', 
         'materials': 'mat-list', 
         'inventory': 'inv-list', 
         'specs': 'spec-list', 
-        'costs': 'cost-list',     // <--- Change 'masterCosts' to 'costs'
-        'masterCosts': 'cost-list' // (Optional) Keep both to be safe
+        'costs': 'cost-list' 
     };
 
     const container = document.getElementById(targets[tab]);
-    if (!container) return; // Safety check
+    if (!container) return;
 
-    // Make sure your store name matches what you're trying to render
-    const data = (tab === 'costs') ? store.masterCosts : store[tab];
-    
-    container.innerHTML = data.map(item => {
-        const labels = { 'materials':'mat', 'inventory':'inv', 'specs':'spec', 'orders':'order', 'costs':'cost' };
-        return renderCard(item, tab, labels[tab]);
-    }).join('');
+    // Fix: Map 'costs' tab to 'masterCosts' data
+    let items = (tab === 'costs') ? store.masterCosts : store[tab];
+    items = items || []; // Safety check
+
+    const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
+    const editLabel = labels[tab];
+
+    if (tab === 'orders') {
+        const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
+        container.innerHTML = statuses.map(status => {
+            const filtered = items.filter(i => (i.status || "New") === status);
+            if (filtered.length === 0) return ''; 
+            return `
+                <div class="status-group" style="margin-top: 20px;">
+                    <div style="background:var(--primary); color:white; padding:5px 10px; border-radius:5px; font-size:10px; display:inline-block; margin-bottom:10px;">${status.toUpperCase()}</div>
+                    ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
+                </div>`;
+        }).join('');
+    } else {
+        container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
+    }
+    applySearch();
 };
-
-            // CRITICAL FIX: Clear only the specific target container
-            const container = document.getElementById(targets[tab]);
-            if (!container) return;
-            
-            // Only proceed if the page containing this list is actually active
-            // This prevents "Specs" from bleeding into "Orders" if they share logic
-            container.innerHTML = ''; 
-
-            const items = store[tab] || [];
-            const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order' };
-            const editLabel = labels[tab];
-
-            if (tab === 'orders') {
-                    const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];                container.innerHTML = statuses.map(status => {
-                    const filtered = items.filter(i => (i.status || "New") === status);
-                    if (filtered.length === 0) return ''; 
-
-                    return `
-                        <div class="status-group" style="margin-top: 20px;">
-                            <div style="background:var(--primary); color:white; padding:5px 10px; border-radius:5px; font-size:10px; display:inline-block; margin-bottom:10px;">${status.toUpperCase()}</div>
-                            ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
-                        </div>`;
-                }).join('');
-            } else {
-                // 3. Default Case: Regular List
-                container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
-            }
-
-            applySearch();
-        };
-
-        // Helper function to keep the main logic clean
 function renderCard(i, tab, editLabel) {
     let detail = "";
 
@@ -679,7 +659,7 @@ function renderCard(i, tab, editLabel) {
         ${(tab === 'orders' && i.desc) ? `<div style="font-size:11px; color:#64748b; margin-bottom:8px;">${i.desc}</div>` : ''}
 
         <div style="margin-top:10px;">
-            ${tab !== 'masterCosts' ? `<button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>` : ''}
+            ${tab !== 'costs' ? `<button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>` : ''}
             <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006;</button>
         </div>
     </div>`;
