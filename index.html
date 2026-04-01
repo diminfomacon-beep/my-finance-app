@@ -508,33 +508,60 @@
         };
 
         window.editObj = (type, id) => {
-            if(type==='order'){ 
+           if (type === 'order') { 
+                // 1. Find the order in the local store
                 const o = store.orders.find(x => x.id === id); 
-                if(!o) return;
-
-                // Use "|| ''" to prevent crashes if a field is empty in the database
-                document.getElementById('oName').value = o.name || ""; 
-                document.getElementById('oAddr').value = o.addr || ""; 
-                document.getElementById('oEmail').value = o.email || ""; 
-                document.getElementById('oPhone').value = o.phone || ""; 
-                document.getElementById('oQty').value = o.qty || 0; 
-                document.getElementById('oDesc').value = o.desc || ""; 
-                document.getElementById('oStatus').value = o.status || "New";
-                document.getElementById('oDiscount').value = o.discount || 0;
-                document.getElementById('oTotal').value = o.total || "$0.00";
-
-                // Rebuild the items list
-                const container = document.getElementById('order-items-container');
-                container.innerHTML = '';
-                if(o.items && o.items.length > 0) {
-                    o.items.forEach(item => addOrderItemRow(item));
-                } else {
-                    addOrderItemRow();
+                if (!o) {
+                    console.error("Order not found in store for ID:", id);
+                    return;
                 }
 
+                // 2. Helper to safely set values without crashing
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val || (el.type === 'number' ? 0 : "");
+                };
+
+                // 3. Fill the standard fields
+                setVal('oName', o.name);
+                setVal('oAddr', o.addr);
+                setVal('oEmail', o.email);
+                setVal('oPhone', o.phone);
+                setVal('oDesc', o.desc);
+                setVal('oStatus', o.status || "New");
+                setVal('oDiscount', o.discount || 0);
+                setVal('oTotal', o.total || "$0.00");
+
+                // 4. Rebuild the dynamic Product rows
+                const container = document.getElementById('order-items-container');
+                if (container) {
+                    container.innerHTML = '';
+                    // If the order has items, loop through and add rows
+                    if (o.items && Array.isArray(o.items) && o.items.length > 0) {
+                        o.items.forEach(item => window.addOrderItemRow(item));
+                    } else if (o.prod) {
+                        // Backward compatibility: If it's an old order using the 'prod' field
+                        window.addOrderItemRow({ name: o.prod, qty: o.qty || 1 });
+                    } else {
+                        // If it's totally empty, just add one blank row
+                        window.addOrderItemRow();
+                    }
+                }
+
+                // 5. Set the "Edit Mode" state
                 activeEdits.order = id; 
-                document.getElementById('orderBtn').innerText = "Update Order"; 
-                if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
+                
+                // 6. Update the Button Text
+                const saveBtn = document.getElementById('orderBtn');
+                if (saveBtn) saveBtn.innerText = "Update Order"; 
+                
+                // 7. Open the Form
+                if (!document.getElementById('order-form').classList.contains('open')) {
+                    window.toggleForm('order-form');
+                }
+                
+                // Scroll to top so the user sees the open form
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             if(type==='mat'){ 
                 // Change store.catalog to store.materials
