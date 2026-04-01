@@ -296,28 +296,61 @@
         window.saveBizSettings = async () => { await setDoc(doc(db,"settings","business"), { labor:document.getElementById('lRate').value, markup:document.getElementById('mUp').value, tax:document.getElementById('tRate').value }); runCalc(); };
 
         window.saveOrder = async () => {
-    const items = [];
-    document.querySelectorAll('#order-items-container .material-row').forEach(row => {
-        items.push({
-            name: row.querySelector('.item-sel').value,
-            qty: row.querySelector('.item-qty').value
-        });
-    });
+            const items = [];
+            document.querySelectorAll('#order-items-container .material-row').forEach(row => {
+                const sel = row.querySelector('.item-sel');
+                if (sel && sel.value) {
+                    items.push({
+                        name: sel.value,
+                        qty: row.querySelector('.item-qty').value
+                    });
+                }
+            });
 
-    const p = {
-        name: document.getElementById('oName').value,
-        items: items,
-        total: document.getElementById('oTotal').value,
-        discount: document.getElementById('oDiscount').value,
-        status: document.getElementById('oStatus').value, // Use the actual element value
-        addr: document.getElementById('oAddr').value, 
-        email: document.getElementById('oEmail').value, 
-        phone: document.getElementById('oPhone').value, 
-        prod: document.getElementById('oProdDrop').value, 
-        qty: document.getElementById('oQty').value, 
-        desc: document.getElementById('oDesc').value
-    };
+            const nameVal = document.getElementById('oName').value;
+            if (!nameVal) {
+                alert("Please enter a Customer Name");
+                return;
+            }
 
+            const p = {
+                name: nameVal,
+                items: items,
+                total: document.getElementById('oTotal').value,
+                discount: document.getElementById('oDiscount').value || 0,
+                status: document.getElementById('oStatus').value || "New",
+                addr: document.getElementById('oAddr').value || "", 
+                email: document.getElementById('oEmail').value || "", 
+                phone: document.getElementById('oPhone').value || "", 
+                prod: document.getElementById('oProdDrop').value || "", 
+                qty: document.getElementById('oQty').value || 0, 
+                desc: document.getElementById('oDesc').value || "",
+                timestamp: Date.now() // Added for the alphabetical/date sorting
+            };
+
+            try {
+                if (activeEdits.order) { 
+                    await updateDoc(doc(db, "orders", activeEdits.order), p); 
+                    activeEdits.order = null; 
+                    document.getElementById('orderBtn').innerText = "Save Order"; 
+                } else { 
+                    await addDoc(collection(db, "orders"), p); 
+                }
+
+                // Clear the form fields
+                ['oName','oAddr','oEmail','oPhone','oQty','oDesc','oDiscount','oTotal'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = '';
+                });
+                
+                document.getElementById('order-items-container').innerHTML = '';
+                addOrderItemRow(); // Put one fresh row back
+                toggleForm('order-form');
+            } catch (err) {
+                console.error("Save Error:", err);
+                alert("Check console: " + err.message);
+            }
+        };
             if(!p.name) return;
             
             if(activeEdits.order) { 
@@ -485,9 +518,32 @@
 
         window.editObj = (type, id) => {
             if(type==='order'){ 
-                const o=store.orders.find(x=>x.id===id); 
-                document.getElementById('oName').value=o.name; document.getElementById('oAddr').value=o.addr; document.getElementById('oEmail').value=o.email; document.getElementById('oPhone').value=o.phone; document.getElementById('oProdDrop').value=o.prod; document.getElementById('oQty').value=o.qty; document.getElementById('oDesc').value=o.desc; document.getElementById('oStatus').value = o.status || "New";
-                activeEdits.order=id; document.getElementById('orderBtn').innerText="Update Order"; if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
+                const o = store.orders.find(x => x.id === id); 
+                if(!o) return;
+
+                // Use "|| ''" to prevent crashes if a field is empty in the database
+                document.getElementById('oName').value = o.name || ""; 
+                document.getElementById('oAddr').value = o.addr || ""; 
+                document.getElementById('oEmail').value = o.email || ""; 
+                document.getElementById('oPhone').value = o.phone || ""; 
+                document.getElementById('oQty').value = o.qty || 0; 
+                document.getElementById('oDesc').value = o.desc || ""; 
+                document.getElementById('oStatus').value = o.status || "New";
+                document.getElementById('oDiscount').value = o.discount || 0;
+                document.getElementById('oTotal').value = o.total || "$0.00";
+
+                // Rebuild the items list
+                const container = document.getElementById('order-items-container');
+                container.innerHTML = '';
+                if(o.items && o.items.length > 0) {
+                    o.items.forEach(item => addOrderItemRow(item));
+                } else {
+                    addOrderItemRow();
+                }
+
+                activeEdits.order = id; 
+                document.getElementById('orderBtn').innerText = "Update Order"; 
+                if(!document.getElementById('order-form').classList.contains('open')) toggleForm('order-form');
             }
             if(type==='mat'){ 
                 // Change store.catalog to store.materials
