@@ -603,32 +603,37 @@ window.runCalc = () => {
         };
 
         // Helper function to keep the main logic clean
-       function renderCard(i, tab, editLabel) {
+function renderCard(i, tab, editLabel) {
     let detail = "";
 
     if (tab === 'inventory') {
-        // Correctly displays Qty and Price for Inventory
         detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
     } else if (tab === 'specs') {
-    const styleInfo = (i.styles || []).map(s => 
-        `<div style="font-size:11px;"><strong>${s.style}:</strong> ${s.size}</div>`
-    ).join('');
-
-    detail = `
-        ${styleInfo}
-        <div style="margin-top:5px; font-size:10px; color:var(--primary);">
-            ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'}
-        </div>
-    `;
-
+        const styleInfo = (i.styles || []).map(s => 
+            `<div style="font-size:11px;"><strong>${s.style}:</strong> ${s.size}</div>`
+        ).join('');
+        detail = `
+            ${styleInfo}
+            <div style="margin-top:5px; font-size:10px; color:var(--primary);">
+                ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'}
+            </div>
+        `;
     } else if (tab === 'orders') {
         if (i.items && i.items.length > 0) {
             detail = i.items.map(item => `${item.name} (x${item.qty})`).join('<br>');
         } else {
             detail = `${i.prod || 'No Product'} (x${i.qty || 0})`;
         }
-    } else {
-        // Fallback for Materials and Products
+    } 
+    // --- ADD THIS SECTION BELOW ---
+    else if (tab === 'materials') {
+        const unitLabel = i.unit ? `/${i.unit}` : '';
+        // Format the cost to 2 decimal places and add the unit
+        detail = `$${parseFloat(i.cost || 0).toFixed(2)}${unitLabel}`;
+    } 
+    // ------------------------------
+    else {
+        // Fallback for Products (Master Costs)
         detail = i.price || (i.cost ? '$' + i.cost : '');
     }
 
