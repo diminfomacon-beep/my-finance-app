@@ -351,22 +351,7 @@
                 alert("Check console: " + err.message);
             }
         };
-            if(!p.name) return;
-            
-            if(activeEdits.order) { 
-                await updateDoc(doc(db, "orders", activeEdits.order), p); 
-                activeEdits.order = null; 
-                document.getElementById('orderBtn').innerText = "Save Order"; 
-            } else { 
-                await addDoc(collection(db, "orders"), p); 
-            }
-
-            // Clear the form
-            ['oName','oAddr','oEmail','oPhone','oQty','oDesc'].forEach(i => document.getElementById(i).value = '');
-            if(document.getElementById('oStatus')) document.getElementById('oStatus').value = "New";
-            
-            toggleForm('order-form');
-        };
+   
         window.saveMaterial = async () => {
             const p = { name:document.getElementById('matName').value, cost:document.getElementById('matCost').value, unit:document.getElementById('matUnit').value };
             if(!p.name) return;
