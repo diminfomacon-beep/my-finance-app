@@ -244,7 +244,8 @@
 
         let store = { orders:[], catalog:[], inventory:[], masterCosts:[], specs:[] };
         let activeEdits = { order:null, mat:null, inv:null, spec:null };
-
+        // Add or remove styles here; everything else updates automatically!
+        const PRINT_STYLES = ["Sublimation Full", "Sublimation Small", "Vinyl", "T-Shirt Left Chest", "T-Shirt Center Chest", "T-Shirt Full Front", "T-Shirt Oversize Front/Back","T-Shirt Back Collar","T-Shirt Upper Back","T-Shirt Full Back","T-Shirt Sleeve"];
         // FIREBASE SYNC
         onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
         onSnapshot(collection(db, "orders"), (s) => { store.orders = s.docs.map(d=>({id:d.id,...d.data()})); render('orders'); });
@@ -366,15 +367,17 @@
             const d = document.createElement('div');
             d.className = 'material-row';
             d.style.marginBottom = "5px";
+
+            // This creates the <option> tags based on your PRINT_STYLES list
+            const styleOptions = PRINT_STYLES.map(s => 
+                `<option value="${s}" ${data.style === s ? 'selected' : ''}>${s}</option>`
+            ).join('');
+
             d.innerHTML = `
                 <select class="spec-style-sel" style="flex:1">
-                    <option value="Sublimation" ${data.style==='Sublimation'?'selected':''}>Sublimation</option>
-                    <option value="DTF" ${data.style==='DTF'?'selected':''}>DTF</option>
-                    <option value="Vinyl" ${data.style==='Vinyl'?'selected':''}>Vinyl</option>
-                    <option value="Laser" ${data.style==='Laser'?'selected':''}>Laser</option>
-                    <option value="Screen Print" ${data.style==='Screen Print'?'selected':''}>Screen Print</option>
+                    ${styleOptions}
                 </select>
-                <input type="text" class="spec-size-input" placeholder="Size (e.g. 9.3x8.2)" value="${data.size}" style="flex:1.5">
+                <input type="text" class="spec-size-input" placeholder="Size" value="${data.size || ''}" style="flex:1.5">
                 <button type="button" class="btn-danger" onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(d);
@@ -684,6 +687,7 @@ window.updateCalcDrops = () => {
 
         addCalcRow();
         addOrderItemRow();
+        addSpecStyleRow();
     </script>
 </body>
 </html>
