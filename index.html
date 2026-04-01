@@ -580,14 +580,27 @@ window.runCalc = () => {
 };
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
-       window.render = (tab) => {
-            const targets = { 
-                'orders': 'order-list', 
-                'materials': 'mat-list', 
-                'inventory': 'inv-list', 
-                'specs': 'spec-list', 
-                'masterCosts': 'cost-list' 
-            };
+     window.render = (tab) => {
+    const targets = { 
+        'orders': 'order-list', 
+        'materials': 'mat-list', 
+        'inventory': 'inv-list', 
+        'specs': 'spec-list', 
+        'costs': 'cost-list',     // <--- Change 'masterCosts' to 'costs'
+        'masterCosts': 'cost-list' // (Optional) Keep both to be safe
+    };
+
+    const container = document.getElementById(targets[tab]);
+    if (!container) return; // Safety check
+
+    // Make sure your store name matches what you're trying to render
+    const data = (tab === 'costs') ? store.masterCosts : store[tab];
+    
+    container.innerHTML = data.map(item => {
+        const labels = { 'materials':'mat', 'inventory':'inv', 'specs':'spec', 'orders':'order', 'costs':'cost' };
+        return renderCard(item, tab, labels[tab]);
+    }).join('');
+};
 
             // CRITICAL FIX: Clear only the specific target container
             const container = document.getElementById(targets[tab]);
