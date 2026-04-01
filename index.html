@@ -302,9 +302,10 @@
                 const sel = row.querySelector('.item-sel');
                 const qtyInp = row.querySelector('.item-qty');
                 if (sel && sel.value) {
-                    items.push({
+                  items.push({
                         name: sel.value,
-                        qty: qtyInp.value || 1
+                        qty: row.querySelector('.item-qty').value,
+                        free: row.querySelector('.item-free').checked // <--- Add this
                     });
                 }
             });
@@ -464,30 +465,30 @@
                 document.getElementById('spec-styles-container').innerHTML = '';
                 toggleForm('spec-form');
             };       
-       window.addOrderItemRow = (data = {name: '', qty: 1}) => {
+        window.addOrderItemRow = (data = {name: '', qty: 1, free: false}) => {
             const container = document.getElementById('order-items-container');
             const d = document.createElement('div');
             d.className = 'material-row';
+            d.style.alignItems = 'center'; // Keep things aligned
             
-            // Ensure we have an array to work with
             const products = store.masterCosts || [];
-            
-            // Create the options, ensuring we handle missing prices gracefully
             const productOptions = products.map(c => {
-                // Remove symbols like $ or , so the math doesn't break later
                 const rawPrice = c.price ? String(c.price).replace(/[$,]/g, '') : "0";
-                const isSelected = (c.name === data.name) ? 'selected' : '';
-                return `<option value="${c.name}" data-price="${rawPrice}" ${isSelected}>
+                return `<option value="${c.name}" data-price="${rawPrice}" ${c.name === data.name ? 'selected' : ''}>
                     ${c.name} (${c.price || '$0.00'})
                 </option>`;
             }).join('');
 
             d.innerHTML = `
                 <select class="item-sel" onchange="calculateOrderTotal()" style="flex:2">
-                    <option value="" disabled ${!data.name ? 'selected' : ''}>Select Product...</option>
+                    <option value="" disabled ${!data.name ? 'selected' : ''}>Product...</option>
                     ${productOptions}
                 </select>
                 <input type="number" class="item-qty" value="${data.qty}" min="1" oninput="calculateOrderTotal()" style="flex:0.5">
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; font-size:9px;">
+                    <label>Free?</label>
+                    <input type="checkbox" class="item-free" ${data.free ? 'checked' : ''} onchange="calculateOrderTotal()">
+                </div>
                 <button type="button" class="btn-danger" onclick="this.parentElement.remove();calculateOrderTotal();">✕</button>
             `;
             container.appendChild(d);
@@ -497,10 +498,13 @@
         window.calculateOrderTotal = () => {
             let subtotal = 0;
             document.querySelectorAll('#order-items-container .material-row').forEach(row => {
-                const sel = row.querySelector('.item-sel');
-                const price = parseFloat(sel.options[sel.selectedIndex]?.dataset.price) || 0;
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                subtotal += (price * qty);
+                const isFree = row.querySelector('.item-free').checked;
+                if (!isFree) {
+                    const sel = row.querySelector('.item-sel');
+                    const price = parseFloat(sel.options[sel.selectedIndex]?.dataset.price) || 0;
+                    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                    subtotal += (price * qty);
+                }
             });
             const disc = parseFloat(document.getElementById('oDiscount').value) || 0;
             const total = subtotal * (1 - (disc / 100));
@@ -674,15 +678,33 @@ window.runCalc = () => {
 
     if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
+        
+        // Define your colors here
+        const statusColors = {
+            "New": "#3b82f6",                // Blue
+            "Processing": "#f59e0b",         // Amber/Orange
+            "Ready for Pick up": "#8b5cf6",  // Purple
+            "Ready to Ship": "#06b6d4",      // Cyan
+            "Shipped": "#10b981",            // Green
+            "Picked up": "#64748b",          // Slate/Grey
+            "Delivered": "#059669"           // Dark Green
+        };
+
         container.innerHTML = statuses.map(status => {
             const filtered = items.filter(i => (i.status || "New") === status);
             if (filtered.length === 0) return ''; 
+
+            const bgColor = statusColors[status] || "#64748b"; // Fallback color
+
             return `
                 <div class="status-group" style="margin-top: 20px;">
-                    <div style="background:var(--primary); color:white; padding:5px 10px; border-radius:5px; font-size:10px; display:inline-block; margin-bottom:10px;">${status.toUpperCase()}</div>
+                    <div style="background:${bgColor}; color:white; padding:5px 12px; border-radius:15px; font-size:10px; font-weight:bold; display:inline-block; margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        ${status.toUpperCase()}
+                    </div>
                     ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
                 </div>`;
         }).join('');
+
     } else {
         container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
     }
