@@ -254,28 +254,41 @@
         const PRINT_STYLES = ["Sublimation Full", "Sublimation Small", "T-Shirt Left Chest", "T-Shirt Center Chest", "T-Shirt Full Front", "T-Shirt Oversize Front/Back","T-Shirt Back Collar","T-Shirt Upper Back","T-Shirt Full Back","T-Shirt Sleeve"];
         // FIREBASE SYNC
         onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
-        onSnapshot(collection(db, "orders"), (s) => { store.orders = s.docs.map(d=>({id:d.id,...d.data()})); render('orders'); });
-       // --- FIX: Corrected Listeners ---
-        onSnapshot(collection(db, "materials"), (s) => { 
-            store.materials = s.docs.map(d=>({id:d.id,...d.data()})); 
-            render('materials'); 
-            updateCalcDrops(); 
+        // Orders by Newest First
+        onSnapshot(collection(db, "orders"), (s) => {
+            store.orders = s.docs.map(d => ({id: d.id, ...d.data()}))
+                .sort((a, b) => b.timestamp - a.timestamp); // Assumes you save a timestamp
+            render('orders');
+        });       // --- FIX: Corrected Listeners ---
+       // Materials
+        onSnapshot(collection(db, "materials"), (s) => {
+            store.materials = s.docs.map(d => ({id: d.id, ...d.data()}))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            render('materials');
+            updateCalcDrops();
         });
 
-        onSnapshot(collection(db, "inventory"), (s) => { 
-            store.inventory = s.docs.map(d => ({id: d.id, ...d.data()})); 
-            render('inventory'); 
-            updateCalcDrops(); 
+        // Inventory
+        onSnapshot(collection(db, "inventory"), (s) => {
+            store.inventory = s.docs.map(d => ({id: d.id, ...d.data()}))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            render('inventory');
+            updateCalcDrops();
         });
 
-        onSnapshot(collection(db, "masterCosts"), (s) => { 
-            store.masterCosts = s.docs.map(d=>({id:d.id,...d.data()})); 
-            render('masterCosts'); 
-            // This is the line you were missing to make Products show in Orders:
-            updateOrderDrops(); 
+        // Specs
+        onSnapshot(collection(db, "specs"), (s) => {
+            store.specs = s.docs.map(d => ({id: d.id, ...d.data()}))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            render('specs');
         });
-        onSnapshot(collection(db, "specs"), (s) => { store.specs = s.docs.map(d=>({id:d.id,...d.data()})); render('specs'); });
 
+        // Products (Master Costs)
+        onSnapshot(collection(db, "masterCosts"), (s) => {
+            store.masterCosts = s.docs.map(d => ({id: d.id, ...d.data()}))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            render('costs');
+        });
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
 
         window.saveBizSettings = async () => { await setDoc(doc(db,"settings","business"), { labor:document.getElementById('lRate').value, markup:document.getElementById('mUp').value, tax:document.getElementById('tRate').value }); runCalc(); };
