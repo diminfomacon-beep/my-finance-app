@@ -284,15 +284,12 @@
         });
 
         // Products (Master Costs)
-        onSnapshot(collection(db, "masterCosts"), (s) => {
+       onSnapshot(collection(db, "masterCosts"), (s) => {
             store.masterCosts = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => {
-                    // This checks for 'name' OR 'prodName' just in case
-                    const nameA = a.name || a.prodName || "";
-                    const nameB = b.name || b.prodName || "";
-                    return nameA.localeCompare(nameB);
-                });
-            render('costs');
+                .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            
+            render('costs'); 
+            updateOrderDrops(); // <--- THIS REFRESHES THE DROPDOWN IN THE ORDER FORM
         });
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
 
@@ -443,27 +440,30 @@
                 document.getElementById('spec-styles-container').innerHTML = '';
                 toggleForm('spec-form');
             };       
-        window.addOrderItemRow = (data = {name: '', qty: 1}) => {
+       window.addOrderItemRow = (data = {name: '', qty: 1}) => {
             const container = document.getElementById('order-items-container');
             const d = document.createElement('div');
             d.className = 'material-row';
             
-            // Safety check: if masterCosts hasn't loaded yet, use an empty array
+            // Ensure we have an array to work with
             const products = store.masterCosts || [];
             
+            // Create the options, ensuring we handle missing prices gracefully
             const productOptions = products.map(c => {
-                // Clean the price string (remove $ and commas) so math works
-                const cleanPrice = c.price ? c.price.toString().replace(/[$,]/g, '') : "0";
+                // Remove symbols like $ or , so the math doesn't break later
+                const rawPrice = c.price ? String(c.price).replace(/[$,]/g, '') : "0";
                 const isSelected = (c.name === data.name) ? 'selected' : '';
-                return `<option value="${c.name}" data-price="${cleanPrice}" ${isSelected}>${c.name} (${c.price})</option>`;
+                return `<option value="${c.name}" data-price="${rawPrice}" ${isSelected}>
+                    ${c.name} (${c.price || '$0.00'})
+                </option>`;
             }).join('');
 
             d.innerHTML = `
-                <select class="item-sel" onchange="calculateOrderTotal()">
+                <select class="item-sel" onchange="calculateOrderTotal()" style="flex:2">
                     <option value="" disabled ${!data.name ? 'selected' : ''}>Select Product...</option>
                     ${productOptions}
                 </select>
-                <input type="number" class="item-qty" value="${data.qty}" min="1" oninput="calculateOrderTotal()">
+                <input type="number" class="item-qty" value="${data.qty}" min="1" oninput="calculateOrderTotal()" style="flex:0.5">
                 <button type="button" class="btn-danger" onclick="this.parentElement.remove();calculateOrderTotal();">✕</button>
             `;
             container.appendChild(d);
@@ -672,10 +672,13 @@ function renderCard(i, tab, editLabel) {
         window.remove = async (c, id) => { if(confirm("Delete permanently?")) await deleteDoc(doc(db, c, id)); };
 window.updateOrderDrops = () => {
     document.querySelectorAll('.item-sel').forEach(sel => {
-        const currentVal = sel.value; // Remember what was selected
-        const options = store.masterCosts.map(c => {
-            const cleanPrice = c.price ? c.price.toString().replace(/[$,]/g, '') : "0";
-            return `<option value="${c.name}" data-price="${cleanPrice}" ${c.name === currentVal ? 'selected' : ''}>${c.name} (${c.price})</option>`;
+        const currentVal = sel.value; 
+        const products = store.masterCosts || [];
+        const options = products.map(c => {
+            const rawPrice = c.price ? String(c.price).replace(/[$,]/g, '') : "0";
+            return `<option value="${c.name}" data-price="${rawPrice}" ${c.name === currentVal ? 'selected' : ''}>
+                ${c.name} (${c.price || '$0.00'})
+            </option>`;
         }).join('');
         
         sel.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Product...</option>` + options;
