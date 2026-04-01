@@ -296,13 +296,15 @@
         window.saveBizSettings = async () => { await setDoc(doc(db,"settings","business"), { labor:document.getElementById('lRate').value, markup:document.getElementById('mUp').value, tax:document.getElementById('tRate').value }); runCalc(); };
 
         window.saveOrder = async () => {
+            // 1. Collect all items from the dynamic rows
             const items = [];
             document.querySelectorAll('#order-items-container .material-row').forEach(row => {
                 const sel = row.querySelector('.item-sel');
+                const qtyInp = row.querySelector('.item-qty');
                 if (sel && sel.value) {
                     items.push({
                         name: sel.value,
-                        qty: row.querySelector('.item-qty').value
+                        qty: qtyInp.value || 1
                     });
                 }
             });
@@ -313,42 +315,46 @@
                 return;
             }
 
-            const p = {
+            // 2. Build the data object carefully
+            // We remove fields like 'oProdDrop' and 'oQty' if they aren't in your HTML anymore
+            const orderData = {
                 name: nameVal,
                 items: items,
-                total: document.getElementById('oTotal').value,
+                total: document.getElementById('oTotal').value || "$0.00",
                 discount: document.getElementById('oDiscount').value || 0,
                 status: document.getElementById('oStatus').value || "New",
                 addr: document.getElementById('oAddr').value || "", 
                 email: document.getElementById('oEmail').value || "", 
                 phone: document.getElementById('oPhone').value || "", 
-                prod: document.getElementById('oProdDrop').value || "", 
-                qty: document.getElementById('oQty').value || 0, 
                 desc: document.getElementById('oDesc').value || "",
-                timestamp: Date.now() // Added for the alphabetical/date sorting
+                timestamp: Date.now() 
             };
 
             try {
                 if (activeEdits.order) { 
-                    await updateDoc(doc(db, "orders", activeEdits.order), p); 
+                    await updateDoc(doc(db, "orders", activeEdits.order), orderData); 
                     activeEdits.order = null; 
                     document.getElementById('orderBtn').innerText = "Save Order"; 
                 } else { 
-                    await addDoc(collection(db, "orders"), p); 
+                    await addDoc(collection(db, "orders"), orderData); 
                 }
 
-                // Clear the form fields
-                ['oName','oAddr','oEmail','oPhone','oQty','oDesc','oDiscount','oTotal'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.value = '';
-                });
+                // 3. Reset the form properly
+                document.getElementById('oName').value = '';
+                document.getElementById('oAddr').value = '';
+                document.getElementById('oEmail').value = '';
+                document.getElementById('oPhone').value = '';
+                document.getElementById('oDesc').value = '';
+                document.getElementById('oDiscount').value = '0';
+                document.getElementById('oTotal').value = '$0.00';
                 
                 document.getElementById('order-items-container').innerHTML = '';
-                addOrderItemRow(); // Put one fresh row back
+                addOrderItemRow(); // Re-add one empty row
                 toggleForm('order-form');
+                
             } catch (err) {
-                console.error("Save Error:", err);
-                alert("Check console: " + err.message);
+                console.error("Detailed Save Error:", err);
+                alert("Firebase Error: " + err.message);
             }
         };
    
@@ -710,40 +716,59 @@ function renderCard(i, tab, editLabel) {
             document.querySelectorAll('.list-item-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
         };
 
-        window.remove = async (c, id) => { if(confirm("Delete permanently?")) await deleteDoc(doc(db, c, id)); };
-window.updateOrderDrops = () => {
-    document.querySelectorAll('.item-sel').forEach(sel => {
-        const currentVal = sel.value; 
-        const products = store.masterCosts || [];
-        const options = products.map(c => {
-            const rawPrice = c.price ? String(c.price).replace(/[$,]/g, '') : "0";
-            return `<option value="${c.name}" data-price="${rawPrice}" ${c.name === currentVal ? 'selected' : ''}>
-                ${c.name} (${c.price || '$0.00'})
-            </option>`;
-        }).join('');
-        
-        sel.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Product...</option>` + options;
-    });
-};
-window.updateCalcDrops = () => {
-    document.querySelectorAll('.calc-sel').forEach(s => {
-        const savedName = s.value; // Keep track of what was already selected
-        
-        const allOptions = [
-            ...(store.materials || []),
-            ...(store.inventory || [])
-        ];
+        window.remove = async (tab, id) => { 
+            if(confirm("Delete permanently?")) {
+                try {
+                    // Map the tab name to the actual Firebase Collection name
+                    const collectionMap = {
+                        'orders': 'orders',
+                        'materials': 'materials',
+                        'inventory': 'inventory',
+                        'specs': 'specs',
+                        'costs': 'masterCosts' // This was likely the missing link
+                    };
+                    
+                    const collectionName = collectionMap[tab] || tab;
+                    await deleteDoc(doc(db, collectionName, id)); 
+                } catch (err) {
+                    console.error("Delete Error:", err);
+                    alert("Delete failed: " + err.message);
+                }
+            }
+        };
+        window.updateOrderDrops = () => {
+            document.querySelectorAll('.item-sel').forEach(sel => {
+                const currentVal = sel.value; 
+                const products = store.masterCosts || [];
+                const options = products.map(c => {
+                    const rawPrice = c.price ? String(c.price).replace(/[$,]/g, '') : "0";
+                    return `<option value="${c.name}" data-price="${rawPrice}" ${c.name === currentVal ? 'selected' : ''}>
+                        ${c.name} (${c.price || '$0.00'})
+                    </option>`;
+                }).join('');
+                
+                sel.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Product...</option>` + options;
+            });
+        };
+        window.updateCalcDrops = () => {
+            document.querySelectorAll('.calc-sel').forEach(s => {
+                const savedName = s.value; // Keep track of what was already selected
+                
+                const allOptions = [
+                    ...(store.materials || []),
+                    ...(store.inventory || [])
+                ];
 
-        s.innerHTML = `<option value="" disabled>Select Item...</option>` + 
-            allOptions.map(opt => {
-                // Use NAME as the value so each row is unique
-                // Use data-cost to store the math value
-                return `<option value="${opt.name}" data-cost="${opt.cost || 0}" ${opt.name === savedName ? 'selected' : ''}>
-                    ${opt.name} ($${opt.cost || 0})
-                </option>`;
-            }).join('');
-    });
-};
+                s.innerHTML = `<option value="" disabled>Select Item...</option>` + 
+                    allOptions.map(opt => {
+                        // Use NAME as the value so each row is unique
+                        // Use data-cost to store the math value
+                        return `<option value="${opt.name}" data-cost="${opt.cost || 0}" ${opt.name === savedName ? 'selected' : ''}>
+                            ${opt.name} ($${opt.cost || 0})
+                        </option>`;
+                    }).join('');
+            });
+        };
         window.showPage = (id, el) => {
             document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById(id).classList.add('active'); el.classList.add('active');
