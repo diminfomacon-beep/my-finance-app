@@ -286,7 +286,12 @@
         // Products (Master Costs)
         onSnapshot(collection(db, "masterCosts"), (s) => {
             store.masterCosts = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => a.name.localeCompare(b.name));
+                .sort((a, b) => {
+                    // This checks for 'name' OR 'prodName' just in case
+                    const nameA = a.name || a.prodName || "";
+                    const nameB = b.name || b.prodName || "";
+                    return nameA.localeCompare(nameB);
+                });
             render('costs');
         });
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
