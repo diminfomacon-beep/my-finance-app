@@ -740,13 +740,16 @@ window.render = (tab) => {
     const editLabel = labels[tab];
 
     // --- INVENTORY TAB (Categorized) ---
+    // --- INVENTORY TAB (Categorized) ---
     if (tab === 'inventory') {
         const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
 
         container.innerHTML = categories.map(cat => {
             const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
+            
+            // REMOVED 'open' attribute so they stay closed by default
             return `
-                <details class="category-group" style="margin-top: 15px;" open>
+                <details class="category-group" style="margin-top: 15px;">
                     <summary style="list-style: none; cursor: pointer; outline: none;">
                         <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
                             <span>${cat.toUpperCase()}</span>
@@ -879,11 +882,24 @@ window.updateInvCatDropdown = () => {
 };
         window.applySearch = () => {
             const q = document.getElementById('tabSearch').value.toLowerCase();
-            document.querySelectorAll('.list-item-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
-                        // Add this to the bottom of applySearch
+            
+            document.querySelectorAll('.list-item-card').forEach(c => { 
+                const isMatch = c.innerText.toLowerCase().includes(q);
+                c.style.display = isMatch ? 'block' : 'none'; 
+            });
+
+            // Auto-open categories that have matches, close them if they don't (when searching)
             document.querySelectorAll('details').forEach(det => {
                 const hasVisibleItems = [...det.querySelectorAll('.list-item-card')].some(card => card.style.display !== 'none');
-                det.style.display = hasVisibleItems ? 'block' : 'none';
+                
+                if (q.length > 0) {
+                    det.open = hasVisibleItems; // Open if matches found
+                    det.style.display = hasVisibleItems ? 'block' : 'none'; // Hide category entirely if no matches
+                } else {
+                    // When search is cleared, collapse them again (as per your request)
+                    det.open = false; 
+                    det.style.display = 'block';
+                }
             });
         };
 
