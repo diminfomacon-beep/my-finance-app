@@ -291,46 +291,58 @@ Please proceed with **Part 2/3** (the script) whenever you're ready, and I will 
         // FIREBASE SYNC
         onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
         // Orders by Newest First
-       onSnapshot(collection(db, "orders"), (snapshot) => {
+       // Orders (Already mostly correct in your snippet)
+       // Helper to safely get the active tab name
+        const getActiveTab = () => {
+            const activeEl = document.querySelector('.nav-item.active');
+            return activeEl ? activeEl.innerText.toLowerCase() : '';
+        };
+
+        // Orders
+        onSnapshot(collection(db, "orders"), (snapshot) => {
             store.orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // IMPORTANT: You must trigger a re-render here!
-            const activeTab = document.querySelector('.nav-item.active').innerText.toLowerCase();
-            if (activeTab === 'orders') {
+            if (getActiveTab() === 'orders') {
                 window.render('orders');
             }
         });
-       // Materials
+
+        // Materials
         onSnapshot(collection(db, "materials"), (s) => {
-            store.materials = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => a.name.localeCompare(b.name));
-            render('materials');
+            store.materials = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.name.localeCompare(b.name));
             updateCalcDrops();
+            if (getActiveTab() === 'materials') {
+                window.render('materials');
+            }
         });
 
         // Inventory
         onSnapshot(collection(db, "inventory"), (s) => {
-            store.inventory = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => a.name.localeCompare(b.name));
-            render('inventory');
+            store.inventory = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.name.localeCompare(b.name));
             updateCalcDrops();
-            updateInvCatDropdown(); // <--- ADD THIS LINE
+            updateInvCatDropdown();
+            if (getActiveTab() === 'inventory') {
+                window.render('inventory');
+            }
         });
 
         // Specs
         onSnapshot(collection(db, "specs"), (s) => {
-            store.specs = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => a.name.localeCompare(b.name));
-            render('specs');
+            store.specs = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.name.localeCompare(b.name));
+            if (getActiveTab() === 'specs') {
+                window.render('specs');
+            }
         });
 
         // Products (Master Costs)
-       onSnapshot(collection(db, "masterCosts"), (s) => {
-            store.masterCosts = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+       // Products (Master Costs)
+        onSnapshot(collection(db, "masterCosts"), (s) => {
+            store.masterCosts = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            updateOrderDrops();
             
-            render('costs'); 
-            updateOrderDrops(); // <--- THIS REFRESHES THE DROPDOWN IN THE ORDER FORM
+            // CHANGED: Use 'products' to match the text inside your nav-item
+            if (getActiveTab() === 'products') {
+                window.render('costs'); 
+            }
         });
         window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
 
@@ -744,14 +756,14 @@ window.render = (tab) => {
     const container = document.getElementById(targetId);
     if (!container) return;
     
-    // 1. Clear ONLY this container
+    // 1. Clear ONLY the target container
     container.innerHTML = ''; 
 
-    // 2. Get the items, fallback to empty array if Firestore hasn't loaded
+    // 2. Get items and handle 'costs' vs 'masterCosts' naming
     let items = (tab === 'costs') ? store.masterCosts : store[tab];
     items = items || [];
 
-    // 3. Stop if no items (prevents inventory math from running on nothing)
+    // 3. Early exit if empty
     if (items.length === 0) {
         container.innerHTML = `<p style="text-align:center; padding:20px; color:#64748b; font-size:12px;">No ${tab} records found.</p>`;
         return;
@@ -760,19 +772,13 @@ window.render = (tab) => {
     const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
     const editLabel = labels[tab];
 
-    // --- YOUR INVENTORY/ORDER LOGIC CONTINUES HERE ---
-    if (tab === 'inventory') {
-        // ... (the math we fixed earlier)
-    }
-    // ... rest of function
-
-    // --- INVENTORY TAB ---
+    // --- INVENTORY TAB (With Categories) ---
     if (tab === 'inventory') {
         const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
         container.innerHTML = categories.map(cat => {
             const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
             return `
-                <details class="category-group" style="margin-top: 15px;" open>
+                <details class="category-group" style="margin-top: 15px;">
                     <summary style="list-style: none; cursor: pointer; outline: none;">
                         <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
                             <span>${cat.toUpperCase()}</span>
@@ -785,7 +791,7 @@ window.render = (tab) => {
                 </details>`;
         }).join('');
 
-    // --- ORDERS TAB ---
+    // --- ORDERS TAB (With Status Groups) ---
     } else if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
         const statusColors = {
@@ -797,10 +803,10 @@ window.render = (tab) => {
             const filtered = items.filter(i => (i.status || "New") === status);
             if (filtered.length === 0) return ''; 
             const bgColor = statusColors[status] || "#64748b";
-            const isClosed = ["Shipped", "Picked up", "Delivered"].includes(status) ? "" : "open";
+            const isOpen = !["Shipped", "Picked up", "Delivered"].includes(status) ? "open" : "";
 
             return `
-                <details class="status-group" style="margin-top: 15px;" ${isClosed}>
+                <details class="status-group" style="margin-top: 15px;" ${isOpen}>
                     <summary style="list-style: none; cursor: pointer; outline: none;">
                         <div style="background:${bgColor}; color:white; padding:8px 15px; border-radius:10px; font-size:11px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
                             <span>${status.toUpperCase()}</span>
@@ -814,7 +820,7 @@ window.render = (tab) => {
         }).join('');
 
     } else {
-        // --- ALL OTHER TABS ---
+        // --- ALL OTHER TABS (Materials, Specs, Costs) ---
         container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
     }
 
