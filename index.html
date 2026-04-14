@@ -439,10 +439,23 @@
             toggleForm('mat-form');
         };
 
-     window.saveInventory = async () => {
+    window.saveInventory = async () => {
+            const sel = document.getElementById('invCat');
+            const newCatInp = document.getElementById('newCatInput');
+            
+            // 1. Get the value from the dropdown
+            let finalCategory = sel.value;
+
+            // 2. If "NEW_CAT" is selected, use the text from the input box instead
+            if (finalCategory === "NEW_CAT") {
+                const typedValue = newCatInp.value.trim();
+                // Fallback to "Uncategorized" if the text box was left empty
+                finalCategory = typedValue || "Uncategorized";
+            }
+
             const p = { 
                 name: document.getElementById('invName').value,
-                category: document.getElementById('invCat').value || "Uncategorized", // Default if empty
+                category: finalCategory, 
                 v1Name: document.getElementById('v1Name').value || "",
                 v1Qty: parseInt(document.getElementById('v1Qty').value) || 0,
                 v2Name: document.getElementById('v2Name').value || "",
@@ -450,22 +463,36 @@
                 cost: document.getElementById('invCost').value || 0
             };
             p.totalQty = p.v1Qty + p.v2Qty;
-        
-            if(!p.name) return;
-        
-            if(activeEdits.inv) { 
-                await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
-                activeEdits.inv = null; 
-                document.getElementById('invBtn').innerText = "Save Stock"; 
-            } else { 
-                await addDoc(collection(db, "inventory"), p); 
+
+            if(!p.name) {
+                alert("Please enter an item name");
+                return;
             }
-            
-            // Reset fields including category
-            ['invName', 'invCat', 'v1Name', 'v1Qty', 'v2Name', 'v2Qty', 'invCost'].forEach(id => {
-                document.getElementById(id).value = (id.includes('Qty') || id.includes('Cost')) ? '0' : '';
-            });
-            toggleForm('inv-form');
+
+            try {
+                if(activeEdits.inv) { 
+                    await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
+                    activeEdits.inv = null; 
+                    document.getElementById('invBtn').innerText = "Save Stock"; 
+                } else { 
+                    await addDoc(collection(db, "inventory"), p); 
+                }
+                
+                // --- RESET UI ---
+                newCatInp.value = "";
+                newCatInp.style.display = "none";
+                sel.value = ""; // Reset dropdown
+                
+                ['invName', 'v1Name', 'v1Qty', 'v2Name', 'v2Qty', 'invCost'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = (id.includes('Qty') || id.includes('Cost')) ? '0' : '';
+                });
+                
+                toggleForm('inv-form');
+            } catch(e) { 
+                console.error("Save Error:", e);
+                alert("Error saving: " + e.message);
+            }
         };
         // Function to add a new Style + Size row
         window.addSpecStyleRow = (data = {style: 'Sublimation', size: ''}) => {
@@ -627,8 +654,8 @@
                 
                 // Scroll to top so the user sees the open form
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            if(type==='mat'){ 
+           if(type=== }
+            'mat'){ 
                 // Change store.catalog to store.materials
                 const m = store.materials.find(x => x.id === id); 
                 if(m) {
@@ -643,11 +670,18 @@
            if(type==='inv'){ 
                 const i = store.inventory.find(x => x.id === id); 
                 document.getElementById('invName').value = i.name; 
+                
+                // Set the dropdown to the category. 
+                // Note: If the category is brand new, updateInvCatDropdown() 
+                // must have run first for this to find the match.
+                document.getElementById('invCat').value = i.category || "";
+                
                 document.getElementById('v1Name').value = i.v1Name || "";
                 document.getElementById('v1Qty').value = i.v1Qty || 0;
                 document.getElementById('v2Name').value = i.v2Name || "";
                 document.getElementById('v2Qty').value = i.v2Qty || 0;
                 document.getElementById('invCost').value = i.cost || 0; 
+                
                 activeEdits.inv = id; 
                 document.getElementById('invBtn').innerText = "Update Stock"; 
                 if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
