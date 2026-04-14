@@ -715,40 +715,46 @@ window.runCalc = () => {
 };
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
-    window.render = (tab) => {
-        const targets = { 'orders': 'order-list', 'materials': 'mat-list', 'inventory': 'inv-list', 'specs': 'spec-list', 'costs': 'cost-list' };
-        const container = document.getElementById(targets[tab]);
-        if (!container) return;
+window.render = (tab) => {
+    const targets = { 
+        'orders': 'order-list', 
+        'materials': 'mat-list', 
+        'inventory': 'inv-list', 
+        'specs': 'spec-list', 
+        'costs': 'cost-list' 
+    };
     
-        let items = (tab === 'costs') ? store.masterCosts : store[tab];
-        items = items || [];
-        const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
-        const editLabel = labels[tab];
-    
-        if (tab === 'inventory') {
-            // 1. Get unique categories
-            const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
-    
-            container.innerHTML = categories.map(cat => {
-                const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
-                
-                return `
-                    <details class="category-group" style="margin-top: 15px;" open>
-                        <summary style="list-style: none; cursor: pointer; outline: none;">
-                            <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                                <span>${cat.toUpperCase()}</span>
-                                <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
-                            </div>
-                        </summary>
-                        <div style="padding-top: 10px;">
-                            ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
-                        </div>
-                    </details>`;
-            }).join('');
+    const container = document.getElementById(targets[tab]);
+    if (!container) return;
 
-    if (tab === 'orders') {
+    let items = (tab === 'costs') ? store.masterCosts : store[tab];
+    items = items || [];
+    const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
+    const editLabel = labels[tab];
+
+    // --- INVENTORY TAB (Categorized) ---
+    if (tab === 'inventory') {
+        const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
+
+        container.innerHTML = categories.map(cat => {
+            const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
+            return `
+                <details class="category-group" style="margin-top: 15px;" open>
+                    <summary style="list-style: none; cursor: pointer; outline: none;">
+                        <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                            <span>${cat.toUpperCase()}</span>
+                            <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
+                        </div>
+                    </summary>
+                    <div style="padding-top: 10px;">
+                        ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
+                    </div>
+                </details>`;
+        }).join('');
+
+    // --- ORDERS TAB (Status Grouped) ---
+    } else if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
-        
         const statusColors = {
             "New": "#3b82f6",
             "Processing": "#f59e0b",
@@ -764,10 +770,11 @@ window.runCalc = () => {
             if (filtered.length === 0) return ''; 
 
             const bgColor = statusColors[status] || "#64748b";
+            // Logic: Collapse 'Shipped', 'Picked up', and 'Delivered' by default to clear clutter
+            const isClosed = ["Shipped", "Picked up", "Delivered"].includes(status) ? "" : "open";
 
-            // Using <details> makes the collapsing native and smooth on mobile
             return `
-                <details class="status-group" style="margin-top: 15px;" open>
+                <details class="status-group" style="margin-top: 15px;" ${isClosed}>
                     <summary style="list-style: none; cursor: pointer; outline: none;">
                         <div style="background:${bgColor}; color:white; padding:8px 15px; border-radius:10px; font-size:11px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <span>${status.toUpperCase()}</span>
@@ -780,10 +787,11 @@ window.runCalc = () => {
                 </details>`;
         }).join('');
 
-
+    // --- ALL OTHER TABS ---
     } else {
         container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
     }
+
     applySearch();
 };
 function renderCard(i, tab, editLabel) {
