@@ -150,7 +150,13 @@
                 <h3 id="invHeader"><span>+ Add Inventory Item</span> <span class="toggle-icon">+</span></h3>
                 <div id="inv-form" class="collapsible-content" onclick="event.stopPropagation()">
                     <input type="text" id="invName" placeholder="Item Name (e.g. 20oz Tumbler)">
-                    <input type="text" id="invCat" placeholder="Category (e.g. Tumblers, Shirts, Gift Boxes)">                    
+
+                    <select id="invCat" onchange="checkNewCat(this.value)" style="margin-bottom:10px;">
+                        <option value="" disabled selected>Select Category...</option>
+                        <option value="NEW_CAT" style="font-weight:bold; color:var(--primary);">+ Add New Category</option>
+                    </select>
+
+                    <input type="text" id="newCatInput" placeholder="Enter New Category Name" style="display:none; border:2px solid var(--primary);">                   
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <div>
                             <label>Variant 1 Name</label>
@@ -297,6 +303,7 @@
                 .sort((a, b) => a.name.localeCompare(b.name));
             render('inventory');
             updateCalcDrops();
+            updateInvCatDropdown(); // <--- ADD THIS LINE
         });
 
         // Specs
@@ -846,6 +853,30 @@ function renderCard(i, tab, editLabel) {
         </div>
     </div>`;
 }
+// Function to show/hide the "New Category" input box
+window.checkNewCat = (val) => {
+    const newCatInput = document.getElementById('newCatInput');
+    newCatInput.style.display = (val === "NEW_CAT") ? "block" : "none";
+    if(val === "NEW_CAT") newCatInput.focus();
+};
+
+// Function to refresh the dropdown choices based on existing data
+window.updateInvCatDropdown = () => {
+    const sel = document.getElementById('invCat');
+    if (!sel) return;
+    
+    const currentVal = sel.value;
+    // Get unique categories from store.inventory
+    const categories = [...new Set(store.inventory.map(i => i.category || "Uncategorized"))].sort();
+    
+    let html = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Category...</option>`;
+    categories.forEach(cat => {
+        html += `<option value="${cat}">${cat}</option>`;
+    });
+    html += `<option value="NEW_CAT" style="font-weight:bold; color:var(--primary);">+ Add New Category</option>`;
+    
+    sel.innerHTML = html;
+};
         window.applySearch = () => {
             const q = document.getElementById('tabSearch').value.toLowerCase();
             document.querySelectorAll('.list-item-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
