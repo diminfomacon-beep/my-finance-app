@@ -149,32 +149,25 @@
             <div class="card" onclick="toggleForm('inv-form')">
                 <h3 id="invHeader"><span>+ Add Inventory Item</span> <span class="toggle-icon">+</span></h3>
                 <div id="inv-form" class="collapsible-content" onclick="event.stopPropagation()">
-                    <input type="text" id="invName" placeholder="Item Name (e.g. 20oz Tumbler)">
+                    <input type="text" id="invName" placeholder="Item Name (e.g. Gildan G500 Shirt)">
 
                     <select id="invCat" onchange="checkNewCat(this.value)" style="margin-bottom:10px;">
                         <option value="" disabled selected>Select Category...</option>
                         <option value="NEW_CAT" style="font-weight:bold; color:var(--primary);">+ Add New Category</option>
                     </select>
+                    <input type="text" id="newCatInput" placeholder="Enter New Category Name" style="display:none; border:2px solid var(--primary); margin-bottom:10px;">
 
-                    <input type="text" id="newCatInput" placeholder="Enter New Category Name" style="display:none; border:2px solid var(--primary);">                   
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <div>
-                            <label>Variant 1 Name</label>
-                            <input type="text" id="v1Name" placeholder="e.g. White">
-                            <label>Variant 1 Qty</label>
-                            <input type="number" id="v1Qty" value="0">
-                        </div>
-                        <div>
-                            <label>Variant 2 Name</label>
-                            <input type="text" id="v2Name" placeholder="e.g. Shimmer">
-                            <label>Variant 2 Qty</label>
-                            <input type="number" id="v2Qty" value="0">
-                        </div>
-                    </div>
-                
-                    <label>Base Cost (for calculator)</label>
+                    <div id="variant-list" style="margin-bottom: 15px;"></div>
+
+                    <button type="button" class="btn-action" onclick="addVariantRow()" style="width:100%; margin-bottom:15px; background:#f0f0f0; color:#333;">
+                        + Add Size/Color Variant
+                    </button>
+
+                    <label>Base Cost (Default for Calculator)</label>
                     <input type="number" id="invCost" step="0.01" placeholder="0.00">
+                    
                     <button class="btn-primary" id="invBtn" onclick="saveInventory()">Save Stock</button>
+                </div>tton class="btn-primary" id="invBtn" onclick="saveInventory()">Save Stock</button>
                 </div>
             </div>
             <div id="inv-list"></div>
@@ -733,7 +726,59 @@
     document.getElementById('active-materials').appendChild(d); 
     runCalc();
 };
+window.addVariantRow = (data = { name: '', qty: 0, cost: 0 }) => {
+    const container = document.getElementById('variant-list');
+    const rowId = Date.now() + Math.random(); // Unique ID for removal
+    const div = document.createElement('div');
+    div.className = 'variant-entry';
+    div.dataset.id = rowId;
+    div.style = "display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center;";
+    
+    div.innerHTML = `
+        <input type="text" class="v-name" placeholder="Variant (e.g. XL White)" value="${data.name}">
+        <input type="number" class="v-qty" placeholder="Qty" value="${data.qty}">
+        <input type="number" class="v-cost" placeholder="Price" step="0.01" value="${data.cost || ''}">
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">✕</button>
+    `;
+    container.appendChild(div);
+};
 
+window.saveInventory = async () => {
+    const name = document.getElementById('invName').value;
+    const sel = document.getElementById('invCat');
+    const cat = (sel.value === "NEW_CAT") ? document.getElementById('newCatInput').value : sel.value;
+    
+    // Collect all variants from the list
+    const variants = [];
+    document.querySelectorAll('#variant-list .variant-entry').forEach(row => {
+        variants.push({
+            name: row.querySelector('.v-name').value,
+            qty: parseInt(row.querySelector('.v-qty').value) || 0,
+            cost: parseFloat(row.querySelector('.v-cost').value) || 0
+        });
+    });
+
+    const p = { 
+        name, 
+        category: cat || "Uncategorized", 
+        variants, 
+        cost: document.getElementById('invCost').value || 0 // Overall base cost
+    };
+
+    if(!p.name || variants.length === 0) return alert("Please add a name and at least one variant.");
+
+    if(activeEdits.inv) { 
+        await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
+        activeEdits.inv = null; 
+    } else { 
+        await addDoc(collection(db, "inventory"), p); 
+    }
+    
+    // Reset Form
+    document.getElementById('invName').value = '';
+    document.getElementById('variant-list').innerHTML = '';
+    toggleForm('inv-form');
+};
 window.runCalc = () => {
     let mTotal = 0;
     document.querySelectorAll('#active-materials .material-row').forEach(row => { 
@@ -774,22 +819,16 @@ window.render = (tab) => {
     const editLabel = labels[tab];
 
     // --- INVENTORY TAB (Categorized) ---
-    // --- INVENTORY TAB (Categorized) ---
     if (tab === 'inventory') {
-        const categories = [...new Set(items.map(i => i.category || "A-Uncategorized"))].sort();
+        const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
 
         container.innerHTML = categories.map(cat => {
-            const filtered = items.filter(i => (i.category || "A-Uncategorized") === cat);
-            
-            // REMOVED 'open' attribute so they stay closed by default
+            const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
             return `
                 <details class="category-group" style="margin-top: 15px;">
                     <summary style="list-style: none; cursor: pointer; outline: none;">
                         <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <span>${cat.toUpperCase()}</span>
-                                <button onclick="event.stopPropagation(); renameCategory('${cat}')" style="background:none; border:none; color:white; cursor:pointer; margin-left:10px; font-size:14px;">✏️</button>
-                            </div>
+                            <span>${cat.toUpperCase()}</span>
                             <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
                         </div>
                     </summary>
@@ -803,13 +842,8 @@ window.render = (tab) => {
     } else if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
         const statusColors = {
-            "New": "#3b82f6",
-            "Processing": "#f59e0b",
-            "Ready for Pick up": "#8b5cf6",
-            "Ready to Ship": "#06b6d4",
-            "Shipped": "#10b981",
-            "Picked up": "#64748b",
-            "Delivered": "#059669"
+            "New": "#3b82f6", "Processing": "#f59e0b", "Ready for Pick up": "#8b5cf6",
+            "Ready to Ship": "#06b6d4", "Shipped": "#10b981", "Picked up": "#64748b", "Delivered": "#059669"
         };
 
         container.innerHTML = statuses.map(status => {
@@ -817,13 +851,12 @@ window.render = (tab) => {
             if (filtered.length === 0) return ''; 
 
             const bgColor = statusColors[status] || "#64748b";
-            // Logic: Collapse 'Shipped', 'Picked up', and 'Delivered' by default to clear clutter
             const isClosed = ["Shipped", "Picked up", "Delivered"].includes(status) ? "" : "open";
 
             return `
                 <details class="status-group" style="margin-top: 15px;" ${isClosed}>
                     <summary style="list-style: none; cursor: pointer; outline: none;">
-                        <div style="background:${bgColor}; color:white; padding:8px 15px; border-radius:10px; font-size:11px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="background:${bgColor}; color:white; padding:8px 15px; border-radius:10px; font-size:11px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
                             <span>${status.toUpperCase()}</span>
                             <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length}</span>
                         </div>
@@ -868,17 +901,27 @@ function renderCard(i, tab, editLabel) {
     let detail = "";
 
     if (tab === 'inventory') {
-        let variantDetails = [];
-        if (i.v1Name) variantDetails.push(`${i.v1Name}: ${i.v1Qty || 0}`);
-        if (i.v2Name) variantDetails.push(`${i.v2Name}: ${i.v2Qty || 0}`);
+        const vars = i.variants || [];
+        const totalQty = vars.reduce((sum, v) => sum + v.qty, 0);
         
+        // Calculate the range
+        let priceDisplay = "$0.00";
+        if (vars.length > 0) {
+            const prices = vars.map(v => parseFloat(v.cost || 0));
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+            priceDisplay = (min === max) ? `$${min.toFixed(2)}` : `$${min.toFixed(2)} - $${max.toFixed(2)}`;
+        }
+
+        const variantDetails = vars.map(v => 
+            `<div style="font-size:10px; color:#64748b;">${v.name}: ${v.qty} @ $${parseFloat(v.cost).toFixed(2)}</div>`
+        ).join('');
+
         detail = `
             <div style="text-align: right;">
-                <div style="color: var(--accent); font-size: 14px;">Total: ${i.totalQty || 0}</div>
-                <div style="font-size: 10px; color: #64748b;">
-                    ${variantDetails.join(' | ')} <br>
-                    Cost: $${parseFloat(i.cost || 0).toFixed(2)}
-                </div>
+                <div style="color: var(--primary); font-weight: bold; font-size: 14px;">${priceDisplay}</div>
+                <div style="color: var(--accent); font-size: 11px; font-weight: bold;">Total: ${totalQty}</div>
+                <div style="margin-top:4px;">${variantDetails}</div>
             </div>
         `;
     } else if (tab === 'orders') {
