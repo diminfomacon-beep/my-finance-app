@@ -15,7 +15,7 @@
         .nav-item.active { color: #FEE84A; border-bottom: 3px solid var(--primary); }
         .container { padding: 15px; }
         .page { display: none; }
-        .page.active { display: block; }
+        .page.active { display: block !important; }
         .card { background: #CAE4DB; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .collapsible-content { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
         .collapsible-content.open { display: block; }
@@ -726,25 +726,31 @@ window.render = (tab) => {
         'costs': 'cost-list' 
     };
     
-    // --- FIX START: Only target the specific container ---
     const targetId = targets[tab];
     const container = document.getElementById(targetId);
     if (!container) return;
     
-    // Clear ONLY this container before rebuilding it
+    // 1. Clear ONLY this container
     container.innerHTML = ''; 
-    // --- FIX END ---
 
+    // 2. Get the items, fallback to empty array if Firestore hasn't loaded
     let items = (tab === 'costs') ? store.masterCosts : store[tab];
-    
-    // --- ADDED SAFETY: Don't try to loop if Firebase hasn't returned data yet ---
-    if (!items || items.length === 0) {
-        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#64748b; padding:20px;">No ${tab} found...</p>`;
+    items = items || [];
+
+    // 3. Stop if no items (prevents inventory math from running on nothing)
+    if (items.length === 0) {
+        container.innerHTML = `<p style="text-align:center; padding:20px; color:#64748b; font-size:12px;">No ${tab} records found.</p>`;
         return;
     }
 
     const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
     const editLabel = labels[tab];
+
+    // --- YOUR INVENTORY/ORDER LOGIC CONTINUES HERE ---
+    if (tab === 'inventory') {
+        // ... (the math we fixed earlier)
+    }
+    // ... rest of function
 
     // --- INVENTORY TAB ---
     if (tab === 'inventory') {
@@ -967,21 +973,33 @@ window.updateInvCatDropdown = () => {
             });
         };
         window.showPage = (id, el) => {
-            // 1. Hide all pages
-            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-            
-            // 2. Show the selected page
+            // 1. Hide every single page first
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none'; 
+            });
+
+            // 2. Show only the requested page
             const targetPage = document.getElementById(id);
-            if (targetPage) targetPage.classList.add('active');
+            if (targetPage) {
+                targetPage.classList.add('active');
+                targetPage.style.display = 'block';
+            }
 
             // 3. Update Nav UI
-            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
             if (el) el.classList.add('active');
 
-            // 4. Clear search and re-render the specific tab
-            document.getElementById('tabSearch').value = ''; 
-            // This assumes the 'id' matches your tab names (e.g., id='inventory')
-            window.render(id); 
+            // 4. Handle footer visibility for the pricing calculator
+            const footer = document.getElementById('calc-footer');
+            if (footer) footer.style.display = (id === 'pricing') ? 'block' : 'none';
+
+            // 5. Clear search and render the data for this specific tab
+            document.getElementById('tabSearch').value = '';
+            
+            // Convert page ID to tab name if they differ (e.g., 'inventory-page' -> 'inventory')
+            const tabName = id.replace('-page', ''); 
+            window.render(tabName);
         };
         window.sendOrderEmail = (order) => {
             if (!order.email) {
