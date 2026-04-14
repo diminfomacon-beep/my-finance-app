@@ -369,22 +369,24 @@
 
             try {
                 if (activeEdits.order) { 
-                    // --- STATUS CHANGE CHECK ---
                     const oldOrder = store.orders.find(x => x.id === activeEdits.order);
-                    const hasStatusChanged = oldOrder && oldOrder.status !== orderData.status;
+
+                    // 🔁 Restore OLD inventory first
+                    if (oldOrder && oldOrder.items) {
+                        await adjustInventory(oldOrder.items, "add");
+                    }
+
+                    // ➖ Subtract NEW inventory
+                    await adjustInventory(orderData.items, "subtract");
 
                     await updateDoc(doc(db, "orders", activeEdits.order), orderData); 
-
-                    // Trigger Formspree ONLY if status changed
-                    if (hasStatusChanged && orderData.email) {
-                        if (confirm(`Status updated to ${orderData.status}. Send email notification?`)) {
-                            window.sendOrderEmail(orderData);
-                        }
-                    }
 
                     activeEdits.order = null; 
                     document.getElementById('orderBtn').innerText = "Save Order"; 
                 } else { 
+                    // ➖ New order → subtract inventory
+                    await adjustInventory(orderData.items, "subtract");
+
                     await addDoc(collection(db, "orders"), orderData); 
                 }
 
@@ -927,23 +929,32 @@ window.updateInvCatDropdown = () => {
         window.remove = async (tab, id) => { 
             if(confirm("Delete permanently?")) {
                 try {
-                    // Map the tab name to the actual Firebase Collection name
+                    if (tab === 'orders') {
+                        const order = store.orders.find(o => o.id === id);
+                        if (order && order.items) {
+                            // 🔁 Restore inventory when deleting order
+                            await adjustInventory(order.items, "add");
+                        }
+                    }
+
                     const collectionMap = {
                         'orders': 'orders',
                         'materials': 'materials',
                         'inventory': 'inventory',
                         'specs': 'specs',
-                        'costs': 'masterCosts' // This was likely the missing link
+                        'costs': 'masterCosts'
                     };
                     
                     const collectionName = collectionMap[tab] || tab;
                     await deleteDoc(doc(db, collectionName, id)); 
+
                 } catch (err) {
                     console.error("Delete Error:", err);
                     alert("Delete failed: " + err.message);
                 }
             }
         };
+            
         window.updateOrderDrops = () => {
             document.querySelectorAll('.item-sel').forEach(sel => {
                 const currentVal = sel.value; 
@@ -1040,6 +1051,35 @@ window.updateInvCatDropdown = () => {
                 console.error("Fetch error:", error);
                 alert("Failed to connect to Formspree.");
             });
+        };
+        window.adjustInventory = async (items, type = "subtract") => {
+            if (!items || items.length === 0) return;
+
+            try {
+                for (const item of items) {
+                    const invItem = store.inventory.find(i => i.name === item.name);
+                    if (!invItem) continue;
+
+                    const qtyChange = parseInt(item.qty) || 0;
+
+                    // Clone variants safely
+                    const updatedVariants = (invItem.variants || []).map(v => {
+                        return {
+                            ...v,
+                            qty: type === "subtract"
+                                ? (v.qty - qtyChange)
+                                : (v.qty + qtyChange)
+                        };
+                    });
+
+                    await updateDoc(doc(db, "inventory", invItem.id), {
+                        variants: updatedVariants
+                    });
+                }
+            } catch (err) {
+                console.error("Inventory update error:", err);
+                alert("Inventory update failed");
+            }
         };
         addCalcRow();
         addOrderItemRow();
