@@ -654,8 +654,8 @@
                 
                 // Scroll to top so the user sees the open form
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-           if(type=== }
-            'mat'){ 
+            }
+            if(type==='mat'){ 
                 // Change store.catalog to store.materials
                 const m = store.materials.find(x => x.id === id); 
                 if(m) {
@@ -667,7 +667,7 @@
                     if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
                 }
             }
-           if(type==='inv'){ 
+          if(type==='inv'){ 
                 const i = store.inventory.find(x => x.id === id); 
                 document.getElementById('invName').value = i.name; 
                 
