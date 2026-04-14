@@ -732,32 +732,24 @@ window.render = (tab) => {
 
     // --- INVENTORY TAB (Categorized) ---
     if (tab === 'inventory') {
-            const vars = i.variants || [];
-            const totalQty = vars.reduce((sum, v) => sum + Number(v.qty || 0), 0);
-            
-            // 1. Calculate the price range
-            let priceDisplay = "$0.00";
-            if (vars.length > 0) {
-                const prices = vars.map(v => parseFloat(v.cost || 0));
-                const min = Math.min(...prices);
-                const max = Math.max(...prices);
-                priceDisplay = (min === max) ? `$${min.toFixed(2)}` : `$${min.toFixed(2)} - $${max.toFixed(2)}`;
-            }
+        const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
 
-            // 2. Map variants to include their specific cost and qty
-            const variantDetails = vars.map(v => 
-                `<div style="font-size:10px; color:#64748b;">${v.name}: ${v.qty} @ $${parseFloat(v.cost || 0).toFixed(2)}</div>`
-            ).join('');
+        container.innerHTML = categories.map(cat => {
+            const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
+            return `
+                <details class="category-group" style="margin-top: 15px;" open>
+                    <summary style="list-style: none; cursor: pointer; outline: none;">
+                        <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                            <span>${cat.toUpperCase()}</span>
+                            <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
+                        </div>
+                    </summary>
+                    <div style="padding-top: 10px;">
+                        ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
+                    </div>
+                </details>`;
+        }).join('');
 
-            // 3. Construct the detail HTML
-            detail = `
-                <div style="text-align: right; line-height: 1.2;">
-                    <div style="color: var(--primary); font-weight: bold; font-size: 14px;">${priceDisplay}</div>
-                    <div style="color: var(--accent); font-size: 11px; font-weight: bold; margin-bottom: 4px;">Total Stock: ${totalQty}</div>
-                    <div class="variant-rows">${variantDetails}</div>
-                </div>
-            `;
-        
     // --- ORDERS TAB (Status Grouped) ---
     } else if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
@@ -787,7 +779,6 @@ window.render = (tab) => {
                 </details>`;
         }).join('');
 
-    // --- ALL OTHER TABS ---
     } else {
         container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
     }
@@ -822,9 +813,8 @@ function renderCard(i, tab, editLabel) {
 
     if (tab === 'inventory') {
         const vars = i.variants || [];
-        const totalQty = vars.reduce((sum, v) => sum + v.qty, 0);
+        const totalQty = vars.reduce((sum, v) => sum + (Number(v.qty) || 0), 0);
         
-        // Calculate the range
         let priceDisplay = "$0.00";
         if (vars.length > 0) {
             const prices = vars.map(v => parseFloat(v.cost || 0));
@@ -834,32 +824,18 @@ function renderCard(i, tab, editLabel) {
         }
 
         const variantDetails = vars.map(v => 
-            `<div style="font-size:10px; color:#64748b;">${v.name}: ${v.qty} @ $${parseFloat(v.cost).toFixed(2)}</div>`
+            `<div style="font-size:10px; color:#64748b;">${v.name}: ${v.qty} @ $${parseFloat(v.cost || 0).toFixed(2)}</div>`
         ).join('');
 
         detail = `
-            <div style="text-align: right;">
+            <div style="text-align: right; line-height: 1.2;">
                 <div style="color: var(--primary); font-weight: bold; font-size: 14px;">${priceDisplay}</div>
-                <div style="color: var(--accent); font-size: 11px; font-weight: bold;">Total: ${totalQty}</div>
-                <div style="margin-top:4px;">${variantDetails}</div>
-            </div>
-        `;
+                <div style="color: var(--accent); font-size: 11px; font-weight: bold; margin-bottom: 4px;">Total Stock: ${totalQty}</div>
+                ${variantDetails}
+            </div>`;
     } else if (tab === 'orders') {
-        if (i.items && i.items.length > 0) {
-            detail = i.items.map(item => `${item.name} (x${item.qty})`).join('<br>');
-        } else {
-            detail = `${i.prod || 'No Product'} (x${i.qty || 0})`;
-        }
-    } 
-    // --- ADD THIS SECTION BELOW ---
-    else if (tab === 'materials') {
-        const unitLabel = i.unit ? `/${i.unit}` : '';
-        // Format the cost to 2 decimal places and add the unit
-        detail = `$${parseFloat(i.cost || 0).toFixed(2)}${unitLabel}`;
-    } 
-    // ------------------------------
-    else {
-        // Fallback for Products (Master Costs)
+        detail = i.total || "$0.00";
+    } else {
         detail = i.price || (i.cost ? '$' + i.cost : '');
     }
 
@@ -867,14 +843,10 @@ function renderCard(i, tab, editLabel) {
     <div class="card list-item-card">
         <div class="list-row">
             <strong>${i.name}</strong> 
-            <span style="font-size: 11px; text-align: right; font-weight: bold; color: var(--primary);">${detail}</span>
+            <span>${detail}</span>
         </div>
-        
-        ${(tab === 'specs' && i.notes) ? `<p style="font-size:10px; color:#64748b; margin-top:5px; font-style:italic;">Note: ${i.notes}</p>` : ''}
-        ${(tab === 'orders' && i.desc) ? `<div style="font-size:11px; color:#64748b; margin-bottom:8px;">${i.desc}</div>` : ''}
-
         <div style="margin-top:10px;">
-            ${tab !== 'costs' ? `<button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>` : ''}
+            <button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>
             <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006;</button>
         </div>
     </div>`;
