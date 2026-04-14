@@ -432,61 +432,7 @@
             toggleForm('mat-form');
         };
 
-    window.saveInventory = async () => {
-            const sel = document.getElementById('invCat');
-            const newCatInp = document.getElementById('newCatInput');
-            
-            // 1. Get the value from the dropdown
-            let finalCategory = sel.value;
-
-            // 2. If "NEW_CAT" is selected, use the text from the input box instead
-            if (finalCategory === "NEW_CAT") {
-                const typedValue = newCatInp.value.trim();
-                // Fallback to "Uncategorized" if the text box was left empty
-                finalCategory = typedValue || "A-Uncategorized";
-            }
-
-            const p = { 
-                name: document.getElementById('invName').value,
-                category: finalCategory, 
-                v1Name: document.getElementById('v1Name').value || "",
-                v1Qty: parseInt(document.getElementById('v1Qty').value) || 0,
-                v2Name: document.getElementById('v2Name').value || "",
-                v2Qty: parseInt(document.getElementById('v2Qty').value) || 0,
-                cost: document.getElementById('invCost').value || 0
-            };
-            p.totalQty = p.v1Qty + p.v2Qty;
-
-            if(!p.name) {
-                alert("Please enter an item name");
-                return;
-            }
-
-            try {
-                if(activeEdits.inv) { 
-                    await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
-                    activeEdits.inv = null; 
-                    document.getElementById('invBtn').innerText = "Save Stock"; 
-                } else { 
-                    await addDoc(collection(db, "inventory"), p); 
-                }
-                
-                // --- RESET UI ---
-                newCatInp.value = "";
-                newCatInp.style.display = "none";
-                sel.value = ""; // Reset dropdown
-                
-                ['invName', 'v1Name', 'v1Qty', 'v2Name', 'v2Qty', 'invCost'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.value = (id.includes('Qty') || id.includes('Cost')) ? '0' : '';
-                });
-                
-                toggleForm('inv-form');
-            } catch(e) { 
-                console.error("Save Error:", e);
-                alert("Error saving: " + e.message);
-            }
-        };
+    
         // Function to add a new Style + Size row
         window.addSpecStyleRow = (data = {style: 'Sublimation', size: ''}) => {
             const container = document.getElementById('spec-styles-container');
@@ -592,22 +538,14 @@
             document.getElementById('oTotal').value = `$${total.toFixed(2)}`;
         };
 
-        window.editObj = (type, id) => {
-           if (type === 'order') { 
-                // 1. Find the order in the local store
-                const o = store.orders.find(x => x.id === id); 
-                if (!o) {
-                    console.error("Order not found in store for ID:", id);
-                    return;
-                }
-
-                // 2. Helper to safely set values without crashing
+       window.editObj = (type, id) => {
+            if (type === 'order') {
+                const o = store.orders.find(x => x.id === id);
+                if (!o) return;
                 const setVal = (id, val) => {
                     const el = document.getElementById(id);
                     if (el) el.value = val || (el.type === 'number' ? 0 : "");
                 };
-
-                // 3. Fill the standard fields
                 setVal('oName', o.name);
                 setVal('oAddr', o.addr);
                 setVal('oEmail', o.email);
@@ -617,91 +555,65 @@
                 setVal('oDiscount', o.discount || 0);
                 setVal('oTotal', o.total || "$0.00");
 
-                // 4. Rebuild the dynamic Product rows
                 const container = document.getElementById('order-items-container');
                 if (container) {
                     container.innerHTML = '';
-                    // If the order has items, loop through and add rows
                     if (o.items && Array.isArray(o.items) && o.items.length > 0) {
                         o.items.forEach(item => window.addOrderItemRow(item));
-                    } else if (o.prod) {
-                        // Backward compatibility: If it's an old order using the 'prod' field
-                        window.addOrderItemRow({ name: o.prod, qty: o.qty || 1 });
                     } else {
-                        // If it's totally empty, just add one blank row
                         window.addOrderItemRow();
                     }
                 }
+                activeEdits.order = id;
+                document.getElementById('orderBtn').innerText = "Update Order";
+                if (!document.getElementById('order-form').classList.contains('open')) window.toggleForm('order-form');
+            }
 
-                // 5. Set the "Edit Mode" state
-                activeEdits.order = id; 
-                
-                // 6. Update the Button Text
-                const saveBtn = document.getElementById('orderBtn');
-                if (saveBtn) saveBtn.innerText = "Update Order"; 
-                
-                // 7. Open the Form
-                if (!document.getElementById('order-form').classList.contains('open')) {
-                    window.toggleForm('order-form');
-                }
-                
-                // Scroll to top so the user sees the open form
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            if(type==='mat'){ 
-                // Change store.catalog to store.materials
-                const m = store.materials.find(x => x.id === id); 
-                if(m) {
-                    document.getElementById('matName').value = m.name; 
-                    document.getElementById('matCost').value = m.cost; 
-                    document.getElementById('matUnit').value = m.unit; 
-                    activeEdits.mat = id; 
-                    document.getElementById('matBtn').innerText = "Update Material"; 
-                    if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
+            if (type === 'mat') {
+                const m = store.materials.find(x => x.id === id);
+                if (m) {
+                    document.getElementById('matName').value = m.name;
+                    document.getElementById('matCost').value = m.cost;
+                    document.getElementById('matUnit').value = m.unit;
+                    activeEdits.mat = id;
+                    document.getElementById('matBtn').innerText = "Update Material";
+                    if (!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
                 }
             }
-          if(type==='inv'){ 
-                const i = store.inventory.find(x => x.id === id); 
-                document.getElementById('invName').value = i.name; 
-                
-                // Set the dropdown to the category. 
-                // Note: If the category is brand new, updateInvCatDropdown() 
-                // must have run first for this to find the match.
-                document.getElementById('invCat').value = i.category || "";
-                
-                document.getElementById('v1Name').value = i.v1Name || "";
-                document.getElementById('v1Qty').value = i.v1Qty || 0;
-                document.getElementById('v2Name').value = i.v2Name || "";
-                document.getElementById('v2Qty').value = i.v2Qty || 0;
-                document.getElementById('invCost').value = i.cost || 0; 
-                
-                activeEdits.inv = id; 
-                document.getElementById('invBtn').innerText = "Update Stock"; 
-                if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
+
+            if (type === 'inv') {
+                const i = store.inventory.find(x => x.id === id);
+                if (i) {
+                    document.getElementById('invName').value = i.name;
+                    document.getElementById('invCat').value = i.category || "";
+                    document.getElementById('invCost').value = i.cost || 0;
+                    // Rebuild variants list
+                    const vContainer = document.getElementById('variant-list');
+                    vContainer.innerHTML = '';
+                    if (i.variants) i.variants.forEach(v => window.addVariantRow(v));
+                    
+                    activeEdits.inv = id;
+                    document.getElementById('invBtn').innerText = "Update Stock";
+                    if (!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
+                }
             }
-            // Update your existing editObj function to include 'spec'
-            if(type === 'spec'){
+
+            if (type === 'spec') {
                 const s = store.specs.find(x => x.id === id);
-                document.getElementById('sName').value = s.name;
-                document.getElementById('sTemp').value = s.temp || "";
-                document.getElementById('sTime').value = s.time || "";
-                document.getElementById('sWeight').value = s.weight || "Medium";
-                document.getElementById('sNotes').value = s.notes || "";
-                
-                // Clear and rebuild Style/Size rows
-                document.getElementById('spec-styles-container').innerHTML = '';
-                if(s.styles && s.styles.length > 0) {
-                    s.styles.forEach(item => addSpecStyleRow(item));
-                } else {
-                    addSpecStyleRow(); // Add one blank if none exist
+                if (s) {
+                    document.getElementById('sName').value = s.name;
+                    document.getElementById('sTemp').value = s.temp || "";
+                    document.getElementById('sTime').value = s.time || "";
+                    document.getElementById('sWeight').value = s.weight || "Medium";
+                    document.getElementById('sNotes').value = s.notes || "";
+                    document.getElementById('spec-styles-container').innerHTML = '';
+                    if (s.styles) s.styles.forEach(item => addSpecStyleRow(item));
+                    activeEdits.spec = id;
+                    document.getElementById('specBtn').innerText = "Update Specs";
+                    if (!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
                 }
-
-                activeEdits.spec = id;
-                document.getElementById('specBtn').innerText = "Update Specs";
-                if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
             }
-            window.scrollTo(0,0);
-            document.getElementById('invCat').value = i.category || "";
+            window.scrollTo(0, 0);
         };
 
       window.addCalcRow = () => {
@@ -820,24 +732,32 @@ window.render = (tab) => {
 
     // --- INVENTORY TAB (Categorized) ---
     if (tab === 'inventory') {
-        const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
+            const vars = i.variants || [];
+            const totalQty = vars.reduce((sum, v) => sum + Number(v.qty || 0), 0);
+            
+            // 1. Calculate the price range
+            let priceDisplay = "$0.00";
+            if (vars.length > 0) {
+                const prices = vars.map(v => parseFloat(v.cost || 0));
+                const min = Math.min(...prices);
+                const max = Math.max(...prices);
+                priceDisplay = (min === max) ? `$${min.toFixed(2)}` : `$${min.toFixed(2)} - $${max.toFixed(2)}`;
+            }
 
-        container.innerHTML = categories.map(cat => {
-            const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
-            return `
-                <details class="category-group" style="margin-top: 15px;">
-                    <summary style="list-style: none; cursor: pointer; outline: none;">
-                        <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                            <span>${cat.toUpperCase()}</span>
-                            <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
-                        </div>
-                    </summary>
-                    <div style="padding-top: 10px;">
-                        ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
-                    </div>
-                </details>`;
-        }).join('');
+            // 2. Map variants to include their specific cost and qty
+            const variantDetails = vars.map(v => 
+                `<div style="font-size:10px; color:#64748b;">${v.name}: ${v.qty} @ $${parseFloat(v.cost || 0).toFixed(2)}</div>`
+            ).join('');
 
+            // 3. Construct the detail HTML
+            detail = `
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="color: var(--primary); font-weight: bold; font-size: 14px;">${priceDisplay}</div>
+                    <div style="color: var(--accent); font-size: 11px; font-weight: bold; margin-bottom: 4px;">Total Stock: ${totalQty}</div>
+                    <div class="variant-rows">${variantDetails}</div>
+                </div>
+            `;
+        
     // --- ORDERS TAB (Status Grouped) ---
     } else if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
