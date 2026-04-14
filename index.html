@@ -7,7 +7,7 @@
     <title>DIM Bright Ideas LLC | Pro Suite</title>
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
         .header { background: white; padding: 15px; text-align: center; border-bottom: 2px solid var(--primary); }
         .logo { font-weight: 900; color: var(--primary); font-size: 18px; text-transform: uppercase; }
         .nav-bar { display: flex; background: #2F6B64; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
@@ -29,7 +29,7 @@
         .btn-danger { color: var(--danger); border: none; background: none; font-weight: bold; cursor: pointer; }
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .material-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 10px; align-items: end; }
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px; border-radius: 15px 15px 0 0; font-weight: bold; text-align: center; z-index: 1001; }
+        .bottom-bar {position: fixed;bottom: 0;left: 0;right: 0;background: var(--primary);color: white;padding: 12px;font-weight: bold;text-align: center;z-index: 1001;font-size: 14px;}
         .toggle-icon { font-size: 18px; transition: transform 0.3s; }
         .open .toggle-icon { transform: rotate(45deg); }
         .btn-danger {color: #ef4444;border: none;  background: none;  font-weight: bold; font-size: 18px; cursor: pointer; padding: 5px 10px;}
@@ -179,7 +179,8 @@
     </div>
 
     <div class="bottom-bar" id="calc-footer" style="display:none;">
-        CALCULATED TOTAL: <span id="grand-total">$0.00</span>
+        CALCULATED TOTAL:<br>
+        <span id="grand-total" style="font-size:18px;">$0.00</span>
     </div>
     <div id="specs" class="page">
         <div class="card" onclick="toggleForm('spec-form')">
@@ -727,6 +728,7 @@ window.runCalc = () => {
 
     const grandTotal = (mTotal + laborCost) * markup * (1 + (taxRate / 100));
     document.getElementById('grand-total').innerText = `$${grandTotal.toFixed(2)}`;
+    document.getElementById('calc-footer').style.display = 'block';
 };
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
@@ -999,6 +1001,11 @@ window.updateInvCatDropdown = () => {
             // Update Nav buttons
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             if (el) el.classList.add('active');
+
+            const footer = document.getElementById('calc-footer');
+            if (footer) {
+                footer.style.display = (id === 'pricing') ? 'block' : 'none';
+            }
 
             // Re-render the tab data
             const tabName = id.replace('-page', ''); // e.g., 'inventory-page' becomes 'inventory'
