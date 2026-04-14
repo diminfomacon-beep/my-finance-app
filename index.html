@@ -721,7 +721,10 @@ window.render = (tab) => {
         'specs': 'spec-list', 
         'costs': 'cost-list' 
     };
-    
+    Object.values(targets).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = ''; 
+    });
     const container = document.getElementById(targets[tab]);
     if (!container) return;
 
@@ -952,10 +955,21 @@ window.updateInvCatDropdown = () => {
             });
         };
         window.showPage = (id, el) => {
-            document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
-            document.getElementById(id).classList.add('active'); el.classList.add('active');
-            document.getElementById('calc-footer').style.display = (id==='pricing') ? 'block' : 'none';
-            document.getElementById('tabSearch').value = ''; applySearch();
+            // 1. Hide all pages
+            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+            
+            // 2. Show the selected page
+            const targetPage = document.getElementById(id);
+            if (targetPage) targetPage.classList.add('active');
+
+            // 3. Update Nav UI
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            // 4. Clear search and re-render the specific tab
+            document.getElementById('tabSearch').value = ''; 
+            // This assumes the 'id' matches your tab names (e.g., id='inventory')
+            window.render(id); 
         };
         window.sendOrderEmail = (order) => {
             if (!order.email) {
