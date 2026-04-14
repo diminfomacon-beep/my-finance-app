@@ -143,9 +143,25 @@
             <div class="card" onclick="toggleForm('inv-form')">
                 <h3 id="invHeader"><span>+ Add Inventory Item</span> <span class="toggle-icon">+</span></h3>
                 <div id="inv-form" class="collapsible-content" onclick="event.stopPropagation()">
-                    <input type="text" id="invName" placeholder="Item Name">
-                    <input type="number" id="invQty" placeholder="Qty">
-                    <input type="number" id="invCost" step="0.01" placeholder="Cost per item (for calculator)">
+                    <input type="text" id="invName" placeholder="Item Name (e.g. 20oz Tumbler)">
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <label>Variant 1 Name</label>
+                            <input type="text" id="v1Name" placeholder="e.g. White">
+                            <label>Variant 1 Qty</label>
+                            <input type="number" id="v1Qty" value="0">
+                        </div>
+                        <div>
+                            <label>Variant 2 Name</label>
+                            <input type="text" id="v2Name" placeholder="e.g. Shimmer">
+                            <label>Variant 2 Qty</label>
+                            <input type="number" id="v2Qty" value="0">
+                        </div>
+                    </div>
+                
+                    <label>Cost per item (for calculator)</label>
+                    <input type="number" id="invCost" step="0.01" placeholder="0.00">
                     <button class="btn-primary" id="invBtn" onclick="saveInventory()">Save Stock</button>
                 </div>
             </div>
@@ -410,20 +426,21 @@
             toggleForm('mat-form');
         };
 
-      window.saveInventory = async () => {
-            // 1. Grab all three fields
-            const nameVal = document.getElementById('invName').value;
-            const qtyVal = document.getElementById('invQty').value;
-            const costVal = document.getElementById('invCost').value; // THE PRICE
-
+     window.saveInventory = async () => {
             const p = { 
-                name: nameVal, 
-                qty: qtyVal,
-                cost: costVal 
+                name: document.getElementById('invName').value,
+                v1Name: document.getElementById('v1Name').value || "",
+                v1Qty: parseInt(document.getElementById('v1Qty').value) || 0,
+                v2Name: document.getElementById('v2Name').value || "",
+                v2Qty: parseInt(document.getElementById('v2Qty').value) || 0,
+                cost: document.getElementById('invCost').value || 0
             };
             
+            // Calculate total on the fly for the overall count
+            p.totalQty = p.v1Qty + p.v2Qty;
+        
             if(!p.name) return;
-
+        
             if(activeEdits.inv) { 
                 await updateDoc(doc(db, "inventory", activeEdits.inv), p); 
                 activeEdits.inv = null; 
@@ -432,10 +449,10 @@
                 await addDoc(collection(db, "inventory"), p); 
             }
             
-            // 2. Clear all three fields after saving
-            document.getElementById('invName').value = '';
-            document.getElementById('invQty').value = '';
-            document.getElementById('invCost').value = '';
+            // Reset fields
+            ['invName', 'v1Name', 'v1Qty', 'v2Name', 'v2Qty', 'invCost'].forEach(id => {
+                document.getElementById(id).value = (id.includes('Qty') || id.includes('Cost')) ? '0' : '';
+            });
             toggleForm('inv-form');
         };
 // Function to add a new Style + Size row
@@ -611,11 +628,14 @@
                     if(!document.getElementById('mat-form').classList.contains('open')) toggleForm('mat-form');
                 }
             }
-            if(type==='inv'){ 
+           if(type==='inv'){ 
                 const i = store.inventory.find(x => x.id === id); 
                 document.getElementById('invName').value = i.name; 
-                document.getElementById('invQty').value = i.qty; 
-                document.getElementById('invCost').value = i.cost || 0; // ADD THIS LINE
+                document.getElementById('v1Name').value = i.v1Name || "";
+                document.getElementById('v1Qty').value = i.v1Qty || 0;
+                document.getElementById('v2Name').value = i.v2Name || "";
+                document.getElementById('v2Qty').value = i.v2Qty || 0;
+                document.getElementById('invCost').value = i.cost || 0; 
                 activeEdits.inv = id; 
                 document.getElementById('invBtn').innerText = "Update Stock"; 
                 if(!document.getElementById('inv-form').classList.contains('open')) toggleForm('inv-form');
@@ -746,15 +766,17 @@ function renderCard(i, tab, editLabel) {
     let detail = "";
 
     if (tab === 'inventory') {
-        detail = `Qty: ${i.qty || 0} | $${i.cost || 0}`;
-    } else if (tab === 'specs') {
-        const styleInfo = (i.styles || []).map(s => 
-            `<div style="font-size:11px;"><strong>${s.style}:</strong> ${s.size}</div>`
-        ).join('');
+        let variantDetails = [];
+        if (i.v1Name) variantDetails.push(`${i.v1Name}: ${i.v1Qty || 0}`);
+        if (i.v2Name) variantDetails.push(`${i.v2Name}: ${i.v2Qty || 0}`);
+        
         detail = `
-            ${styleInfo}
-            <div style="margin-top:5px; font-size:10px; color:var(--primary);">
-                ${i.temp || 0}°F | ${i.time || 0}s | ${i.weight || 'Med'}
+            <div style="text-align: right;">
+                <div style="color: var(--accent); font-size: 14px;">Total: ${i.totalQty || 0}</div>
+                <div style="font-size: 10px; color: #64748b;">
+                    ${variantDetails.join(' | ')} <br>
+                    Cost: $${parseFloat(i.cost || 0).toFixed(2)}
+                </div>
             </div>
         `;
     } else if (tab === 'orders') {
