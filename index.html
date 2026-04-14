@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-    <link rel="apple-touch-icon" href="mascot.png">
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/png" href="mascot.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DIM Bright Ideas LLC | Pro Suite</title>
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
@@ -282,11 +277,15 @@
         // FIREBASE SYNC
         onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
         // Orders by Newest First
-        onSnapshot(collection(db, "orders"), (s) => {
-            store.orders = s.docs.map(d => ({id: d.id, ...d.data()}))
-                .sort((a, b) => b.timestamp - a.timestamp); // Assumes you save a timestamp
-            render('orders');
-        });       // --- FIX: Corrected Listeners ---
+       onSnapshot(collection(db, "orders"), (snapshot) => {
+            store.orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // IMPORTANT: You must trigger a re-render here!
+            const activeTab = document.querySelector('.nav-item.active').innerText.toLowerCase();
+            if (activeTab === 'orders') {
+                window.render('orders');
+            }
+        });
        // Materials
         onSnapshot(collection(db, "materials"), (s) => {
             store.materials = s.docs.map(d => ({id: d.id, ...d.data()}))
@@ -726,22 +725,30 @@ window.render = (tab) => {
         'specs': 'spec-list', 
         'costs': 'cost-list' 
     };
-    Object.values(targets).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = ''; 
-    });
-    const container = document.getElementById(targets[tab]);
+    
+    // --- FIX START: Only target the specific container ---
+    const targetId = targets[tab];
+    const container = document.getElementById(targetId);
     if (!container) return;
+    
+    // Clear ONLY this container before rebuilding it
+    container.innerHTML = ''; 
+    // --- FIX END ---
 
     let items = (tab === 'costs') ? store.masterCosts : store[tab];
-    items = items || [];
+    
+    // --- ADDED SAFETY: Don't try to loop if Firebase hasn't returned data yet ---
+    if (!items || items.length === 0) {
+        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#64748b; padding:20px;">No ${tab} found...</p>`;
+        return;
+    }
+
     const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
     const editLabel = labels[tab];
 
-    // --- INVENTORY TAB (Categorized) ---
+    // --- INVENTORY TAB ---
     if (tab === 'inventory') {
         const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
-
         container.innerHTML = categories.map(cat => {
             const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
             return `
@@ -758,7 +765,7 @@ window.render = (tab) => {
                 </details>`;
         }).join('');
 
-    // --- ORDERS TAB (Status Grouped) ---
+    // --- ORDERS TAB ---
     } else if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
         const statusColors = {
@@ -769,7 +776,6 @@ window.render = (tab) => {
         container.innerHTML = statuses.map(status => {
             const filtered = items.filter(i => (i.status || "New") === status);
             if (filtered.length === 0) return ''; 
-
             const bgColor = statusColors[status] || "#64748b";
             const isClosed = ["Shipped", "Picked up", "Delivered"].includes(status) ? "" : "open";
 
@@ -788,6 +794,7 @@ window.render = (tab) => {
         }).join('');
 
     } else {
+        // --- ALL OTHER TABS ---
         container.innerHTML = items.map(i => renderCard(i, tab, editLabel)).join('');
     }
 
