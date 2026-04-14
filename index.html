@@ -728,7 +728,6 @@ window.runCalc = () => {
 
     const grandTotal = (mTotal + laborCost) * markup * (1 + (taxRate / 100));
     document.getElementById('grand-total').innerText = `$${grandTotal.toFixed(2)}`;
-    document.getElementById('calc-footer').style.display = 'block';
 };
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
@@ -991,25 +990,25 @@ window.updateInvCatDropdown = () => {
             });
         };
         window.showPage = (id, el) => {
-            // Hide all elements with the class 'page'
+            // Hide all pages
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             
-            // Show the one we want
+            // Show selected page
             const target = document.getElementById(id);
             if (target) target.classList.add('active');
 
-            // Update Nav buttons
+            // Update nav
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             if (el) el.classList.add('active');
 
+            // 🔥 CONTROL FOOTER HERE ONLY
             const footer = document.getElementById('calc-footer');
             if (footer) {
                 footer.style.display = (id === 'pricing') ? 'block' : 'none';
             }
 
-            // Re-render the tab data
-            const tabName = id.replace('-page', ''); // e.g., 'inventory-page' becomes 'inventory'
-            window.render(tabName);
+            // Render tab
+            window.render(id);
         };
         window.sendOrderEmail = (order) => {
             if (!order.email) {
