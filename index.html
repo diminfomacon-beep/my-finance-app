@@ -150,7 +150,7 @@
                 <h3 id="invHeader"><span>+ Add Inventory Item</span> <span class="toggle-icon">+</span></h3>
                 <div id="inv-form" class="collapsible-content" onclick="event.stopPropagation()">
                     <input type="text" id="invName" placeholder="Item Name (e.g. 20oz Tumbler)">
-                    
+                    <input type="text" id="invCat" placeholder="Category (e.g. Tumblers, Shirts, Gift Boxes)">                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <div>
                             <label>Variant 1 Name</label>
@@ -435,14 +435,13 @@
      window.saveInventory = async () => {
             const p = { 
                 name: document.getElementById('invName').value,
+                category: document.getElementById('invCat').value || "Uncategorized", // Default if empty
                 v1Name: document.getElementById('v1Name').value || "",
                 v1Qty: parseInt(document.getElementById('v1Qty').value) || 0,
                 v2Name: document.getElementById('v2Name').value || "",
                 v2Qty: parseInt(document.getElementById('v2Qty').value) || 0,
                 cost: document.getElementById('invCost').value || 0
             };
-            
-            // Calculate total on the fly for the overall count
             p.totalQty = p.v1Qty + p.v2Qty;
         
             if(!p.name) return;
@@ -455,13 +454,13 @@
                 await addDoc(collection(db, "inventory"), p); 
             }
             
-            // Reset fields
-            ['invName', 'v1Name', 'v1Qty', 'v2Name', 'v2Qty', 'invCost'].forEach(id => {
+            // Reset fields including category
+            ['invName', 'invCat', 'v1Name', 'v1Qty', 'v2Name', 'v2Qty', 'invCost'].forEach(id => {
                 document.getElementById(id).value = (id.includes('Qty') || id.includes('Cost')) ? '0' : '';
             });
             toggleForm('inv-form');
         };
-// Function to add a new Style + Size row
+        // Function to add a new Style + Size row
         window.addSpecStyleRow = (data = {style: 'Sublimation', size: ''}) => {
             const container = document.getElementById('spec-styles-container');
             const d = document.createElement('div');
@@ -668,6 +667,7 @@
                 if(!document.getElementById('spec-form').classList.contains('open')) toggleForm('spec-form');
             }
             window.scrollTo(0,0);
+            document.getElementById('invCat').value = i.category || "";
         };
 
       window.addCalcRow = () => {
@@ -716,23 +716,35 @@ window.runCalc = () => {
         window.saveToMasterCosts = async () => { const n = document.getElementById('calcProdName').value; const p = document.getElementById('grand-total').innerText; if(n) await addDoc(collection(db,"masterCosts"), {name:n, price:p}); document.getElementById('calcProdName').value=''; };
 
     window.render = (tab) => {
-    const targets = { 
-        'orders': 'order-list', 
-        'materials': 'mat-list', 
-        'inventory': 'inv-list', 
-        'specs': 'spec-list', 
-        'costs': 'cost-list' 
-    };
-
-    const container = document.getElementById(targets[tab]);
-    if (!container) return;
-
-    // Fix: Map 'costs' tab to 'masterCosts' data
-    let items = (tab === 'costs') ? store.masterCosts : store[tab];
-    items = items || []; // Safety check
-
-    const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
-    const editLabel = labels[tab];
+        const targets = { 'orders': 'order-list', 'materials': 'mat-list', 'inventory': 'inv-list', 'specs': 'spec-list', 'costs': 'cost-list' };
+        const container = document.getElementById(targets[tab]);
+        if (!container) return;
+    
+        let items = (tab === 'costs') ? store.masterCosts : store[tab];
+        items = items || [];
+        const labels = { 'materials': 'mat', 'inventory': 'inv', 'specs': 'spec', 'orders': 'order', 'costs': 'cost' };
+        const editLabel = labels[tab];
+    
+        if (tab === 'inventory') {
+            // 1. Get unique categories
+            const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
+    
+            container.innerHTML = categories.map(cat => {
+                const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
+                
+                return `
+                    <details class="category-group" style="margin-top: 15px;" open>
+                        <summary style="list-style: none; cursor: pointer; outline: none;">
+                            <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                                <span>${cat.toUpperCase()}</span>
+                                <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
+                            </div>
+                        </summary>
+                        <div style="padding-top: 10px;">
+                            ${filtered.map(i => renderCard(i, tab, editLabel)).join('')}
+                        </div>
+                    </details>`;
+            }).join('');
 
     if (tab === 'orders') {
         const statuses = ["New", "Processing", "Ready for Pick up", "Ready to Ship", "Shipped", "Picked up", "Delivered"];
@@ -829,6 +841,11 @@ function renderCard(i, tab, editLabel) {
         window.applySearch = () => {
             const q = document.getElementById('tabSearch').value.toLowerCase();
             document.querySelectorAll('.list-item-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
+                        // Add this to the bottom of applySearch
+            document.querySelectorAll('details').forEach(det => {
+                const hasVisibleItems = [...det.querySelectorAll('.list-item-card')].some(card => card.style.display !== 'none');
+                det.style.display = hasVisibleItems ? 'block' : 'none';
+            });
         };
 
         window.remove = async (tab, id) => { 
