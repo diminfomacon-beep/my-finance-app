@@ -450,7 +450,7 @@
             if (finalCategory === "NEW_CAT") {
                 const typedValue = newCatInp.value.trim();
                 // Fallback to "Uncategorized" if the text box was left empty
-                finalCategory = typedValue || "Uncategorized";
+                finalCategory = typedValue || "A-Uncategorized";
             }
 
             const p = { 
@@ -776,10 +776,10 @@ window.render = (tab) => {
     // --- INVENTORY TAB (Categorized) ---
     // --- INVENTORY TAB (Categorized) ---
     if (tab === 'inventory') {
-        const categories = [...new Set(items.map(i => i.category || "Uncategorized"))].sort();
+        const categories = [...new Set(items.map(i => i.category || "A-Uncategorized"))].sort();
 
         container.innerHTML = categories.map(cat => {
-            const filtered = items.filter(i => (i.category || "Uncategorized") === cat);
+            const filtered = items.filter(i => (i.category || "A-Uncategorized") === cat);
             
             // REMOVED 'open' attribute so they stay closed by default
             return `
@@ -904,7 +904,7 @@ window.updateInvCatDropdown = () => {
     
     const currentVal = sel.value;
     // Get unique categories from store.inventory
-    const categories = [...new Set(store.inventory.map(i => i.category || "Uncategorized"))].sort();
+    const categories = [...new Set(store.inventory.map(i => i.category || "A-Uncategorized"))].sort();
     
     let html = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Select Category...</option>`;
     categories.forEach(cat => {
