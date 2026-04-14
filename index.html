@@ -786,7 +786,10 @@ window.render = (tab) => {
                 <details class="category-group" style="margin-top: 15px;">
                     <summary style="list-style: none; cursor: pointer; outline: none;">
                         <div style="background:var(--primary); color:white; padding:10px 15px; border-radius:10px; font-size:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                            <span>${cat.toUpperCase()}</span>
+                            <div>
+                                <span>${cat.toUpperCase()}</span>
+                                <button onclick="event.stopPropagation(); renameCategory('${cat}')" style="background:none; border:none; color:white; cursor:pointer; margin-left:10px; font-size:14px;">✏️</button>
+                            </div>
                             <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">${filtered.length} Items</span>
                         </div>
                     </summary>
@@ -837,6 +840,29 @@ window.render = (tab) => {
     }
 
     applySearch();
+};
+window.renameCategory = async (oldName) => {
+    const newName = prompt(`Rename category "${oldName}" to:`, oldName);
+    
+    if (!newName || newName === oldName) return;
+
+    if (confirm(`This will update all items in "${oldName}" to "${newName}". Proceed?`)) {
+        try {
+            // Find all items in the store that match the old category name
+            const itemsToUpdate = store.inventory.filter(i => (i.category || "Uncategorized") === oldName);
+            
+            // Update each document in Firestore
+            const updates = itemsToUpdate.map(item => 
+                updateDoc(doc(db, "inventory", item.id), { category: newName })
+            );
+
+            await Promise.all(updates);
+            alert(`Updated ${updates.length} items to "${newName}"`);
+        } catch (err) {
+            console.error("Rename Error:", err);
+            alert("Failed to rename category.");
+        }
+    }
 };
 function renderCard(i, tab, editLabel) {
     let detail = "";
