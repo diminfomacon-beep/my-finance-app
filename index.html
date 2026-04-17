@@ -1105,12 +1105,21 @@ window.updateInvCatDropdown = () => {
 
     // 2. Map store data and define headers
     if (activeTab === 'inventory') {
-        csvRows.push("Item Name,Category,Variant,Stock Qty,Unit Price");
+        csvRows.push("Item Name,Category,Variant Name,Stock Qty,Unit Price");
         store.inventory.forEach(item => {
-            (item.variants || []).forEach(v => {
-                csvRows.push(`"${item.name}","${item.category || 'Uncategorized'}","${v.name}",${v.qty},${v.cost}`);
-            });
+            const variants = item.variants || [];
+            
+            if (variants.length > 0) {
+                // If there are variants, export a line for each one
+                variants.forEach(v => {
+                    csvRows.push(`"${item.name}","${item.category || 'Uncategorized'}","${v.name}",${v.qty || 0},${v.cost || item.cost || 0}`);
+                });
+            } else {
+                // If there are NO variants, still export the base item so it's not missing!
+                csvRows.push(`"${item.name}","${item.category || 'Uncategorized'}","Base Item",0,${item.cost || 0}`);
+            }
         });
+    
     } else if (activeTab === 'orders') {
         csvRows.push("Customer,Status,Total Price,Items Summary,Email,Date");
         store.orders.forEach(item => {
