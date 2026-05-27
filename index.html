@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,8 +12,9 @@
     <style>
         :root { --primary: #2F6B64; --accent: #22c55e; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
-        .header { background: white; padding: 15px; text-align: center; border-bottom: 2px solid var(--primary); }
+        .header { background: white; padding: 15px; text-align: center; border-bottom: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; padding: 10px; }
         .logo { font-weight: 900; color: var(--primary); font-size: 18px; text-transform: uppercase; }
+        .logo img { max-height: 60px; display: block; margin: 0 auto; }
         .nav-bar { display: flex; background: #2F6B64; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
         .nav-item { flex: 0 0 auto; padding: 15px 15px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; border-bottom: 3px solid transparent; text-transform: uppercase; }
         .nav-item.active { color: #FEE84A; border-bottom: 3px solid var(--primary); }
@@ -30,22 +30,17 @@
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
         .search-input { border: 2px solid var(--primary); background: #fff; margin-bottom: 15px; position: sticky; top: 55px; z-index: 999; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-action {background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; font-size: 18px; color: #2F6B64;cursor: pointer; margin-right: 10px;}
-        .btn-danger { color: var(--danger); border: none; background: none; font-weight: bold; cursor: pointer; }
+        .btn-action { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; font-size: 18px; color: #2F6B64; cursor: pointer; margin-right: 10px; }
+        .btn-danger { color: #ef4444; border: none; background: none; font-weight: bold; font-size: 18px; cursor: pointer; padding: 5px 10px; }
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .material-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 10px; align-items: end; }
-        .bottom-bar {position: fixed;bottom: 0;left: 0;right: 0;background: var(--primary);color: white;padding: 12px;font-weight: bold;text-align: center;z-index: 1001;font-size: 14px;}
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 12px; font-weight: bold; text-align: center; z-index: 1001; font-size: 14px; }
         .toggle-icon { font-size: 18px; transition: transform 0.3s; }
         .open .toggle-icon { transform: rotate(45deg); }
-        .btn-danger {color: #ef4444;border: none;  background: none;  font-weight: bold; font-size: 18px; cursor: pointer; padding: 5px 10px;}
-        .logo img {max-height: 60px; display: block; margin: 0 auto;}
-        .header {display: flex;align-items: center;justify-content: center;padding: 10px;}
-        /* Removes the default arrow from the summary tag */
-        summary::-webkit-details-marker {display: none;}
-        details summary {user-select: none;}
-        /* Optional: adds a slight fade-in when opening */
-        details[open] div {animation: fadeIn 0.3s ease;}
-        @keyframes fadeIn {from { opacity: 0; transform: translateY(-5px);} to { opacity: 1; transform: translateY(0); }}
+        summary::-webkit-details-marker { display: none; }
+        details summary { user-select: none; }
+        details[open] div { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -54,7 +49,7 @@
         <button id="login-btn" onclick="handleAuth()" style="padding:5px 10px; cursor:pointer;">Login</button>
     </div>
 
-   <div class="header">
+    <div class="header">
         <div class="logo">
             <img src="https://raw.githubusercontent.com/diminfomacon-beep/new-design-studio/main/studio-mockups/New%20logo%20no%20background.png" alt="DIM Bright Ideas LLC" style="height: 50px; width: auto;">
         </div>
@@ -85,8 +80,7 @@
                     <input type="email" id="oEmail" placeholder="Email">
                     <input type="tel" id="oPhone" placeholder="Phone">
                     <label>Order Items</label>
-                    <div id="order-items-container" style="margin-bottom: 10px;">
-                        </div>
+                    <div id="order-items-container" style="margin-bottom: 10px;"></div>
                     <button type="button" class="btn-primary" style="background:#e2e8f0; color:#2F6B64; margin-bottom:15px; padding: 10px;" onclick="addOrderItemRow()">+ Add Item to Order</button>
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -116,14 +110,14 @@
             <div id="order-list"></div>
         </div>
 
-       <div id="pricing" class="page">
-        <div class="card">
-            <h3>Price Calculator</h3>
-            <input type="text" id="calcProdName" placeholder="Product Name">
-            <h4>Required Materials</h4>
-            <div id="active-materials"></div>
-            
-            <button class="btn-primary" style="margin-bottom:15px; background: #e2e8f0; color: #2F6B64;" onclick="addCalcRow()">+</button>            
+        <div id="pricing" class="page">
+            <div class="card">
+                <h3>Price Calculator</h3>
+                <input type="text" id="calcProdName" placeholder="Product Name">
+                <h4>Required Materials</h4>
+                <div id="active-materials"></div>
+                
+                <button class="btn-primary" style="margin-bottom:15px; background: #e2e8f0; color: #2F6B64;" onclick="addCalcRow()">+</button>            
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div><label>Labor (Mins)</label><input type="number" id="lMins" value="15" oninput="runCalc()"></div>
                     <div><label>Labor $/hr</label><input type="number" id="lRate" value="32" oninput="saveBizSettings()"></div>
@@ -185,49 +179,51 @@
             <div class="card"><h3>Product Price List</h3></div>
             <div id="cost-list"></div>
         </div>
+
+        <div id="specs" class="page">
+            <div class="card" onclick="toggleForm('spec-form')">
+                <h3 id="specHeader"><span>+ Add Product Specs</span> <span class="toggle-icon">+</span></h3>
+                <div id="spec-form" class="collapsible-content" onclick="event.stopPropagation()">
+                    <input type="text" id="sName" placeholder="Product Name (e.g. 20oz Skinny)">
+                    
+                    <div style="margin: 10px 0; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                        <label style="font-weight:bold; font-size:12px; color: #475569;">Styles & Sizes:</label>
+                        <div id="spec-styles-container"></div>
+                        <button type="button" class="btn-primary" style="background:#cbd5e1; color:#1e293b; margin-top:5px; font-size: 11px;" onclick="addSpecStyleRow()">+ Add Style/Size</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                        <div><label>Temp (°F)</label><input type="number" id="sTemp" placeholder="385"></div>
+                        <div><label>Time (Secs)</label><input type="number" id="sTime" placeholder="60"></div>
+                        <div>
+                            <label>Pressure</label>
+                            <select id="sWeight">
+                                <option value="Light">Light</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Heavy">Heavy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <textarea id="sNotes" placeholder="Special Notes (e.g. Mirror image, cool peel)"></textarea>
+                    <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
+                </div>
+            </div>
+            <div id="spec-list"></div>
+        </div>
     </div>
 
     <div class="bottom-bar" id="calc-footer" style="display:none;">
         CALCULATED TOTAL:<br>
         <span id="grand-total" style="font-size:18px;">$0.00</span>
     </div>
-    <div id="specs" class="page">
-        <div class="card" onclick="toggleForm('spec-form')">
-            <h3 id="specHeader"><span>+ Add Product Specs</span> <span class="toggle-icon">+</span></h3>
-            <div id="spec-form" class="collapsible-content" onclick="event.stopPropagation()">
-                <input type="text" id="sName" placeholder="Product Name (e.g. 20oz Skinny)">
-                
-                <div style="margin: 10px 0; padding: 10px; background: #f1f5f9; border-radius: 8px;">
-                    <label style="font-weight:bold; font-size:12px; color: #475569;">Styles & Sizes:</label>
-                    <div id="spec-styles-container"></div>
-                    <button type="button" class="btn-primary" style="background:#cbd5e1; color:#1e293b; margin-top:5px; font-size: 11px;" onclick="addSpecStyleRow()">+ Add Style/Size</button>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-                    <div><label>Temp (°F)</label><input type="number" id="sTemp" placeholder="385"></div>
-                    <div><label>Time (Secs)</label><input type="number" id="sTime" placeholder="60"></div>
-                    <div>
-                        <label>Pressure</label>
-                        <select id="sWeight">
-                            <option value="Light">Light</option>
-                            <option value="Medium" selected>Medium</option>
-                            <option value="Heavy">Heavy</option>
-                        </select>
-                    </div>
-                </div>
-
-                <textarea id="sNotes" placeholder="Special Notes (e.g. Mirror image, cool peel)"></textarea>
-                <button class="btn-primary" id="specBtn" onclick="saveSpec()">Save Specs</button>
-            </div>
-        </div>
-        <div id="spec-list"></div>
-    </div>
 
     <script type="module">
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-         const firebaseConfig = {
+
+        const firebaseConfig = {
             apiKey: "AIzaSyB1nxrTvgy8Z8queZ4eW2KsObizBmFSbEY",
             authDomain: "dim-accounting-app.firebaseapp.com",
             projectId: "dim-accounting-app",
@@ -235,13 +231,24 @@
             messagingSenderId: "432651879673",
             appId: "1:432651879673:web:589f87967b39ac6a478e28"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();   
-            // IMPORTANT: This 'window.' prefix makes the function visible to your HTML button
- 
 
+        // Global App States
+        let store = { orders:[], materials:[], inventory:[], masterCosts:[], specs:[] };
+        let activeEdits = { order:null, mat:null, inv:null, spec:null };
+        const PRINT_STYLES = ["Sublimation Full", "Sublimation Small", "T-Shirt Left Chest", "T-Shirt Center Chest", "T-Shirt Full Front", "T-Shirt Oversize Front/Back","T-Shirt Back Collar","T-Shirt Upper Back","T-Shirt Full Back","T-Shirt Sleeve"];
+
+        // Document Safe Tab Helper
+        const getActiveTab = () => {
+            const activeEl = document.querySelector('.nav-item.active');
+            return activeEl ? activeEl.innerText.toLowerCase() : '';
+        };
+
+        // Firebase Auth Lifecycle
         onAuthStateChanged(auth, (user) => {
             const btn = document.getElementById('login-btn');
             const emailDisp = document.getElementById('user-email');
@@ -250,101 +257,90 @@
                 console.log("User is logged in:", user.email);
                 btn.innerText = "Logout";
                 emailDisp.innerText = user.email;
-                // Re-render the current tab now that we have permission
-                const activeTab = document.querySelector('.nav-item.active').innerText.toLowerCase();
-                render(activeTab); 
+                const activeTab = getActiveTab();
+                if(activeTab) render(activeTab === 'products' ? 'costs' : activeTab); 
             } else {
                 console.log("User is logged out.");
                 btn.innerText = "Login";
                 emailDisp.innerText = "Logged Out";
-                // Optional: Clear the lists so unauthorized people can't see them
                 document.getElementById('order-list').innerHTML = "Please login to view data.";
             }
         });
 
         window.handleAuth = async () => {
-            console.log("Login button clicked!"); 
             try {
                 if (auth.currentUser) {
-                    console.log("Logging out...");
                     await signOut(auth);
                 } else {
-                    console.log("Opening Google Popup...");
                     await signInWithPopup(auth, provider);
                 }
             } catch (error) {
                 console.error("Auth Error:", error.code, error.message);
-                // This will alert you if the domain isn't authorized!
                 alert("Error: " + error.code); 
             }
         };
 
-        let store = { orders:[], materials:[], inventory:[], masterCosts:[], specs:[] };
-        let activeEdits = { order:null, mat:null, inv:null, spec:null };
-        // Add or remove styles here; everything else updates automatically!
-        const PRINT_STYLES = ["Sublimation Full", "Sublimation Small", "T-Shirt Left Chest", "T-Shirt Center Chest", "T-Shirt Full Front", "T-Shirt Oversize Front/Back","T-Shirt Back Collar","T-Shirt Upper Back","T-Shirt Full Back","T-Shirt Sleeve"];
-        // FIREBASE SYNC
-        onSnapshot(doc(db, "settings", "business"), (d) => { if(d.exists()){ const s=d.data(); document.getElementById('lRate').value=s.labor||32; document.getElementById('mUp').value=s.markup||2; document.getElementById('tRate').value=s.tax||7; runCalc(); }});
-        // Orders by Newest First
-       // Orders (Already mostly correct in your snippet)
-       // Helper to safely get the active tab name
-        const getActiveTab = () => {
-            const activeEl = document.querySelector('.nav-item.active');
-            return activeEl ? activeEl.innerText.toLowerCase() : '';
-        };
+        // Initialize Dynamic Form Setup when DOM parses
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof addOrderItemRow === 'function') addOrderItemRow();
+        });
 
-        // Orders
+        // LIVE FIRESTORE SYNC LISTENERS
+        onSnapshot(doc(db, "settings", "business"), (d) => { 
+            if(d.exists()){ 
+                const s = d.data(); 
+                document.getElementById('lRate').value = s.labor || 32; 
+                document.getElementById('mUp').value = s.markup || 2; 
+                document.getElementById('tRate').value = s.tax || 7; 
+                if(typeof runCalc === 'function') runCalc(); 
+            }
+        });
+
         onSnapshot(collection(db, "orders"), (snapshot) => {
             store.orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (getActiveTab() === 'orders') {
-                window.render('orders');
-            }
+            if (getActiveTab() === 'orders' && window.render) window.render('orders');
         });
 
-        // Materials
         onSnapshot(collection(db, "materials"), (s) => {
             store.materials = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.name.localeCompare(b.name));
-            updateCalcDrops();
-            if (getActiveTab() === 'materials') {
-                window.render('materials');
-            }
+            if(window.updateCalcDrops) updateCalcDrops();
+            if (getActiveTab() === 'materials' && window.render) window.render('materials');
         });
 
-        // Inventory
         onSnapshot(collection(db, "inventory"), (s) => {
             store.inventory = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.name.localeCompare(b.name));
-            updateCalcDrops();
-            updateInvCatDropdown();
-            if (getActiveTab() === 'inventory') {
-                window.render('inventory');
-            }
+            if(window.updateCalcDrops) updateCalcDrops();
+            if(window.updateInvCatDropdown) updateInvCatDropdown();
+            if (getActiveTab() === 'inventory' && window.render) window.render('inventory');
         });
 
-        // Specs
         onSnapshot(collection(db, "specs"), (s) => {
             store.specs = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.name.localeCompare(b.name));
-            if (getActiveTab() === 'specs') {
-                window.render('specs');
-            }
+            if (getActiveTab() === 'specs' && window.render) window.render('specs');
         });
 
-        // Products (Master Costs)
-       // Products (Master Costs)
         onSnapshot(collection(db, "masterCosts"), (s) => {
             store.masterCosts = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-            updateOrderDrops();
-            
-            // CHANGED: Use 'products' to match the text inside your nav-item
-            if (getActiveTab() === 'products') {
-                window.render('costs'); 
-            }
+            if(window.updateOrderDrops) updateOrderDrops();
+            if (getActiveTab() === 'products' && window.render) window.render('costs'); 
         });
-        window.toggleForm = (id) => { document.getElementById(id).classList.toggle('open'); document.getElementById(id).parentElement.classList.toggle('open'); };
 
-        window.saveBizSettings = async () => { await setDoc(doc(db,"settings","business"), { labor:document.getElementById('lRate').value, markup:document.getElementById('mUp').value, tax:document.getElementById('tRate').value }); runCalc(); };
+        // GLOBAL HANDLERS
+        window.toggleForm = (id) => { 
+            document.getElementById(id).classList.toggle('open'); 
+            document.getElementById(id).parentElement.classList.toggle('open'); 
+        };
+
+        window.saveBizSettings = async () => { 
+            await setDoc(doc(db,"settings","business"), { 
+                labor: document.getElementById('lRate').value, 
+                markup: document.getElementById('mUp').value, 
+                tax: document.getElementById('tRate').value 
+            }); 
+            if(typeof runCalc === 'function') runCalc(); 
+        };
 
         window.saveOrder = async () => {
-            // 1. Collect all items from the dynamic rows
             const items = [];
             document.querySelectorAll('#order-items-container .material-row').forEach(row => {
                 const sel = row.querySelector('.item-sel');
@@ -358,15 +354,10 @@
             });
 
             const nameVal = document.getElementById('oName').value;
-            if (!nameVal) {
-                alert("Please enter a Customer Name");
-                return;
-            }
+            if (!nameVal) { alert("Please enter a Customer Name"); return; }
 
-            // 2. Build the data object
             const orderData = {
-                name: nameVal,
-                items: items,
+                name: nameVal, items: items,
                 total: document.getElementById('oTotal').value || "$0.00",
                 discount: document.getElementById('oDiscount').value || 0,
                 status: document.getElementById('oStatus').value || "New",
@@ -380,27 +371,16 @@
             try {
                 if (activeEdits.order) { 
                     const oldOrder = store.orders.find(x => x.id === activeEdits.order);
-
-                    // 🔁 Restore OLD inventory first
-                    if (oldOrder && oldOrder.items) {
-                        await adjustInventory(oldOrder.items, "add");
-                    }
-
-                    // ➖ Subtract NEW inventory
-                    await adjustInventory(orderData.items, "subtract");
-
+                    if (oldOrder && oldOrder.items && window.adjustInventory) await adjustInventory(oldOrder.items, "add");
+                    if (window.adjustInventory) await adjustInventory(orderData.items, "subtract");
                     await updateDoc(doc(db, "orders", activeEdits.order), orderData); 
-
                     activeEdits.order = null; 
                     document.getElementById('orderBtn').innerText = "Save Order"; 
                 } else { 
-                    // ➖ New order → subtract inventory
-                    await adjustInventory(orderData.items, "subtract");
-
+                    if (window.adjustInventory) await adjustInventory(orderData.items, "subtract");
                     await addDoc(collection(db, "orders"), orderData); 
                 }
 
-                // 3. Reset the form properly
                 document.getElementById('oName').value = '';
                 document.getElementById('oAddr').value = '';
                 document.getElementById('oEmail').value = '';
@@ -408,145 +388,119 @@
                 document.getElementById('oDesc').value = '';
                 document.getElementById('oDiscount').value = '0';
                 document.getElementById('oTotal').value = '$0.00';
-                
                 document.getElementById('order-items-container').innerHTML = '';
                 addOrderItemRow(); 
                 toggleForm('order-form');
-                
             } catch (err) {
                 console.error("Detailed Save Error:", err);
                 alert("Firebase Error: " + err.message);
             }
         };
 
-        // 4. The Formspree Function
         window.sendOrderEmail = (order) => {
             const details = (order.items || []).map(i => `${i.name} (x${i.qty})${i.free ? ' [FREE]' : ''}`).join(", ");
-            
             const payload = {
-                to: order.email, // Formspree will show this in the submission
+                to: order.email,
                 subject: `Order Update for ${order.name}`,
                 message: `Your order status has changed to: ${order.status}.\n\nItems: ${details}\nTotal: ${order.total}\n\nThank you!`
             };
-
             fetch("https://formspree.io/f/mdapdnrj", {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
             })
-            .then(res => {
-                if (res.ok) console.log("Formspree notification sent.");
-            })
+            .then(res => { if (res.ok) console.log("Formspree notification sent."); })
             .catch(err => console.error("Formspree Error:", err));
         };
    
         window.saveMaterial = async () => {
             const p = { name:document.getElementById('matName').value, cost:document.getElementById('matCost').value, unit:document.getElementById('matUnit').value };
             if(!p.name) return;
-            
-            // Change "catalog" to "materials" in both lines below
             if(activeEdits.mat) { 
                 await updateDoc(doc(db,"materials",activeEdits.mat), p); 
                 activeEdits.mat=null; 
                 document.getElementById('matBtn').innerText="Save Material"; 
-            }
-            else { 
+            } else { 
                 await addDoc(collection(db,"materials"), p); 
             }
-            
             document.getElementById('matName').value=''; 
             document.getElementById('matCost').value='';
             toggleForm('mat-form');
         };
 
-    
-        // Function to add a new Style + Size row
-        window.addSpecStyleRow = (data = {style: 'Sublimation', size: ''}) => {
+        window.addSpecStyleRow = (data = {style: 'Sublimation Full', size: ''}) => {
             const container = document.getElementById('spec-styles-container');
             const d = document.createElement('div');
             d.className = 'material-row';
             d.style.marginBottom = "5px";
-
-            // This creates the <option> tags based on your PRINT_STYLES list
-            const styleOptions = PRINT_STYLES.map(s => 
-                `<option value="${s}" ${data.style === s ? 'selected' : ''}>${s}</option>`
-            ).join('');
-
+            const styleOptions = PRINT_STYLES.map(s => `<option value="${s}" ${data.style === s ? 'selected' : ''}>${s}</option>`).join('');
             d.innerHTML = `
-                <select class="spec-style-sel" style="flex:1">
-                    ${styleOptions}
-                </select>
+                <select class="spec-style-sel" style="flex:1">${styleOptions}</select>
                 <input type="text" class="spec-size-input" placeholder="Size" value="${data.size || ''}" style="flex:1.5">
                 <button type="button" class="btn-danger" onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(d);
         };
 
-            // Updated Save Function
-            window.saveSpec = async () => {
-                const styleEntries = [];
-                document.querySelectorAll('#spec-styles-container .material-row').forEach(row => {
-                    styleEntries.push({
-                        style: row.querySelector('.spec-style-sel').value,
-                        size: row.querySelector('.spec-size-input').value
-                    });
+        window.saveSpec = async () => {
+            const styleEntries = [];
+            document.querySelectorAll('#spec-styles-container .material-row').forEach(row => {
+                styleEntries.push({
+                    style: row.querySelector('.spec-style-sel').value,
+                    size: row.querySelector('.spec-size-input').value
                 });
+            });
 
-                const p = { 
-                    name: document.getElementById('sName').value, 
-                    styles: styleEntries, 
-                    temp: document.getElementById('sTemp').value, 
-                    time: document.getElementById('sTime').value, 
-                    weight: document.getElementById('sWeight').value,
-                    notes: document.getElementById('sNotes').value 
-                };
+            const p = { 
+                name: document.getElementById('sName').value, 
+                styles: styleEntries, 
+                temp: document.getElementById('sTemp').value, 
+                time: document.getElementById('sTime').value, 
+                weight: document.getElementById('sWeight').value,
+                notes: document.getElementById('sNotes').value 
+            };
+            if(!p.name) return;
+            if(activeEdits.spec) { 
+                await updateDoc(doc(db, "specs", activeEdits.spec), p); 
+                activeEdits.spec = null; 
+                document.getElementById('specBtn').innerText = "Save Specs";
+            } else { 
+                await addDoc(collection(db, "specs"), p); 
+            }
+            document.getElementById('sName').value = '';
+            document.getElementById('sTemp').value = '';
+            document.getElementById('sTime').value = '';
+            document.getElementById('sNotes').value = '';
+            document.getElementById('spec-styles-container').innerHTML = '';
+            toggleForm('spec-form');
+        };       
 
-                if(!p.name) return;
-
-                if(activeEdits.spec) { 
-                    await updateDoc(doc(db, "specs", activeEdits.spec), p); 
-                    activeEdits.spec = null; 
-                    document.getElementById('specBtn').innerText = "Save Specs";
-                } else { 
-                    await addDoc(collection(db, "specs"), p); 
-                }
-
-                // Reset Form
-                document.getElementById('sName').value = '';
-                document.getElementById('sTemp').value = '';
-                document.getElementById('sTime').value = '';
-                document.getElementById('sNotes').value = '';
-                document.getElementById('spec-styles-container').innerHTML = '';
-                toggleForm('spec-form');
-            };       
         window.addOrderItemRow = (data = {name: '', qty: 1, free: false}) => {
             const container = document.getElementById('order-items-container');
+            if(!container) return;
             const d = document.createElement('div');
             d.className = 'material-row';
-            d.style.alignItems = 'center'; // Keep things aligned
-            
+            d.style.alignItems = 'center';
             const products = store.masterCosts || [];
             const productOptions = products.map(c => {
                 const rawPrice = c.price ? String(c.price).replace(/[$,]/g, '') : "0";
-                return `<option value="${c.name}" data-price="${rawPrice}" ${c.name === data.name ? 'selected' : ''}>
-                    ${c.name} (${c.price || '$0.00'})
-                </option>`;
+                return `<option value="${c.name}" data-price="${rawPrice}" ${c.name === data.name ? 'selected' : ''}>${c.name} (${c.price || '$0.00'})</option>`;
             }).join('');
 
             d.innerHTML = `
-                <select class="item-sel" onchange="calculateOrderTotal()" style="flex:2">
+                <select class="item-sel" onchange="if(window.calculateOrderTotal) calculateOrderTotal()" style="flex:2">
                     <option value="" disabled ${!data.name ? 'selected' : ''}>Product...</option>
                     ${productOptions}
                 </select>
-                <input type="number" class="item-qty" value="${data.qty}" min="1" oninput="calculateOrderTotal()" style="flex:0.5">
+                <input type="number" class="item-qty" value="${data.qty}" min="1" oninput="if(window.calculateOrderTotal) calculateOrderTotal()" style="flex:0.5">
                 <div style="flex:1; display:flex; flex-direction:column; align-items:center; font-size:9px;">
                     <label>Free?</label>
-                    <input type="checkbox" class="item-free" ${data.free ? 'checked' : ''} onchange="calculateOrderTotal()">
+                    <input type="checkbox" class="item-free" ${data.free ? 'checked' : ''} onchange="if(window.calculateOrderTotal) calculateOrderTotal()">
                 </div>
-                <button type="button" class="btn-danger" onclick="this.parentElement.remove();calculateOrderTotal();">✕</button>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove(); if(window.calculateOrderTotal) calculateOrderTotal();">✕</button>
             `;
             container.appendChild(d);
-            calculateOrderTotal();
+            if(window.calculateOrderTotal) window.calculateOrderTotal();
         };
 
         window.calculateOrderTotal = () => {
@@ -871,21 +825,46 @@ function renderCard(i, tab, editLabel) {
                 <div style="color: var(--accent); font-size: 11px; font-weight: bold; margin-bottom: 4px;">Total Stock: ${totalQty}</div>
                 ${variantDetails}
             </div>`;
+
     } else if (tab === 'orders') {
         detail = i.total || "$0.00";
+
+    // --- NEW: inline viewer for specs tab ---
+    } else if (tab === 'specs') {
+        const stylesList = (i.styles || []).map(st => 
+            `<span style="display:inline-block; background:#f1f5f9; color:#334155; font-size:10px; padding:3px 8px; border-radius:15px; margin:2px;">
+                ${st.name || 'Standard'}
+             </span>`
+        ).join('');
+
+        detail = `
+            <div style="text-align: left; font-size: 11px; color: #475569; margin-top: 6px; width: 100%;">
+                <div style="display: flex; gap: 15px; margin-bottom: 4px;">
+                    <span><strong>Temp:</strong> ${i.temp || 'N/A'}</span>
+                    <span><strong>Time:</strong> ${i.time || 'N/A'}</span>
+                    <span><strong>Weight:</strong> ${i.weight || 'Medium'}</span>
+                </div>
+                ${i.notes ? `<div style="font-style: italic; color:#64748b; margin-bottom: 6px;">"${i.notes}"</div>` : ''}
+                <div style="margin-top: 4px;">${stylesList}</div>
+            </div>`;
+
     } else {
         detail = i.price || (i.cost ? '$' + i.cost : '');
     }
 
+    // Adjusted card layout slightly so spec details render cleanly beneath the main title row if needed
     return `
-    <div class="card list-item-card">
-        <div class="list-row">
+    <div class="card list-item-card" style="display: flex; flex-direction: column; gap: 4px; padding: 12px; margin-bottom: 8px;">
+        <div class="list-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <strong>${i.name}</strong> 
-            <span>${detail}</span>
+            <span>${tab === 'specs' ? '' : detail}</span> 
         </div>
-        <div style="margin-top:10px;">
-            <button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998;</button>
-            <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006;</button>
+        
+        ${tab === 'specs' ? detail : ''}
+        
+        <div style="margin-top:10px; border-top: 1px dashed #e2e8f0; padding-top: 8px; display: flex; gap: 8px;">
+            <button class="btn-action" onclick="editObj('${editLabel}','${i.id}')">&#9998; Edit</button>
+            <button class="btn-danger" onclick="remove('${tab}','${i.id}')">&#10006; Delete</button>
         </div>
     </div>`;
 }
@@ -1068,37 +1047,43 @@ window.updateInvCatDropdown = () => {
             });
         };
         window.adjustInventory = async (items, type = "subtract") => {
-            if (!items || items.length === 0) return;
+    if (!items || items.length === 0) return;
 
-            try {
-                for (const item of items) {
-                    const invItem = store.inventory.find(i => i.name === item.name);
-                    if (!invItem) continue;
+    try {
+        for (const item of items) {
+            const invItem = store.inventory.find(i => i.name === item.name);
+            if (!invItem) continue;
 
-                    const qtyChange = parseInt(item.qty) || 0;
+            const qtyChange = parseInt(item.qty) || 0;
 
-                    // Clone variants safely
-                    const updatedVariants = (invItem.variants || []).map(v => {
-                        return {
-                            ...v,
-                            qty: type === "subtract"
-                                ? (v.qty - qtyChange)
-                                : (v.qty + qtyChange)
-                        };
-                    });
-
-                    await updateDoc(doc(db, "inventory", invItem.id), {
-                        variants: updatedVariants
-                    });
+            const updatedVariants = (invItem.variants || []).map(v => {
+                // Fix: Only target the specific variant matching the order item row
+                if (v.name === item.variantName) { 
+                    return {
+                        ...v,
+                        qty: type === "subtract" ? (v.qty - qtyChange) : (v.qty + qtyChange)
+                    };
                 }
-            } catch (err) {
-                console.error("Inventory update error:", err);
-                alert("Inventory update failed");
-            }
-        };
+                return v; // Leave other variants untouched
+            });
+
+            await updateDoc(doc(db, "inventory", invItem.id), {
+                variants: updatedVariants
+            });
+        }
+    } catch (err) {
+        console.error("Inventory update error:", err);
+        alert("Inventory update failed");
+    }
+};        };
         window.exportToSheets = () => {
     // 1. Determine active tab
-    const activeTab = getActiveTab(); 
+    const getActiveTab = () => {
+    const activeNav = document.querySelector('.nav-item.active');
+        // Assuming your nav element looks like: <div class="nav-item active" onclick="showPage('orders', this)">
+        // Or you can map it based on text content/attributes:
+        return activeNav ? activeNav.innerText.toLowerCase().trim() : 'orders';
+    };
     let data = [];
     let csvRows = [];
     let fileName = `Dim_Accounting_${activeTab}_${new Date().toLocaleDateString()}.csv`;
@@ -1112,7 +1097,13 @@ window.updateInvCatDropdown = () => {
             if (variants.length > 0) {
                 // If there are variants, export a line for each one
                 variants.forEach(v => {
-                    csvRows.push(`"${item.name}","${item.category || 'Uncategorized'}","${v.name}",${v.qty || 0},${v.cost || item.cost || 0}`);
+                    const escapeCSV = (str) => {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/"/g, '""');
+};
+
+// Usage inside your loop arrays:
+csvRows.push(`"${escapeCSV(item.name)}","${escapeCSV(item.category || 'Uncategorized')}","Base Item",0,${item.cost || 0}`);
                 });
             } else {
                 // If there are NO variants, still export the base item so it's not missing!
