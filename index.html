@@ -830,22 +830,28 @@ function renderCard(i, tab, editLabel) {
         detail = i.total || "$0.00";
 
     // --- NEW: inline viewer for specs tab ---
-    } else if (tab === 'specs') {
-        const stylesList = (i.styles || []).map(st => 
-            `<span style="display:inline-block; background:#f1f5f9; color:#334155; font-size:10px; padding:3px 8px; border-radius:15px; margin:2px;">
-                ${st.name || 'Standard'}
+   } else if (tab === 'specs') {
+        // Render dimensions/print styles as distinct badges
+        const dimensionsList = (i.styles || []).map(st => 
+            `<span style="display:inline-block; background:#e2e8f0; color:#1e293b; font-size:10px; padding:3px 8px; border-radius:6px; margin:2px; font-weight:500;">
+                ${st.style || 'Standard'}: ${st.size || 'N/A'}
              </span>`
         ).join('');
 
         detail = `
-            <div style="text-align: left; font-size: 11px; color: #475569; margin-top: 6px; width: 100%;">
-                <div style="display: flex; gap: 15px; margin-bottom: 4px;">
-                    <span><strong>Temp:</strong> ${i.temp || 'N/A'}</span>
-                    <span><strong>Time:</strong> ${i.time || 'N/A'}</span>
-                    <span><strong>Weight:</strong> ${i.weight || 'Medium'}</span>
+            <div style="text-align: left; font-size: 12px; color: #334155; margin-top: 6px; width: 100%;">
+                <div style="display: flex; gap: 20px; margin-bottom: 8px; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <span><strong style="color: #64748b;">TEMP:</strong> <span style="color: #0f172a; font-weight:600;">${i.temp || 'N/A'}</span></span>
+                    <span><strong style="color: #64748b;">TIME:</strong> <span style="color: #0f172a; font-weight:600;">${i.time || 'N/A'}</span></span>
+                    <span><strong style="color: #64748b;">WEIGHT:</strong> <span style="color: #0f172a; font-weight:500;">${i.weight || 'Medium'}</span></span>
                 </div>
-                ${i.notes ? `<div style="font-style: italic; color:#64748b; margin-bottom: 6px;">"${i.notes}"</div>` : ''}
-                <div style="margin-top: 4px;">${stylesList}</div>
+                
+                <div style="margin-bottom: 6px;">
+                    <strong style="font-size: 10px; color: #94a3b8; display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Dimensions & Placements</strong>
+                    ${dimensionsList ? dimensionsList : '<span style="color:#94a3b8; font-size:11px; italic">No dimensions set</span>'}
+                </div>
+
+                ${i.notes ? `<div style="font-style: italic; color:#64748b; font-size: 11px; margin-top: 4px; border-left: 2px solid #cbd5e1; padding-left: 6px;">"${i.notes}"</div>` : ''}
             </div>`;
 
     } else {
