@@ -825,6 +825,27 @@ function renderCard(i, tab, editLabel) {
                 <div style="color: var(--accent); font-size: 11px; font-weight: bold; margin-bottom: 4px;">Total Stock: ${totalQty}</div>
                 ${variantDetails}
             </div>`;
+    } else if (tab === 'product') {
+    detail = `
+        <div style="text-align: left; margin-top: 6px; display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <div>
+                <label style="font-size: 10px; color: #64748b; font-weight: 600;">PRODUCT NAME</label>
+                <input type="text" 
+                       class="edit-prod-input" 
+                       data-field="name" 
+                       value="${i.name || ''}" 
+                       style="width: 100%; padding: 4px 8px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+            </div>
+            <div>
+                <label style="font-size: 10px; color: #64748b; font-weight: 600;">SKU / SUPPLIER</label>
+                <input type="text" 
+                       class="edit-prod-input" 
+                       data-field="sku" 
+                       value="${i.sku || ''}" 
+                       style="width: 100%; padding: 4px 8px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px;" />
+            </div>
+        </div>`;
+}
 
     } else if (tab === 'orders') {
         detail = i.total || "$0.00";
