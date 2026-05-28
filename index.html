@@ -1103,6 +1103,26 @@ window.updateInvCatDropdown = () => {
         alert("Inventory update failed");
     }
 };
+        // Add this helper block where you initialize your application's global listeners
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('edit-prod-input')) {
+        const field = e.target.getAttribute('data-field'); // e.g., 'name' or 'sku'
+        const newValue = e.target.value;
+        
+        // 1. Find the parent card to get the item ID
+        const card = e.target.closest('.card-element-class'); 
+        const itemId = card.getAttribute('data-id'); 
+
+        // 2. Update your local data array
+        const item = myDataArray.find(item => item.id == itemId);
+        if (item) {
+            item[field] = newValue;
+        }
+        
+        // Optional: If you use an auto-save function or sync to localStorage, trigger it here:
+        // saveToDatabase();
+    }
+});
         window.exportToSheets = () => {
     // 1. Determine active tab
     const getActiveTab = () => {
