@@ -31,8 +31,8 @@
         <div>
             <div class="p-6 border-b border-blue-900 text-center bg-[#161f48]">
                 <div class="inline-block p-2 bg-yellow-400 rounded-full text-[#1e295d] mb-2 font-bold text-xl">💡</div>
-                <h1 id="edit-brand-title" contenteditable="true" onblur="saveData('edit-brand-title')" class="text-xl font-black tracking-wider text-yellow-400">D.I.M. BRIGHT IDEAS</h1>
-                <p id="edit-brand-sub" contenteditable="true" onblur="saveData('edit-brand-sub')" class="text-xs text-slate-300 font-semibold tracking-widest mt-1">DID IT MYSELF</p>
+                <h1 id="edit-brand-title" contenteditable="false" onblur="saveData('edit-brand-title')" class="text-xl font-black tracking-wider text-yellow-400">D.I.M. BRIGHT IDEAS</h1>
+                <p id="edit-brand-sub" contenteditable="false" onblur="saveData('edit-brand-sub')" class="text-xs text-slate-300 font-semibold tracking-widest mt-1">DID IT MYSELF</p>
             </div>
 
             <nav class="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]" id="sidebar-nav">
@@ -67,73 +67,191 @@
             <div id="view-Cover" class="tab-view h-full flex flex-col justify-between bg-gradient-to-br from-[#1e295d] to-[#12193a] text-white rounded-2xl p-12 shadow-2xl relative overflow-hidden text-center min-h-[500px]">
                 <div class="absolute top-10 left-1/2 -translate-x-1/2 text-7xl opacity-80">💡</div>
                 <div class="my-auto space-y-6">
-                    <h1 id="edit-cover-title" contenteditable="true" onblur="saveData('edit-cover-title')" class="text-6xl font-black tracking-tight text-white">D.I.M. BRIGHT IDEAS <span class="text-yellow-400 font-extrabold">LLC</span></h1>
-                    <h3 id="edit-cover-sub" contenteditable="true" onblur="saveData('edit-cover-sub')" class="text-2xl italic font-serif text-yellow-300 tracking-wide">Did It Myself</h3>
+                    <h1 id="edit-cover-title" contenteditable="false" onblur="saveData('edit-cover-title')" class="text-6xl font-black tracking-tight text-white">D.I.M. BRIGHT IDEAS <span class="text-yellow-400 font-extrabold">LLC</span></h1>
+                    <h3 id="edit-cover-sub" contenteditable="false" onblur="saveData('edit-cover-sub')" class="text-2xl italic font-serif text-yellow-300 tracking-wide">Did It Myself</h3>
                     <div class="h-1 w-24 bg-orange-500 mx-auto rounded-full"></div>
-                    <p id="edit-cover-tagline" contenteditable="true" onblur="saveData('edit-cover-tagline')" class="text-lg tracking-widest uppercase font-light text-slate-300 max-w-2xl mx-auto">Meaningful Gifts. Personalized Experiences. Lasting Connections.</p>
+                    <p id="edit-cover-tagline" contenteditable="false" onblur="saveData('edit-cover-tagline')" class="text-lg tracking-widest uppercase font-light text-slate-300 max-w-2xl mx-auto">Meaningful Gifts. Personalized Experiences. Lasting Connections.</p>
                 </div>
-                <div id="edit-cover-footer" contenteditable="true" onblur="saveData('edit-cover-footer')" class="text-xs text-slate-400 tracking-widest uppercase">Macon, GA · Custom Products · Gift Planning · QR Experiences</div>
+                <div id="edit-cover-footer" contenteditable="false" onblur="saveData('edit-cover-footer')" class="text-xs text-slate-400 tracking-widest uppercase">Macon, GA · Custom Products · Gift Planning · QR Experiences</div>
             </div>
 
             <!-- 02 SNAPSHOT -->
             <div id="view-Snapshot" class="tab-view hidden space-y-8">
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-md">
+                    <div class="bg-gradient-to-br from-blue-200 to-blue-300 text-white rounded-xl p-6 shadow-md">
                         <div class="flex items-center space-x-2 mb-3"><span class="text-xl">🎯</span><h3 class="font-bold text-lg uppercase tracking-wide">Mission</h3></div>
-                        <p id="edit-snapshot-mission" contenteditable="true" onblur="saveData('edit-snapshot-mission')" class="text-sm leading-relaxed text-blue-50">Provide meaningful, customized products and experiences that allow individuals and organizations to celebrate, remember, appreciate, and connect through personalized gifts and creative solutions.</p>
+                        <p id="edit-snapshot-mission" contenteditable="false" onblur="saveData('edit-snapshot-mission')" class="text-sm leading-relaxed text-blue-50">Provide meaningful, customized products and experiences that allow individuals and organizations to celebrate, remember, appreciate, and connect through personalized gifts and creative solutions.</p>
                     </div>
-                    <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-md">
+                    <div class="bg-gradient-to-br from-orange-200 to-orange-300 text-white rounded-xl p-6 shadow-md">
                         <div class="flex items-center space-x-2 mb-3"><span class="text-xl">🔭</span><h3 class="font-bold text-lg uppercase tracking-wide">Vision</h3></div>
-                        <p id="edit-snapshot-vision" contenteditable="true" onblur="saveData('edit-snapshot-vision')" class="text-sm leading-relaxed text-orange-50">Become a recognized creative gift and personalization company known throughout Georgia and online for custom products, gift planning, and interactive QR experiences while creating sustainable full-time income.</p>
+                        <p id="edit-snapshot-vision" contenteditable="false" onblur="saveData('edit-snapshot-vision')" class="text-sm leading-relaxed text-orange-50">Become a recognized creative gift and personalization company known throughout the USA and online for custom products, gift planning, and interactive QR experiences while creating sustainable full-time income.</p>
                     </div>
                 </div>
                 
                 <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
                     <h3 class="text-center font-black text-[#1e295d] tracking-wider uppercase mb-4">What Makes D.I.M. Unique?</h3>
                     <div class="grid md:grid-cols-3 gap-4 text-center text-sm font-semibold text-slate-700">
-                        <div id="edit-unique-1" contenteditable="true" onblur="saveData('edit-unique-1')" class="bg-white p-4 rounded-lg shadow-sm border border-yellow-200 flex flex-col justify-center items-center">
+                        <div id="edit-unique-1" contenteditable="false" onblur="saveData('edit-unique-1')" class="bg-white p-4 rounded-lg shadow-sm border border-yellow-200 flex flex-col justify-center items-center">
                             <span>🎁 We don't just sell products — we create meaningful gifts & personalized experiences.</span>
                         </div>
-                        <div id="edit-unique-2" contenteditable="true" onblur="saveData('edit-unique-2')" class="bg-white p-4 rounded-lg shadow-sm border border-yellow-200 flex flex-col justify-center items-center">
-                            <span>📱 QR Experience technology sets us apart from every other crafter.</span>
+                        <div id="edit-unique-2" contenteditable="false" onblur="saveData('edit-unique-2')" class="bg-white p-4 rounded-lg shadow-sm border border-yellow-200 flex flex-col justify-center items-center">
+                            <span>📱 QR Experience technology sets us apart from other crafters.</span>
                         </div>
-                        <div id="edit-unique-3" contenteditable="true" onblur="saveData('edit-unique-3')" class="bg-white p-4 rounded-lg shadow-sm border border-yellow-200 flex flex-col justify-center items-center">
+                        <div id="edit-unique-3" contenteditable="false" onblur="saveData('edit-unique-3')" class="bg-white p-4 rounded-lg shadow-sm border border-yellow-200 flex flex-col justify-center items-center">
                             <span>🤝 We serve individuals AND businesses — with packages for both.</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="w-full">
-                    <div id="edit-brand-position" contenteditable="true" onblur="saveData('edit-brand-position')" class="bg-orange-500 text-white text-center p-4 rounded-xl font-bold text-sm tracking-wide shadow-sm">
+                    <div id="edit-brand-position" contenteditable="false" onblur="saveData('edit-brand-position')" class="bg-orange-500 text-white text-center p-4 rounded-xl font-bold text-sm tracking-wide shadow-sm">
                         💡 BRAND POSITION: "We create meaningful gifts and personalized experiences."
                     </div>
                 </div>
             </div>
 
             <!-- 03 DIVISIONS -->
-            <div id="view-Divisions" class="tab-view hidden grid md:grid-cols-2 gap-6">
+            <div id="view-Divisions" class="tab-view hidden grid md:grid-cols-4 gap-3">
                 <div class="bg-white border-t-4 border-blue-500 rounded-xl p-6 shadow-sm">
                     <h4 class="font-bold text-blue-600 uppercase text-xs tracking-wider mb-1">Division 1</h4>
                     <h3 class="font-extrabold text-slate-800 text-lg mb-3">Personalized Products</h3>
                     <p class="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1">Current Services:</p>
-                    <p id="edit-div1-current" contenteditable="true" onblur="saveData('edit-div1-current')" class="text-sm text-slate-600 mb-3">Sublimation: Tumblers, Mugs, Water Bottles, Photo Panels, Tote Bags, Baby Apparel, T-Shirts, Coasters, Soap Dispensers, Spray Bottles</p>
+                    <div id="edit-div1-current" contenteditable="true" onblur="saveData('edit-div1-current')" class="text-sm text-slate-600 mb-3 space-y-3">
+                        <div>
+                            <strong class="text-[#1e295d] block mb-1">🔥 Sublimation:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>Full-Wrap Tumblers & Travel Mugs</li>
+                                <li>Coffee Mugs (Solid, Accent, & Color-Changing)</li>
+                                <li>Stainless Steel & Aluminum Sports Water Bottles</li>
+                                <li>High-Definition ChromaLuxe Metal Photo Panels & Slates</li>
+                                <li>Tote Bags & Drawstring Packs</li>
+                                <li>Ultra-Soft Polyester Baby Apparel (Onesies & Milestones)</li>
+                                <li>T-Shirts</li>
+                                <li>Ceramic, Sandstone, & Glossy Hardboard Coasters</li>
+                                <li>Soap Dispensers</li>
+                                <li>Spray Bottles</li>
+                                <li>Personalized Keychains, Luggage Tags, & Mousepads</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong class="text-[#1e295d] block mb-1">✨ Vinyl:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>Custom Canvas Tote Bags & Eco-Friendly Shoppers</li>
+                                <li>Personalized Baby Apparel (Onesies, Bodysuits, & Bibs)</li>
+                                <li>T-Shirts, Hoodies, & Custom Team Outerwear</li>
+                                <li>Precision-Cut Permanent Decals for Windows & Vehicles</li>
+                                <li>Custom Iron-On Fabric Patches & Uniform Branding</li>
+                                <li>Monogrammed Cosmetic Bags & Travel Pouches</li>
+                            </ul>
+                            </ul>
+                        </div>
+                        <div>
+                           <strong class="text-[#1e295d] block mb-1">🧪 Resin/Epoxy:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>Glitter, Alcohol Ink, & Milky Way Tumblers</li>
+                                <li>Custom Resin-Handle Mugs & Coffee Cups</li>
+                                <li>High-Gloss Protective Coated Water Bottles</li>
+                                <li>Geode, Pressed Flower, & Faux-Marble Coasters</li>
+                                <li>Decorative Embedded-Element Soap Dispensers</li>
+                                <li>Matching Custom-Tinted Countertop Spray Bottles</li>
+                                <li>Resin-Cast Keychains, Badge Reels, & Phone Grips</li>
+                                <li>Custom Jewelry Trays & Trinket Dishes</li>
+                            </ul>
+                        </div>
+                    </div>                
                 </div>
                 <div class="bg-white border-t-4 border-orange-500 rounded-xl p-6 shadow-sm">
                     <h4 class="font-bold text-orange-600 uppercase text-xs tracking-wider mb-1">Division 2</h4>
                     <h3 class="font-extrabold text-slate-800 text-lg mb-3">Gift Planning Services</h3>
-                    <p class="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1">INDIVIDUAL & Bulk Orders:</p>
-                    <p id="edit-div2-bulk" contenteditable="true" onblur="saveData('edit-div2-bulk')" class="text-sm text-slate-600 mb-3">Employee/Teacher appreciation, Conference gifts, Church gifts, Wedding favors, Onboarding gifts, Special Occasion gifts(birthdays, reunions,...)</p>
-                </div>
+                    <p class="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1">CURRENT INDIVIDUAL & BULK OFFERS:</p>
+                    <div id="edit-div2-bulk" contenteditable="true" onblur="saveData('edit-div2-bulk')" class="text-sm text-slate-600 mb-3 space-y-3">
+                        <div>
+                            <strong class="text-[#1e295d] block mb-1">🏢 Corporate & Organization:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>Employee/Teacher Appreciation</li>
+                                <li>Onboarding & New Hire Welcome Kits</li>
+                                <li>Conference, Seminar, & Summit SWAG</li>
+                                <li>Church Events & Volunteer Recognition</li>
+                                <li>Client Appreciation & Thank-You Gifts</li>
+                                <li>Corporate Milestone & Anniversary Celebrations</li>
+                                <li>Holiday & End-of-Year Corporate Giving</li>
+                                <li>Executive Branding & Luxury V.I.P. Gifts</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong class="text-[#1e295d] block mb-1">🎉 Social & Special Occasion:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>Weddings, Bridal Showers, & Anniversaries</li>
+                                <li>Milestone Birthdays & Quinceañeras</li>
+                                <li>Graduations & Academic Achievements</li>
+                                <li>Family & Class Reunions</li>
+                                <li>Celebration of Life & Memorial Tributes</li>
+                                <li>Holiday Gatherings & Seasonal Gift Exchanges</li>
+                                <li>Baby Showers & Gender Reveal Keepsakes</li>
+                                <li>Retirement Parties & Legacy Milestones</li>
+                            </ul>
+                        </div>
+                    </div>                </div>
                 <div class="bg-white border-t-4 border-indigo-600 rounded-xl p-6 shadow-sm relative">
                     <span class="absolute top-4 right-4 bg-orange-500 text-white text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded">Signature</span>
                     <h4 class="font-bold text-indigo-600 uppercase text-xs tracking-wider mb-1">Division 3</h4>
                     <h3 class="font-extrabold text-slate-800 text-lg mb-3">QR Experience Services</h3>
-                    <p id="edit-div3-current" contenteditable="true" onblur="saveData('edit-div3-current')" class="text-sm text-slate-600 mb-3">Slideshows, Audio messages, Video messages, Custom letters, Milestones, Memorials, Graduations, Weddings, Time Capsules,...</p>
-                </div>
+                    <div id="edit-div3-current" contenteditable="true" onblur="saveData('edit-div3-current')" class="text-sm text-slate-600 mb-3 space-y-3">
+                      <div>
+                        <strong class="text-[#1e295d] block mb-1">📱 Digital Media Content:</strong>
+                        <ul class="list-disc pl-5 space-y-0.5">
+                            <li>Custom-Timed Photo Slideshows with Background Music</li>
+                            <li>Personalized Audio Messages & Voice Note Greetings</li>
+                            <li>High-Definition Video Messages & Cinematic Keepsake Clips</li>
+                            <li>Custom Digital Letters, Interactive Journals, & Storytelling Pages</li>
+                            <li>Shared Digital Photo Albums (Dynamic Guest-Upload Portals)</li>
+                            <li>Curated Audio Playlists linked to Custom Gift Keepsakes</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong class="text-[#1e295d] block mb-1">⏳ Event & Theme Triggers:</strong>
+                        <ul class="list-disc pl-5 space-y-0.5">
+                            <li>Milestones, Celebration of Life, & Interactive Memorial Tributes</li>
+                            <li>Graduations (Video memories, future well-wishes, & diploma highlights)</li>
+                            <li>Weddings (Digital guest books, proposal videos, & wedding day highlights)</li>
+                            <li>Digital Time Capsules (Scheduled or date-locked future message delivery)</li>
+                            <li>Corporate & Church Events (Interactive agendas, itineraries, & welcome videos)</li>
+                            <li>Scavenger Hunts, Interactive Maps, & Local Community Trail Events</li>
+                        </ul>
+                    </div>
+                    </div>                </div>
                 <div class="bg-white border-t-4 border-emerald-500 rounded-xl p-6 shadow-sm">
                     <h4 class="font-bold text-emerald-600 uppercase text-xs tracking-wider mb-1">Division 4</h4>
                     <h3 class="font-extrabold text-slate-800 text-lg mb-3">Future Creative Services</h3>
-                    <p id="edit-div4-coming" contenteditable="true" onblur="saveData('edit-div4-coming')" class="text-sm text-slate-600 mb-3">Embroidery Apparel, Resin drinkware, 3D printing, DIY craft kits, Workshops, Seasonal Collections, Home Decor, Subscription Gift Boxes, Monthly Appreciation Boxes, Workshops & Classes,Digital Products(Teacher worksheets, planners, budgets, calendar,...)</p>
+                    <div id="edit-div4-coming" contenteditable="true" onblur="saveData('edit-div4-coming')" class="text-sm text-slate-600 mb-3 space-y-3">
+                        <div>
+                            <strong class="text-[#1e295d] block mb-1">🎨 Future Creative Services:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>Embroidery Apparel & Direct-to-Garment Customization</li>
+                                <li>Resin Drinkware, Geode Coasters, & High-Gloss Art finishes</li>
+                                <li>3D Printing (Custom product prototypes, lithophanes, & specialty keychains)</li>
+                                <li>DIY Craft Kits & Curated Creative Activity Packs</li>
+                                <li>In-Person Workshops, Creative Classes, & Private Crafting Events</li>
+                                <li>Seasonal Home Decor Collections & Custom Holiday Accents</li>
+                                <li>Monthly Subscription Gift Boxes & Routine Appreciation Packages</li>
+                                <li>Digital Products (Custom teacher worksheets, planners, calendars, & budgeting templates)</li>
+                            </ul>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong class="text-[#1e295d] block mb-1">🎟️ Workshops & Experiences:</strong>
+                            <ul class="list-disc pl-5 space-y-0.5">
+                                <li>In-Person Creative Workshops & Guided Crafting Events</li>
+                                <li>Private Group Classes (Sip & Paint, Team-Building, Birthday Private Bookings)</li>
+                                <li>Seasonal Home Decor Crafting Clinics & Holiday Accent Design Nights</li>
+                                <li>Curated Holiday & Seasonal Product Collections (Fall, Winter, Spring, Summer Drops)</li>
+                                <li>Custom Home Decor Styling Accents, Signs, & Custom Tableware</li>
+                                <li>Monthly Subscription Gift Boxes & Routine VIP Appreciation Packages</li>
+                                <li>Co-Branded Local Business Collaborative Workshops & Pop-Up Events</li>
+                            </ul>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -172,19 +290,19 @@
             <div id="view-Customers" class="tab-view hidden space-y-6">
                 <div class="grid md:grid-cols-2 gap-4">
                     <div class="bg-white border p-4 rounded-lg shadow-sm flex flex-col justify-between">
-                        <h3 id="edit-cust1-title" contenteditable="true" onblur="saveData('edit-cust1-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Individuals</h3>
+                        <h3 id="edit-cust1-title" contenteditable="false" onblur="saveData('edit-cust1-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Individuals</h3>
                         <p id="edit-cust1-details" contenteditable="true" onblur="saveData('edit-cust1-details')" class="text-xs text-slate-600">✓ High emotional connection, Repeat custom purchasing patterns<br>⚠️ Smaller order values. Seasonal demand.</p>
                     </div>
                     <div class="bg-white border p-4 rounded-lg shadow-sm flex flex-col justify-between">
-                        <h3 id="edit-cust2-title" contenteditable="true" onblur="saveData('edit-cust2-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Small Business</h3>
+                        <h3 id="edit-cust2-title" contenteditable="false" onblur="saveData('edit-cust2-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Small Business</h3>
                         <p id="edit-cust2-details" contenteditable="true" onblur="saveData('edit-cust2-details')" class="text-xs text-slate-600">✓ Higher average order value. Repeat orders.<br>⚠️ Price sensitive.</p>
                     </div>
                     <div class="bg-white border p-4 rounded-lg shadow-sm flex flex-col justify-between">
-                        <h3 id="edit-cust3-title" contenteditable="true" onblur="saveData('edit-cust3-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Corporate</h3>
+                        <h3 id="edit-cust3-title" contenteditable="false" onblur="saveData('edit-cust3-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Corporate</h3>
                         <p id="edit-cust3-details" contenteditable="true" onblur="saveData('edit-cust3-details')" class="text-xs text-slate-600">✓ Large orders. Long Term Contracts.<br>⚠️ Longer approval process.</p>
                     </div>
                     <div class="bg-white border p-4 rounded-lg shadow-sm flex flex-col justify-between">
-                        <h3 id="edit-cust4-title" contenteditable="true" onblur="saveData('edit-cust4-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Churches & Schools</h3>
+                        <h3 id="edit-cust4-title" contenteditable="false" onblur="saveData('edit-cust4-title')" class="font-bold text-slate-800 border-b pb-1 mb-2 text-sm text-center uppercase">Churches & Schools</h3>
                         <p id="edit-cust4-details" contenteditable="true" onblur="saveData('edit-cust4-details')" class="text-xs text-slate-600">✓ Strong community referrals. Repeat annual opportunities.<br>⚠️ Seasonal Spending. Budget restrictions.</p>
                     </div>
                 </div>
@@ -196,25 +314,28 @@
                     <h3 class="font-bold tracking-wider text-center border-b border-blue-900 pb-2 mb-4 text-yellow-400 uppercase text-sm">Order Intake Process</h3>
                     <ol id="edit-ops-steps" contenteditable="true" onblur="saveData('edit-ops-steps')" class="space-y-1 text-xs font-medium list-none">
                         <li class="bg-blue-950/40 p-2 rounded border border-blue-900">1. Inquiry Received</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">2. Discovery Questions (Type of product, theme, colors, name/logo, date needed, pickup/delivery/shipping preference)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">3. Quote Provided (Include production timeframe, policy, deposit amount)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">2. Discovery Questions <br>(Type of product, theme, colors, name/logo, date needed, pickup/delivery/shipping preference)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">3. Quote Provided <br> (Include production timeframe, policy, deposit amount)</li>
                         <li class="bg-blue-950/40 p-2 rounded border border-blue-900">4. Invoice Sent</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">5. Deposit Received (Secures space on production calendar)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">6. Design Mockup Created (Layout digital elements based on customer brief)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">7. Design Approval (Draft sent to client -> Client confirms/requests edits -> Final approval locked)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">8. Materials Procurement (Verify inventory; source blanks, specific sub inks, or paper if needed)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">9. Production (Print design, align and heat-tape substrates, press product at designated times/temps)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">10. Quality Check (Inspect for faded spots, ghosting, alignment issues, or surface flaws)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">11. Packaging (Clean item, wrap carefully, add care card/logo sticker, box/bag up)</li>
-                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">12. Shipping/Delivery (limited)/Pickup (Collect remaining balance, send tracking details, or confirm pickup location)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">5. Deposit Received <br>(Secures space on production calendar)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">6. Design Mockup Created <br>(Layout digital elements based on customer brief)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">7. Design Approval <br>(Draft sent to client -> Client confirms/requests edits -> Final approval locked)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">8. Materials Procurement <br>(Verify inventory; source blanks, specific sub inks, or paper if needed)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">9. Production <br>(Print design, align and heat-tape substrates, press product at designated times/temps)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">10. Quality Check <br>(Inspect for faded spots, ghosting, alignment issues, or surface flaws)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">11. Packaging <br>(Clean item, wrap carefully, add care card/logo sticker, box/bag up)</li>
+                        <li class="bg-blue-950/40 p-2 rounded border border-blue-900">12. Shipping/Delivery (limited)/Pickup <br>(Collect remaining balance, send tracking details, or confirm pickup location)</li>
                     </ol>
                 </div>
                 <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-5 text-slate-700">
                     <h3 class="font-bold mb-2 uppercase text-xs tracking-wider">Deposit Policy & Safeguards</h3>
                     <ul id="edit-ops-deposits" contenteditable="true" onblur="saveData('edit-ops-deposits')" class="text-xs space-y-1 font-semibold">
                         <li>💰 Under $100: Full payment upfront before production begins</li>
+                        <br>
                         <li>💵 $100–$500: 50% deposit minimum required to start</li>
+                        <br>
                         <li>💳 Over $500: 60% deposit minimum required to start</li>
+                        <br>
                         <li>🍶 <strong class="text-red-600">***Custom Products: ALL deposits are strictly non-refundable once materials are ordered or design drafts are completed.***</strong></li>
                     </ul>
                 </div>
@@ -253,7 +374,7 @@
                     </div>
                     <div class="bg-[#1e295d] text-white p-5 rounded-xl shadow-sm">
                         <h3 class="font-bold text-sm uppercase text-yellow-400 border-b border-blue-900 pb-2 mb-3">Target Bank Account Matrix</h3>
-                        <p id="edit-finance-routine" contenteditable="true" onblur="saveData('edit-finance-routine')" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+                        <p id="edit-finance-routine" contenteditable="false" onblur="saveData('edit-finance-routine')" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
                             🏦 <strong>Checking Account:</strong>
                             Main operating hub. Receives all client deposits and invoice payments. Disburses baseline supply costs.
                             
@@ -267,7 +388,7 @@
                             Holds the 10% tax withholding. Untouchable until quarterly or annual tax filings.
                             
                             🛠️ <strong>Equipment Savings Account:</strong>
-                            Receives the 5% allocation. Dedicated exclusively to major assets (such as purchasing the upcoming 3D printer and future commercial embroidery machines).
+                            Receives the 5% allocation. Dedicated exclusively to major assets (such as purchasing new equipment).
                         </p>
                     </div>
                 </div>
@@ -276,30 +397,32 @@
             <div id="view-Marketing" class="tab-view hidden space-y-6">
                 <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest text-center">Interactive Daily Campaign Scheduler(Daily Marketing-15 mins)</h3>
                 <div id="edit-marketing-calendar-1" contenteditable="true" onblur="saveData('edit-marketing-calendar-1')" class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-white">
-                    <div class="bg-blue-600 p-2 rounded">MON<br><span class="font-normal text-[9px]">Behind Scenes</span></div>
-                    <div class="bg-indigo-600 p-2 rounded">TUE<br><span class="font-normal text-[9px]">Product Feature</span></div>
-                    <div class="bg-orange-600 p-2 rounded">WED<br><span class="font-normal text-[9px]">Client Review</span></div>
-                    <div class="bg-yellow-500 p-2 rounded text-slate-950">THU<br><span class="font-normal text-[9px]">Educational</span></div>
-                    <div class="bg-emerald-600 p-2 rounded">FRI<br><span class="font-normal text-[9px]">Feature Friday</span></div>
-                    <div class="bg-purple-600 p-2 rounded">SAT<br><span class="font-normal text-[9px]">Market Showcase</span></div>
-                    <div class="bg-pink-600 p-2 rounded">SUN<br><span class="font-normal text-[9px]">New Drop</span></div>
+                    <div class="bg-blue-900 p-2 rounded">MON<br><span class="font-normal text-[9px]">Behind Scenes</span></div>
+                    <div class="bg-blue-800 p-2 rounded">TUE<br><span class="font-normal text-[9px]">Product Feature</span></div>
+                    <div class="bg-blue-700 p-2 rounded">WED<br><span class="font-normal text-[9px]">Client Review</span></div>
+                    <div class="bg-blue-600 p-2 rounded">THU<br><span class="font-normal text-[9px]">Educational</span></div>
+                    <div class="bg-blue-500 p-2 rounded">FRI<br><span class="font-normal text-[9px]">Feature Friday</span></div>
+                    <div class="bg-blue-400 p-2 rounded">SAT<br><span class="font-normal text-[9px]">Market Showcase</span></div>
+                    <div class="bg-blue-300 p-2 rounded">SUN<br><span class="font-normal text-[9px]">New Drop</span></div>
                 </div>
+
+                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest text-center">Weekly Goals/Tasks</h3>
                 <div id="edit-marketing-calendar-2" contenteditable="true" onblur="saveData('edit-marketing-calendar-2')" class="grid grid-cols-5 gap-2 text-center text-xs font-bold text-white font-medium mt-2">
-                    <div class="bg-pink-400 p-2 rounded">1 Reel</div>
-                    <div class="bg-pink-300 p-2 rounded">3 Posts</div>
-                    <div class="bg-green-600 p-2 rounded">5 Stories</div>
-                    <div class="bg-purple-500 p-2 rounded text-slate-950">Comment on 10 Local Businesses</div>
-                    <div class="bg-blue-300 p-2 rounded">Add 5 contacts to email list</div>
+                    <div class="bg-purple-900 p-2 rounded">1 Reel</div>
+                    <div class="bg-purple-800 p-2 rounded">3 Posts</div>
+                    <div class="bg-purple-700 p-2 rounded">5 Stories</div>
+                    <div class="bg-purple-600 p-2 rounded">Comment on 10 Local Businesses</div>
+                    <div class="bg-purple-500 p-2 rounded">Add 5 contacts to email list</div>
                 </div>
                 
                 <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest text-center mt-8">6-Month Rolling Calendar Execution</h3>
                 <div id="edit-marketing-calendar-3" contenteditable="true" onblur="saveData('edit-marketing-calendar-3')" class="grid grid-cols-6 gap-2 text-center text-xs font-bold text-white">
-                    <div class="bg-orange-300 p-2 rounded">MONTH 1<br><span class="font-normal text-[9px]">Website Improvements</span></div>
-                    <div class="bg-indigo-400 p-2 rounded">MONTH 2<br><span class="font-normal text-[9px]">Google Profile Optimization</span></div>
-                    <div class="bg-orange-500 p-2 rounded">MONTH 3<br><span class="font-normal text-[9px]">Email List</span></div>
-                    <div class="bg-yellow-400 p-2 rounded text-slate-950">MONTH 4<br><span class="font-normal text-[9px]">Referral Program</span></div>
-                    <div class="bg-emerald-400 p-2 rounded">MONTH 5<br><span class="font-normal text-[9px]">Corporate Outreach</span></div>
-                    <div class="bg-purple-300 p-2 rounded">MONTH 6<br><span class="font-normal text-[9px]">School & Church Outreach</span></div>
+                    <div class="bg-orange-800 p-2 rounded">MONTH 1<br><span class="font-normal text-[9px]">Website Improvements</span></div>
+                    <div class="bg-orange-700 p-2 rounded">MONTH 2<br><span class="font-normal text-[9px]">Google Profile Optimization</span></div>
+                    <div class="bg-orange-600 p-2 rounded">MONTH 3<br><span class="font-normal text-[9px]">Email List</span></div>
+                    <div class="bg-orange-500 p-2 rounded">MONTH 4<br><span class="font-normal text-[9px]">Referral Program</span></div>
+                    <div class="bg-orange-400 p-2 rounded">MONTH 5<br><span class="font-normal text-[9px]">Corporate Outreach</span></div>
+                    <div class="bg-orange-300 p-2 rounded">MONTH 6<br><span class="font-normal text-[9px]">School & Church Outreach</span></div>
                 </div>
             </div>
 
@@ -317,8 +440,8 @@
                     <h3 class="font-bold text-amber-800 uppercase mb-2">Crucial Systems Checklist</h3>
                     <div class="space-y-2 font-bold text-slate-700">
                         <label class="flex items-center space-x-2"><input type="checkbox" id="check-sys-1" onchange="saveCheck('check-sys-1')"> <span>Standard Operating Procedures (SOPs) Built</span></label>
-                        <label class="flex items-center space-x-2"><input type="checkbox" id="check-sys-2" onchange="saveCheck('check-sys-2')"> <span>Overhead Scaling Formula Built</span></label>
-                        <label class="flex items-center space-x-2"><input type="checkbox" id="check-sys-3" onchange="saveCheck('check-sys-3')"> <span>Standard Client CRM Implemented</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" id="check-sys-2" onchange="saveCheck('check-sys-2')"> <span>Employee Training Program Implemented</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" id="check-sys-3" onchange="saveCheck('check-sys-3')"> <span>All Equipment & Software fully functional</span></label>
                     </div>
                 </div>
                 <div class="bg-[#1e295d] text-white p-5 rounded-xl">
@@ -521,6 +644,8 @@
             document.getElementById('calc-op').innerText = '$' + (val * 0.55).toFixed(2);
             document.getElementById('calc-pay').innerText = '$' + (val * 0.20).toFixed(2);
             document.getElementById('calc-tax').innerText = '$' + (val * 0.10).toFixed(2);
+            document.getElementById('calc-savings').innerText = '$' + (val * 0.10).toFixed(2);
+            document.getElementById('calc-equip').innerText = '$' + (val* 0.05).toFixed(2);
         }
 
         // Local Storage Sync Engine
@@ -539,54 +664,83 @@
         }
 
         // Initial Initialization Engine (Hydrating stored inputs)
-        window.onload = function() {
-            const textFields = [
-                'edit-brand-title', 'edit-brand-sub', 'edit-cover-title', 'edit-cover-sub', 
-                'edit-cover-tagline', 'edit-cover-footer', 'edit-snapshot-mission', 'edit-snapshot-vision',
-                'edit-unique-1', 'edit-unique-2', 'edit-unique-3', 'edit-brand-position',
-                'edit-div1-current', 'edit-div2-bulk', 'edit-div3-current', 'edit-div4-coming',
-                'edit-pkg1-title', 'edit-pkg1-desc', 'edit-pkg2-title', 'edit-pkg2-desc', 'edit-pkg3-title', 'edit-pkg3-desc',
-                'edit-pkg4-title', 'edit-pkg4-desc', 'edit-pkg5-title', 'edit-pkg5-desc',
-                'edit-pricing-formula', 'edit-cust1-title', 'edit-cust1-details', 'edit-cust2-title', 'edit-cust2-details',
-                'edit-cust3-title', 'edit-cust3-details', 'edit-cust4-title', 'edit-cust4-details',
-                'edit-ops-steps', 'edit-ops-deposits', 'edit-ops-inventory', 'edit-finance-routine',
-                'edit-marketing-calendar-1', 'edit-marketing-calendar-2', 'edit-marketing-calendar-3',
-                'edit-network-orgs-1', 'edit-network-orgs-2', 'edit-network-orgs-3', 'edit-network-orgs-4', 'edit-network-orgs-5',
-                'edit-roadmap-p1', 'edit-roadmap-p2', 'edit-roadmap-p3', 'edit-roadmap-p4',
-                'metric-gross', 'metric-repeat', 'metric-subscribers', 'metric-email', 'metric-church', 'metric-smb', 'metric-corp', 'metric-aov', 'metric-events'
-            ];
+        // Updated Initialization Engine to allow new HTML changes to show through
+// 1. SMART INITIALIZATION ENGINE
+window.onload = function() {
+    const textFields = [
+        'edit-brand-title', 'edit-brand-sub', 'edit-cover-title', 'edit-cover-sub', 
+        'edit-cover-tagline', 'edit-cover-footer', 'edit-snapshot-mission', 'edit-snapshot-vision',
+        'edit-unique-1', 'edit-unique-2', 'edit-unique-3', 'edit-brand-position',
+        'edit-div1-current', 'edit-div2-bulk', 'edit-div3-current', 'edit-div4-coming',
+        'edit-pkg1-title', 'edit-pkg1-desc', 'edit-pkg2-title', 'edit-pkg2-desc', 'edit-pkg3-title', 'edit-pkg3-desc',
+        'edit-pkg4-title', 'edit-pkg4-desc', 'edit-pkg5-title', 'edit-pkg5-desc',
+        'edit-pricing-formula', 'edit-cust1-title', 'edit-cust1-details', 'edit-cust2-title', 'edit-cust2-details',
+        'edit-cust3-title', 'edit-cust3-details', 'edit-cust4-title', 'edit-cust4-details',
+        'edit-ops-steps', 'edit-ops-deposits', 'edit-ops-inventory', 'edit-finance-routine',
+        'edit-marketing-calendar-1', 'edit-marketing-calendar-2', 'edit-marketing-calendar-3',
+        'edit-network-orgs-1', 'edit-network-orgs-2', 'edit-network-orgs-3', 'edit-network-orgs-4', 'edit-network-orgs-5',
+        'edit-roadmap-p1', 'edit-roadmap-p2', 'edit-roadmap-p3', 'edit-roadmap-p4',
+        'metric-gross', 'metric-repeat', 'metric-subscribers', 'metric-email', 'metric-church', 'metric-smb', 'metric-corp', 'metric-aov', 'metric-events'
+    ];
 
-            textFields.forEach(fieldId => {
-                const storedValue = localStorage.getItem(fieldId);
-                const el = document.getElementById(fieldId);
-                
-                if (storedValue && el) {
-                    // FORCE THE BROWSER TO USE NEW HTML FOR SECTIONS 6 & 7
-                    if (fieldId === 'edit-ops-steps' || fieldId === 'edit-ops-inventory') {
-                        // Leave it alone! Let the fresh HTML code shine through.
-                        return; 
-                    }
-                    
-                    // Otherwise, load saved data for everything else
-                    if (el.tagName === 'INPUT') {
-                        el.value = storedValue;
-                    } else {
-                        el.innerHTML = storedValue;
-                    }
+    textFields.forEach(fieldId => {
+        const storedData = localStorage.getItem(fieldId);
+        const el = document.getElementById(fieldId);
+        
+        if (storedData && el) {
+            try {
+                const parsed = JSON.parse(storedData);
+                // Clean the text strings to make comparison completely accurate
+                const cleanHTML = el.innerHTML.replace(/\s+/g, ' ').trim();
+                const cleanSavedHTML = parsed.htmlStructure.replace(/\s+/g, ' ').trim();
+
+                // If the file's raw HTML structure has changed, use the new code file!
+                if (cleanHTML !== cleanSavedHTML) {
+                    localStorage.removeItem(fieldId); // Clears the stale memory cache
+                    return; 
                 }
-            });
 
-            const checkFields = ['check-sys-1', 'check-sys-2', 'check-sys-3', 'check-mile-1', 'check-mile-2', 'check-mile-3', 'check-mile-4', 'check-mile-5'];
-            checkFields.forEach(checkId => {
-                const storedStatus = localStorage.getItem(checkId);
-                const el = document.getElementById(checkId);
-                if (storedStatus === 'true' && el) {
-                    el.checked = true;
+                // If the underlying code is the same, load the user's manual screen edits
+                if (el.tagName === 'INPUT') {
+                    el.value = parsed.userText;
+                } else {
+                    el.innerHTML = parsed.userText;
                 }
-            });
+            } catch (e) {
+                // Fallback for legacy simple strings
+                localStorage.removeItem(fieldId);
+            }
+        }
+    });
 
-            calculateFinances();
-        };
+    // Checkbox State Restore
+    const checkFields = ['check-sys-1', 'check-sys-2', 'check-sys-3', 'check-mile-1', 'check-mile-2', 'check-mile-3', 'check-mile-4', 'check-mile-5'];
+    checkFields.forEach(checkId => {
+        const storedStatus = localStorage.getItem(checkId);
+        const el = document.getElementById(checkId);
+        if (storedStatus === 'true' && el) {
+            el.checked = true;
+        }
+    });
+
+    calculateFinances();
+};
+
+// 2. SMART AUTO-SAVE ENGINE
+function saveData(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+
+    // Grab the initial baseline HTML from a fresh template clone to keep it pure
+    const cleanDOMElement = el.cloneNode(false); 
+    
+    const savePayload = {
+        userText: el.tagName === 'INPUT' ? el.value : el.innerHTML,
+        htmlStructure: el.tagName === 'INPUT' ? "" : el.innerHTML 
+    };
+
+    localStorage.setItem(fieldId, JSON.stringify(savePayload));
+}
     </script>
 </body>
 </html>
