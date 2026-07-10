@@ -631,6 +631,20 @@
             </div>
 
         </div>
+        <div class="fixed bottom-0 right-0 left-0 md:left-85 bg-white/90 backdrop-blur-md border-t border-slate-200 px-6 py-3 flex justify-between items-center z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button id="nav-prev-btn" onclick="navigateTab(-1)" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer">
+                <span>←</span> <span>Prev</span>
+            </button>
+            
+            <div class="text-center hidden sm:block">
+                <span class="text-xs uppercase tracking-wider font-bold text-slate-400">Current Section</span>
+                <div id="nav-current-title" class="text-sm font-bold text-[#1e295d]">01 Cover</div>
+            </div>
+            
+            <button id="nav-next-btn" onclick="navigateTab(1)" class="flex items-center space-x-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-[#1e295d] text-white hover:bg-[#161f48] transition-colors cursor-pointer">
+                <span>Next</span> <span>→</span>
+            </button>
+        </div>
     </main>
 
     <script>
@@ -655,6 +669,9 @@
             const buttons = document.querySelectorAll('#sidebar-nav button');
             buttons.forEach(btn => btn.classList.remove('active-tab'));
             document.getElementById('btn-' + tabId).classList.add('active-tab');
+                        // Hide previous arrow on step 1, hide next arrow on step 12
+            document.getElementById('nav-prev-btn').style.visibility = (nextIndex === 0) ? 'hidden' : 'visible';
+            document.getElementById('nav-next-btn').style.visibility = (nextIndex === SECTION_ORDER.length - 1) ? 'hidden' : 'visible';
         }
 
         // Dynamic Financial Arithmetic Calculator
@@ -787,6 +804,40 @@ function saveData(fieldId) {
 
     localStorage.setItem(fieldId, JSON.stringify(savePayload));
 }
+// ORDERED MAP OF YOUR BLUEPRINT TABS
+const SECTION_ORDER = [
+    'Cover', 'Snapshot', 'Divisions', 'Products', 'Customers', 
+    'Operations', 'Finances', 'Marketing', 'Networking', 
+    'Metrics', 'Roadmap', 'Milestones'
+];
+
+function navigateTab(direction) {
+    // 1. Find out what tab is currently active
+    const activeBtn = document.querySelector('.active-tab');
+    if (!activeBtn) return;
+    
+    const currentTabId = activeBtn.id.replace('btn-', '');
+    let currentIndex = SECTION_ORDER.indexOf(currentTabId);
+    
+    // 2. Calculate next target index
+    let nextIndex = currentIndex + direction;
+    
+    // 3. Keep constraints locked inside the array limits
+    if (nextIndex >= 0 && nextIndex < SECTION_ORDER.length) {
+        const nextTabName = SECTION_ORDER[nextIndex];
+        
+        // Call your existing tab switching engine function
+        switchTab(nextTabName);
+        
+        // Smoothly glide the viewport back to the top of the new section
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+// EXTENSION FOR YOUR EXISTING switchTab() FUNCTION
+// Add this line inside your existing switchTab(tabName) code block to keep the tracker text accurate:
+// document.getElementById('nav-current-title').innerText = document.getElementById('btn-' + tabName).innerText;
+
     </script>
 </body>
 </html>
