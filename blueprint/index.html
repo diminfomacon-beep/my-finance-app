@@ -27,35 +27,54 @@
 </head>
 <body class="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
 
-    <aside class="w-80 bg-[#1e295d] text-white flex flex-col justify-between shadow-xl z-10">
-        <div>
-            <div class="p-6 border-b border-blue-900 text-center bg-[#161f48]">
-                <div class="inline-block p-2 bg-yellow-400 rounded-full text-[#1e295d] mb-2 font-bold text-xl">💡</div>
-                <h1 id="edit-brand-title" contenteditable="false" onblur="saveData('edit-brand-title')" class="text-xl font-black tracking-wider text-yellow-400">D.I.M. BRIGHT IDEAS</h1>
-                <p id="edit-brand-sub" contenteditable="false" onblur="saveData('edit-brand-sub')" class="text-xs text-slate-300 font-semibold tracking-widest mt-1">DID IT MYSELF</p>
+    <!-- THE TOGGLE BUTTON: Place this right ABOVE your <aside> tag in the file -->
+<button id="mobile-sidebar-toggle" class="md:hidden fixed top-4 left-4 z-50 bg-[#1e295d] text-white p-2.5 rounded-lg shadow-xl border border-blue-900 focus:outline-none hover:bg-[#161f48] transition-colors">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+</button>
+
+<!-- RESPONSIVE SIDEBAR WRAPPER -->
+        <aside id="main-sidebar" class="w-80 bg-[#1e295d] text-white flex flex-col justify-between shadow-xl fixed md:relative inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out h-full">
+            <div>
+                <!-- SIDEBAR HEADER (Brand & Close Button for Mobile) -->
+                <div class="p-6 border-b border-blue-900 bg-[#161f48] relative">
+                    <!-- Mobile Close Button -->
+                    <button id="mobile-sidebar-close" class="md:hidden absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div class="text-center">
+                        <div class="inline-block p-2 bg-yellow-400 rounded-full text-[#1e295d] mb-2 font-bold text-xl">💡</div>
+                        <h1 id="edit-brand-title" contenteditable="false" onblur="saveData('edit-brand-title')" class="text-xl font-black tracking-wider text-yellow-400">D.I.M. BRIGHT IDEAS</h1>
+                        <p id="edit-brand-sub" contenteditable="false" onblur="saveData('edit-brand-sub')" class="text-xs text-slate-300 font-semibold tracking-widest mt-1">DID IT MYSELF</p>
+                    </div>
+                </div>
+
+                <!-- NAVIGATION LINKS -->
+                <nav class="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]" id="sidebar-nav">
+                    <button onclick="switchTab('Cover')" id="btn-Cover" class="active-tab w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>01 Cover</span></button>
+                    <button onclick="switchTab('Snapshot')" id="btn-Snapshot" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>02 Business Snapshot</span></button>
+                    <button onclick="switchTab('Divisions')" id="btn-Divisions" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>03 Business Divisions</span></button>
+                    <button onclick="switchTab('Products')" id="btn-Products" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>04 Products & Packages</span></button>
+                    <button onclick="switchTab('Customers')" id="btn-Customers" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>05 Target Customers</span></button>
+                    <button onclick="switchTab('Operations')" id="btn-Operations" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>06 Operations Plan</span></button>
+                    <button onclick="switchTab('Finances')" id="btn-Finances" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>07 Financial Organization</span></button>
+                    <button onclick="switchTab('Marketing')" id="btn-Marketing" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>08 Marketing Plan</span></button>
+                    <button onclick="switchTab('Networking')" id="btn-Networking" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>09 Networking Plan</span></button>
+                    <button onclick="switchTab('Metrics')" id="btn-Metrics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>10 Success Metrics</span></button>
+                    <button onclick="switchTab('Roadmap')" id="btn-Roadmap" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>11 Growth Roadmap</span></button>
+                    <button onclick="switchTab('Milestones')" id="btn-Milestones" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>12 Milestones</span></button>
+                </nav>
             </div>
 
-            <nav class="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]" id="sidebar-nav">
-                <button onclick="switchTab('Cover')" id="btn-Cover" class="active-tab w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>01 Cover</span></button>
-                <button onclick="switchTab('Snapshot')" id="btn-Snapshot" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>02 Business Snapshot</span></button>
-                <button onclick="switchTab('Divisions')" id="btn-Divisions" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>03 Business Divisions</span></button>
-                <button onclick="switchTab('Products')" id="btn-Products" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>04 Products & Packages</span></button>
-                <button onclick="switchTab('Customers')" id="btn-Customers" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>05 Target Customers</span></button>
-                <button onclick="switchTab('Operations')" id="btn-Operations" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>06 Operations Plan</span></button>
-                <button onclick="switchTab('Finances')" id="btn-Finances" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>07 Financial Organization</span></button>
-                <button onclick="switchTab('Marketing')" id="btn-Marketing" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>08 Marketing Plan</span></button>
-                <button onclick="switchTab('Networking')" id="btn-Networking" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>09 Networking Plan</span></button>
-                <button onclick="switchTab('Metrics')" id="btn-Metrics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>10 Success Metrics</span></button>
-                <button onclick="switchTab('Roadmap')" id="btn-Roadmap" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>11 Growth Roadmap</span></button>
-                <button onclick="switchTab('Milestones')" id="btn-Milestones" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all text-slate-300 hover:bg-blue-950/50 hover:text-white"><span>12 Milestones</span></button>
-            </nav>
-        </div>
-
-        <div class="p-4 bg-[#161f48] text-center text-xs text-slate-400 border-t border-blue-900 font-medium">
-            D.I.M. Bright Ideas LLC © 2026
-        </div>
-    </aside>
-
+            <!-- SIDEBAR FOOTER -->
+            <div class="p-4 bg-[#161f48] text-center text-xs text-slate-400 border-t border-blue-900 font-medium">
+                D.I.M. Bright Ideas LLC © 2026
+            </div>
+        </aside>
     <main class="flex-1 overflow-y-auto bg-slate-50 relative flex flex-col">
         <header class="bg-yellow-400 text-[#1e295d] font-bold text-center py-2 text-xs tracking-widest uppercase shadow-sm">
             Strategic Growth & Operations Blueprint
@@ -725,7 +744,34 @@ window.onload = function() {
 
     calculateFinances();
 };
+// MOBILE SIDEBAR INTERACTION CONTROLLER
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebar = document.getElementById("main-sidebar");
+    const openBtn = document.getElementById("mobile-sidebar-toggle");
+    const closeBtn = document.getElementById("mobile-sidebar-close");
 
+    if (openBtn && sidebar) {
+        openBtn.addEventListener("click", () => {
+            sidebar.classList.remove("-translate-x-full");
+        });
+    }
+
+    if (closeBtn && sidebar) {
+        closeBtn.addEventListener("click", () => {
+            sidebar.classList.add("-translate-x-full");
+        });
+    }
+
+    // Auto-close sidebar on mobile if a link inside it is clicked
+    const sidebarLinks = sidebar ? sidebar.querySelectorAll("a, button") : [];
+    sidebarLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            if (window.innerWidth < 768 && !link.id.includes('toggle')) {
+                sidebar.classList.add("-translate-x-full");
+            }
+        });
+    });
+});
 // 2. SMART AUTO-SAVE ENGINE
 function saveData(fieldId) {
     const el = document.getElementById(fieldId);
