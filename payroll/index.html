@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D.I.M. Bright Ideas — Payroll & Commission</title>
+
+<!-- Firebase App & Firestore SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root{--ink:#241f2b;--muted:#6d6875;--line:#e5e0e8;--paper:#fff;--bg:#f7f4f8;--accent:#6b3fa0;--accent2:#8d63bd;--danger:#b42318;--ok:#147a4b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(135deg,#241f2b,#6b3fa0);color:#fff;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+header h1{margin:0;font-size:22px}header p{margin:3px 0 0;opacity:.85}
+.wrap{max-width:1180px;margin:24px auto;padding:0 16px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+button,.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}
+button.secondary,.btn.secondary{background:#eee9f1;color:var(--ink)}button.danger{background:#b42318}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 5px 20px #2b1c3b0a}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{font-weight:700;display:block;margin-bottom:6px}input,select,textarea{width:100%;padding:10px;border:1px solid #d8d1dd;border-radius:8px;background:#fff;color:var(--ink)}
+h2,h3{margin-top:0}.muted{color:var(--muted)}.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:14px;background:#faf8fb;border:1px solid var(--line);border-radius:10px}.metric strong{display:block;font-size:20px;margin-top:4px}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted);text-transform:uppercase}
+.hidden{display:none!important}.notice{padding:12px;border-radius:9px;background:#f1ebf8;border:1px solid #dfd1ec}.small{font-size:12px}
+.status-badge{display:inline-block;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;background:#e5e0e8;color:var(--muted)}
+.status-connected{background:#e6f4ea;color:var(--ok)}.status-disconnected{background:#fce8e6;color:var(--danger)}
+@media(max-width:850px){.grid,.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.grid,.grid2,.summary{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}
+@media print{body{background:#fff}.no-print,header,.tabs,.actions{display:none!important}.wrap{max-width:none;margin:0;padding:0}.card{box-shadow:none;border:0}.printable{display:block!important}}
+</style>
+</head>
+<body>
+<header>
+<div>
+  <h1>D.I.M. Bright Ideas</h1>
+  <p>Payroll & Commission Dashboard</p>
+  <div style="font-size: 12px; opacity: 0.9; margin-top: 4px;">Phone: (478) 382-0150 · Email: info@dimbrightideas.com</div>
+</div>
+<div>
+  <span id="cloudStatus" class="status-badge status-disconnected">Cloud Disconnected</span>
+</div>
+</header>
+
+<div class="wrap">
+<div class="tabs no-print">
+<button onclick="showTab('dashboard')">Dashboard</button>
+<button onclick="showTab('new')">Create Paystub</button>
+<button onclick="showTab('history')">Paystub History</button>
+<button onclick="showTab('settings')">Settings & Firebase</button>
+</div>
+
+<section id="dashboard">
+<div class="card"><!-- Payroll Overview Dashboard --><h2>Payroll Overview</h2><div class="summary">
+<div class="metric">Paystubs<strong id="mStubs">0</strong></div>
+<div class="metric">YTD Gross<strong id="mGross">$0.00</strong></div>
+<div class="metric">YTD Commission<strong id="mComm">$0.00</strong></div>
+<div class="metric">YTD Net<strong id="mNet">$0.00</strong></div>
+</div></div>
+<div class="card"><h3>Employee Info</h3><p><b>Georgia Ellis</b> (ID: <span id="dEmpId">2607060</span>)<br><span id="dEmpAddr">205 Bass Rd, Macon GA, 31210</span><br><br><b>D.I.M. Bright Ideas, LLC</b><br>Part-Time Employee · $15.00/hour · 10% Regular Comm. / 15% Market Comm.</p>
+<div class="notice small">This app calculates federal and Georgia state income tax withholding using standard single filing deduction thresholds (4.99% GA state flat tax rate). Override calculated fields if employee W-4 or G-4 states additional withholding.</div></div>
+</section>
+
+<section id="new" class="hidden">
+<div class="card">
+<h2>Create Paystub</h2>
+<div class="grid">
+<div><label>Pay Period Start</label><input id="periodStart" type="date"></div>
+<div><label>Pay Period End</label><input id="periodEnd" type="date"></div>
+<div><label>Pay Date</label><input id="payDate" type="date"></div>
+<div><label>Paystub Number</label><input id="stubNo"></div>
+</div>
+<h3 style="margin-top:22px">Employee & Earnings</h3>
+<div class="grid">
+<div><label>Employee</label><input value="Georgia Ellis" disabled></div>
+<div><label>Employee ID</label><input id="empId" value="2607060" disabled></div>
+<div><label>Regular Hours</label><input id="hours" type="number" min="0" step=".01" value="0"></div>
+<div><label>Hourly Rate ($)</label><input id="rate" type="number" min="0" step=".01" value="15.00"></div>
+<div><label>Bonus ($)</label><input id="bonus" type="number" min="0" step=".01" value="0"></div>
+</div>
+
+<h4 style="margin-top:16px; margin-bottom:8px;">Commission Breakdown</h4>
+<div class="grid">
+<div><label>Regular Sales ($)</label><input id="sales" type="number" min="0" step=".01" value="0"></div>
+<div><label>Reg. Comm. Rate (%)</label><input id="commRate" type="number" min="0" max="100" step=".01" value="10"></div>
+<div><label>Craft/Market Sales ($)</label><input id="craftSales" type="number" min="0" step=".01" value="0"></div>
+<div><label>Market Comm. Rate (%)</label><input id="craftCommRate" type="number" min="0" max="100" step=".01" value="15"></div>
+</div>
+
+<h3 style="margin-top:22px">Payroll Deductions</h3>
+<p class="muted small">Calculated automatically based on earnings and pay period duration (GA: 4.99% flat tax with $15,000 standard deduction). You may manually override federal/state fields if needed.</p>
+<div class="grid">
+<div><label>Federal Income Tax</label><input id="federal" type="number" min="0" step=".01" placeholder="Auto-calculated"></div>
+<div><label>Georgia Income Tax</label><input id="state" type="number" min="0" step=".01" placeholder="Auto-calculated"></div>
+<div><label>Other Deductions</label><input id="other" type="number" min="0" step=".01" value="0"></div>
+<div><label>Additional Notes</label><input id="notes"></div>
+</div>
+<div class="actions">
+<button onclick="calculate()">Calculate</button>
+<button class="secondary" onclick="clearForm()">Clear</button>
+</div>
+</div>
+
+<div id="preview" class="card hidden printable">
+<div class="row">
+  <div>
+    <h2 style="margin-bottom:3px">D.I.M. Bright Ideas, LLC</h2>
+    <div class="small muted">Phone: (478) 382-0150 | Email: info@dimbrightideas.com</div>
+    <div class="muted" style="margin-top:4px;">Employee Paystub</div>
+  </div>
+  <div><b id="pStub"></b><br><span id="pDate"></span></div>
+</div>
+<hr>
+<div class="grid2">
+<div>
+  <b>Employee Details</b><br>
+  Georgia Ellis (ID: <span id="pEmpId">2607060</span>)<br>
+  <span id="pEmpAddr">205 Bass Rd, Macon GA, 31210</span>
+</div>
+<div>
+  <b>Pay Period</b><br>
+  <span id="pPeriod"></span>
+</div>
+</div>
+<table style="margin-top:18px">
+<thead><tr><th>Earnings</th><th>Current Amount</th><th>YTD Amount</th></tr></thead>
+<tbody>
+<tr><td>Regular Pay</td><td id="pRegular"></td><td id="pYtdRegular"></td></tr>
+<tr><td>Regular Commission (<span id="pRegRate"></span>)</td><td id="pRegComm"></td><td id="pYtdRegComm"></td></tr>
+<tr><td>Market/Craft Commission (<span id="pMarketRate"></span>)</td><td id="pMarketComm"></td><td id="pYtdMarketComm"></td></tr>
+<tr><td>Bonus</td><td id="pBonus"></td><td id="pYtdBonus"></td></tr>
+<tr><th>Gross Pay</th><th id="pGross"></th><th id="pYtdGross"></th></tr>
+</tbody>
+</table>
+<table style="margin-top:18px">
+<thead><tr><th>Deductions</th><th>Current Amount</th><th>YTD Amount</th></tr></thead>
+<tbody>
+<tr><td>Federal Income Tax</td><td id="pFederal"></td><td id="pYtdFederal"></td></tr>
+<tr><td>Georgia Income Tax (4.99%)</td><td id="pState"></td><td id="pYtdState"></td></tr>
+<tr><td>Social Security</td><td id="pSS"></td><td id="pYtdSS"></td></tr>
+<tr><td>Medicare</td><td id="pMedicare"></td><td id="pYtdMedicare"></td></tr>
+<tr><td>Other Deductions</td><td id="pOther"></td><td id="pYtdOther"></td></tr>
+<tr><th>Total Deductions</th><th id="pDed"></th><th id="pYtdDed"></th></tr>
+<tr><th>Net Pay</th><th id="pNet"></th><th id="pYtdNet"></th></tr>
+</tbody>
+</table>
+<p class="small muted" id="pNotes"></p>
+<div class="actions no-print"><button onclick="window.print()">Print / Save PDF</button><button onclick="saveStub()">Save Paystub to Cloud</button></div>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="card"><div class="row"><h2>Paystub History</h2><button class="danger no-print" onclick="deleteAll()">Delete All</button></div>
+<table><thead><tr><th>Stub</th><th>Pay Date</th><th>Period</th><th>Gross</th><th>Net</th><th></th></tr></thead><tbody id="historyBody"></tbody></table>
+</div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="card">
+  <h2>Firebase Cloud Connection</h2>
+  <p class="muted small">Connected Firebase Configuration Details:</p>
+  <textarea id="firebaseConfigInput" rows="7" readonly></textarea>
+</div>
+
+<div class="card"><h2>Payroll & Employee Settings</h2>
+<div class="grid">
+<div><label>Employee ID Number</label><input id="setEmpId"></div>
+<div><label>Employee Address</label><input id="setEmpAddr"></div>
+<div><label>Default Hourly Rate ($)</label><input id="setRate" type="number" step=".01"></div>
+<div><label>Reg. Commission Rate (%)</label><input id="setComm" type="number" step=".01"></div>
+<div><label>Market Comm. Rate (%)</label><input id="setCraftComm" type="number" step=".01"></div>
+<div><label>Social Security Rate (%)</label><input id="setSS" type="number" step=".01"></div>
+<div><label>Medicare Rate (%)</label><input id="setMedicare" type="number" step=".01"></div>
+<div><label>GA Tax Rate (%)</label><input id="setGaRate" type="number" step=".01"></div>
+<div><label>GA Single Std. Deduction ($)</label><input id="setGaDed" type="number" step="100"></div>
+<div><label>Fed Single Std. Deduction ($)</label><input id="setFedDed" type="number" step="100"></div>
+</div>
+<div class="actions"><button onclick="saveSettings()">Save Settings</button><button class="secondary" onclick="resetSettings()">Reset Defaults</button></div>
+</div>
+</section>
+</div>
+
+<script>
+// Firebase Credentials
+const firebaseConfig = {
+  apiKey: "AIzaSyDGlX_kJz0kF3z8MK0GaW9Y4xxMHLg9ETo",
+  authDomain: "payroll-f89b6.firebaseapp.com",
+  projectId: "payroll-f89b6",
+  storageBucket: "payroll-f89b6.firebasestorage.app",
+  messagingSenderId: "826643206551",
+  appId: "1:826643206551:web:54b5bd61b10427498b74d2",
+  measurementId: "G-R3MSFHSR2D"
+};
+
+let db = null;
+let stubs = [];
+let defaultSettings = {
+  empId: '2607060',
+  empAddr: '205 Bass Rd, Macon GA, 31210',
+  rate: 15, comm: 10, craftComm: 15, ss: 6.2, medicare: 1.45,
+  gaRate: 4.99, gaDed: 15000, fedDed: 15700
+};
+let settings = {...defaultSettings};
+let current = null;
+
+function $(id){return document.getElementById(id)}
+function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0)}
+function showTab(id){['dashboard','new','history','settings'].forEach(x=>$(x).classList.toggle('hidden',x!==id)); if(id==='dashboard')dashboard(); if(id==='history')renderHistory(); if(id==='settings')loadSettings()}
+function today(){return new Date().toISOString().slice(0,10)}
+
+function init(){
+  if ($('firebaseConfigInput')) {
+    $('firebaseConfigInput').value = JSON.stringify(firebaseConfig, null, 2);
+  }
+  try {
+    initFirebase(firebaseConfig);
+  } catch(e) {
+    console.error("Firebase Init Error:", e);
+  }
+  loadSettings();
+  updateEmpUI();
+  populateFormDefaults();
+  $('payDate').value = today(); 
+  $('stubNo').value = 'DIM-' + new Date().getFullYear() + '-0001'; 
+}
+
+function initFirebase(config) {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(config);
+  }
+  db = firebase.firestore();
+  $('cloudStatus').textContent = 'Cloud Connected';
+  $('cloudStatus').className = 'status-badge status-connected';
+  
+  db.collection('paystubs').onSnapshot(snapshot => {
+    stubs = [];
+    snapshot.forEach(doc => stubs.push(doc.data()));
+    dashboard();
+    renderHistory();
+    if($('stubNo')) $('stubNo').value = 'DIM-' + new Date().getFullYear() + '-' + String(stubs.length + 1).padStart(4, '0');
+  });
+
+  db.collection('settings').doc('app_settings').onSnapshot(doc => {
+    if(doc.exists()) {
+      settings = doc.data();
+      loadSettings();
+      updateEmpUI();
+      populateFormDefaults();
+    }
+  });
+}
+
+function populateFormDefaults() {
+  if ($('rate')) $('rate').value = settings.rate ?? 15;
+  if ($('commRate')) $('commRate').value = settings.comm ?? 10;
+  if ($('craftCommRate')) $('craftCommRate').value = settings.craftComm ?? 15;
+}
+
+function updateEmpUI(){
+  const id = settings.empId || '2607060';
+  const addr = settings.empAddr || '205 Bass Rd, Macon GA, 31210';
+  if($('dEmpId')) $('dEmpId').textContent = id;
+  if($('dEmpAddr')) $('dEmpAddr').textContent = addr;
+  if($('empId')) $('empId').value = id;
+  if($('pEmpId')) $('pEmpId').textContent = id;
+  if($('pEmpAddr')) $('pEmpAddr').textContent = addr;
+}
+
+function getPeriodDays(){
+  const start = new Date($('periodStart').value);
+  const end = new Date($('periodEnd').value);
+  if(isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return 7;
+  const diffTime = Math.abs(end - start);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1 || 7;
+}
+
+function calculateYTD(payDateStr, currentStubNo) {
+  const targetYear = payDateStr ? new Date(payDateStr).getFullYear() : new Date().getFullYear();
+  const pastStubs = stubs.filter(s => {
+    if (s.stubNo === currentStubNo) return false;
+    const year = s.payDate ? new Date(s.payDate).getFullYear() : null;
+    return year === targetYear && (s.payDate || '') <= (payDateStr || '');
+  });
+
+  return {
+    regular: pastStubs.reduce((a, s) => a + (s.regular || 0), 0),
+    regCommission: pastStubs.reduce((a, s) => a + (s.regCommission || 0), 0),
+    craftCommission: pastStubs.reduce((a, s) => a + (s.craftCommission || 0), 0),
+    bonus: pastStubs.reduce((a, s) => a + (s.bonus || 0), 0),
+    gross: pastStubs.reduce((a, s) => a + (s.gross || 0), 0),
+    federal: pastStubs.reduce((a, s) => a + (s.federal || 0), 0),
+    state: pastStubs.reduce((a, s) => a + (s.state || 0), 0),
+    ss: pastStubs.reduce((a, s) => a + (s.ss || 0), 0),
+    med: pastStubs.reduce((a, s) => a + (s.med || 0), 0),
+    other: pastStubs.reduce((a, s) => a + (s.other || 0), 0),
+    ded: pastStubs.reduce((a, s) => a + (s.ded || 0), 0),
+    net: pastStubs.reduce((a, s) => a + (s.net || 0), 0)
+  };
+}
+
+function calculate(){
+const hours=+$('hours').value||0, rate=+$('rate').value||0, bonus=+$('bonus').value||0;
+const sales=+$('sales').value||0, cr=(+$('commRate').value||0)/100;
+const craftSales=+$('craftSales').value||0, ccr=(+$('craftCommRate').value||0)/100;
+
+const regular = hours * rate;
+const regCommission = sales * cr;
+const craftCommission = craftSales * ccr;
+const totalCommission = regCommission + craftCommission;
+const gross = regular + totalCommission + bonus;
+
+const periodDays = getPeriodDays();
+const yearFraction = periodDays / 365;
+
+const proratedGaDed = (settings.gaDed || 15000) * yearFraction;
+const proratedFedDed = (settings.fedDed || 15700) * yearFraction;
+
+const taxableGa = Math.max(0, gross - proratedGaDed);
+const autoGaState = taxableGa * ((settings.gaRate || 4.99) / 100);
+
+const taxableFed = Math.max(0, gross - proratedFedDed);
+const autoFederal = taxableFed * 0.10;
+
+const federal = $('federal').value !== '' ? +$('federal').value : autoFederal;
+const state = $('state').value !== '' ? +$('state').value : autoGaState;
+const other = +$('other').value || 0;
+
+const ss = gross * (settings.ss / 100);
+const med = gross * (settings.medicare / 100);
+const ded = federal + state + other + ss + med;
+const net = gross - ded;
+
+const stubNo = $('stubNo').value || 'DIM-' + Date.now();
+const payDate = $('payDate').value;
+const ytdPast = calculateYTD(payDate, stubNo);
+
+current={
+  stubNo,
+  empId: settings.empId || '2607060',
+  empAddr: settings.empAddr || '205 Bass Rd, Macon GA, 31210',
+  periodStart:$('periodStart').value,
+  periodEnd:$('periodEnd').value,
+  payDate,
+  hours,rate,sales,commRate:cr*100,
+  craftSales,craftCommRate:ccr*100,
+  bonus,regular,commission:totalCommission,
+  regCommission,craftCommission,gross,
+  federal,state,other,ss,med,ded,net,
+  notes:$('notes').value
+};
+
+$('pStub').textContent=current.stubNo;
+$('pDate').textContent=current.payDate||'';
+$('pPeriod').textContent=(current.periodStart||'')+' to '+(current.periodEnd||'');
+
+$('pRegular').textContent=money(regular);
+$('pRegRate').textContent=(cr*100)+'%';
+$('pRegComm').textContent=money(regCommission);
+$('pMarketRate').textContent=(ccr*100)+'%';
+$('pMarketComm').textContent=money(craftCommission);
+$('pBonus').textContent=money(bonus);
+$('pGross').textContent=money(gross);
+
+$('pYtdRegular').textContent=money(ytdPast.regular + regular);
+$('pYtdRegComm').textContent=money(ytdPast.regCommission + regCommission);
+$('pYtdMarketComm').textContent=money(ytdPast.craftCommission + craftCommission);
+$('pYtdBonus').textContent=money(ytdPast.bonus + bonus);
+$('pYtdGross').textContent=money(ytdPast.gross + gross);
+
+$('pFederal').textContent=money(federal);
+$('pState').textContent=money(state);
+$('pSS').textContent=money(ss);
+$('pMedicare').textContent=money(med);
+$('pOther').textContent=money(other);
+$('pDed').textContent=money(ded);
+$('pNet').textContent=money(net);
+
+$('pYtdFederal').textContent=money(ytdPast.federal + federal);
+$('pYtdState').textContent=money(ytdPast.state + state);
+$('pYtdSS').textContent=money(ytdPast.ss + ss);
+$('pYtdMedicare').textContent=money(ytdPast.med + med);
+$('pYtdOther').textContent=money(ytdPast.other + other);
+$('pYtdDed').textContent=money(ytdPast.ded + ded);
+$('pYtdNet').textContent=money(ytdPast.net + net);
+
+$('pNotes').textContent=current.notes||'';
+updateEmpUI();
+$('preview').classList.remove('hidden');
+}
+
+async function saveStub(){
+  if(!current) calculate();
+  if(!current) return;
+  
+  if(db) {
+    await db.collection('paystubs').doc(current.stubNo).set({...current, savedAt: new Date().toISOString()});
+    alert('Paystub saved permanently to Cloud Database.');
+  } else {
+    alert('Firebase Cloud is not connected!');
+  }
+}
+
+function renderHistory(){
+const body=$('historyBody');body.innerHTML='';
+if(!stubs.length){body.innerHTML='<tr><td colspan="6" class="muted">No paystubs saved yet.</td></tr>';return}
+[...stubs].sort((a,b)=>(b.payDate||'').localeCompare(a.payDate||'')).forEach(s=>{
+const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(s.stubNo)}</td><td>${esc(s.payDate||'')}</td><td>${esc(s.periodStart||'')} to ${esc(s.periodEnd||'')}</td><td>${money(s.gross)}</td><td>${money(s.net)}</td><td><button class="secondary" onclick="loadStub('${encodeURIComponent(s.stubNo)}')">View</button> <button class="danger" onclick="deleteStub('${encodeURIComponent(s.stubNo)}')">Delete</button></td>`;body.appendChild(tr)
+})}
+
+function loadStub(enc){
+const s=stubs.find(x=>x.stubNo===decodeURIComponent(enc));if(!s)return;current=s;
+['periodStart','periodEnd','payDate','stubNo','hours','rate','sales','commRate','craftSales','craftCommRate','bonus','federal','state','other','notes'].forEach(k=>{if($(k))$(k).value=s[k]??''});
+calculate();showTab('new')
+}
+
+async function deleteStub(enc){
+  const id=decodeURIComponent(enc);
+  if(confirm('Delete this paystub?')){
+    if(db) await db.collection('paystubs').doc(id).delete();
+  }
+}
+
+async function deleteAll(){
+  if(confirm('Delete all saved paystubs from Cloud?')){
+    if(db) {
+      const snap = await db.collection('paystubs').get();
+      snap.forEach(doc => doc.ref.delete());
+    }
+  }
+}
+
+function dashboard(){ $('mStubs').textContent=stubs.length;$('mGross').textContent=money(stubs.reduce((a,s)=>a+(s.gross||0),0));$('mComm').textContent=money(stubs.reduce((a,s)=>a+(s.commission||0),0));$('mNet').textContent=money(stubs.reduce((a,s)=>a+(s.net||0),0))}
+
+function clearForm(){
+document.querySelectorAll('#new input').forEach(i=>{if(!i.disabled)i.value=''});
+populateFormDefaults();
+$('payDate').value=today();
+$('stubNo').value='DIM-'+new Date().getFullYear()+'-'+String(stubs.length+1).padStart(4,'0');
+$('preview').classList.add('hidden');
+current=null;
+}
+
+function loadSettings(){
+$('setEmpId').value=settings.empId||'2607060';
+$('setEmpAddr').value=settings.empAddr||'205 Bass Rd, Macon GA, 31210';
+$('setRate').value=settings.rate||15;
+$('setComm').value=settings.comm||10;
+$('setCraftComm').value=settings.craftComm||15;
+$('setSS').value=settings.ss||6.2;
+$('setMedicare').value=settings.medicare||1.45;
+$('setGaRate').value=settings.gaRate||4.99;
+$('setGaDed').value=settings.gaDed||15000;
+$('setFedDed').value=settings.fedDed||15700;
+}
+
+async function saveSettings(){
+settings={
+  empId:$('setEmpId').value||'2607060',
+  empAddr:$('setEmpAddr').value||'205 Bass Rd, Macon GA, 31210',
+  rate:+$('setRate').value||15,
+  comm:+$('setComm').value||10,
+  craftComm:+$('setCraftComm').value||15,
+  ss:+$('setSS').value||6.2,
+  medicare:+$('setMedicare').value||1.45,
+  gaRate:+$('setGaRate').value||4.99,
+  gaDed:+$('setGaDed').value||15000,
+  fedDed:+$('setFedDed').value||15700
+};
+if(db) await db.collection('settings').doc('app_settings').set(settings);
+populateFormDefaults();
+updateEmpUI();
+alert('Settings saved to Cloud.');
+}
+
+function resetSettings(){
+settings={...defaultSettings};
+if(db) db.collection('settings').doc('app_settings').set(settings);
+loadSettings();
+populateFormDefaults();
+updateEmpUI();
+}
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+init();
+</script>
+</body>
+</html>
