@@ -22,12 +22,29 @@ button.secondary,.btn.secondary{background:#eee9f1;color:var(--ink)}button.dange
 label{font-weight:700;display:block;margin-bottom:6px}input,select,textarea{width:100%;padding:10px;border:1px solid #d8d1dd;border-radius:8px;background:#fff;color:var(--ink)}
 h2,h3{margin-top:0}.muted{color:var(--muted)}.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:14px;background:#faf8fb;border:1px solid var(--line);border-radius:10px}.metric strong{display:block;font-size:20px;margin-top:4px}
-table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted);text-transform:uppercase}
+
+/* Table styling */
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:8px 10px;text-align:left;border:none}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--line)}
+tr.total-row th, tr.total-row td{border-top:2px solid var(--ink);padding-top:10px;font-weight:bold}
+
 .hidden{display:none!important}.notice{padding:12px;border-radius:9px;background:#f1ebf8;border:1px solid #dfd1ec}.small{font-size:12px}
 .status-badge{display:inline-block;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;background:#e5e0e8;color:var(--muted)}
 .status-connected{background:#e6f4ea;color:var(--ok)}.status-disconnected{background:#fce8e6;color:var(--danger)}
+.timeoff-box{background:#faf8fb;border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:16px}
+.payment-box{background:#f3edf8;border:1px solid var(--accent2);border-radius:8px;padding:12px;margin-top:16px}
+
 @media(max-width:850px){.grid,.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.grid,.grid2,.summary{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}
-@media print{body{background:#fff}.no-print,header,.tabs,.actions{display:none!important}.wrap{max-width:none;margin:0;padding:0}.card{box-shadow:none;border:0}.printable{display:block!important}}
+
+/* Clean Print / PDF rules */
+@media print{
+  body{background:#fff;margin:0;padding:0}
+  header, .tabs, .actions, .no-print, #dashboard, #history, #settings, .form-container {display:none!important}
+  .wrap{max-width:100%;margin:0;padding:0}
+  .card{box-shadow:none;border:none;padding:0;margin:0}
+  #preview{display:block!important;padding:20px}
+}
 </style>
 </head>
 <body>
@@ -51,7 +68,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 </div>
 
 <section id="dashboard">
-<div class="card"><!-- Payroll Overview Dashboard --><h2>Payroll Overview</h2><div class="summary">
+<div class="card"><h2>Payroll Overview</h2><div class="summary">
 <div class="metric">Paystubs<strong id="mStubs">0</strong></div>
 <div class="metric">YTD Gross<strong id="mGross">$0.00</strong></div>
 <div class="metric">YTD Commission<strong id="mComm">$0.00</strong></div>
@@ -62,7 +79,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 </section>
 
 <section id="new" class="hidden">
-<div class="card">
+<div class="card form-container no-print">
 <h2>Create Paystub</h2>
 <div class="grid">
 <div><label>Pay Period Start</label><input id="periodStart" type="date"></div>
@@ -70,11 +87,27 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 <div><label>Pay Date</label><input id="payDate" type="date"></div>
 <div><label>Paystub Number</label><input id="stubNo"></div>
 </div>
+
+<h3 style="margin-top:22px">Payment Option & Options</h3>
+<div class="grid">
+<div>
+  <label>Payment Method</label>
+  <select id="payMethod" onchange="togglePayFields()">
+    <option value="Direct Deposit">Direct Deposit</option>
+    <option value="Check">Check</option>
+    <option value="Cash">Cash</option>
+    <option value="Venmo / Zelle / CashApp">Electronic Transfer (Venmo/Zelle)</option>
+  </select>
+</div>
+<div id="checkNumGroup"><label>Check / Ref #</label><input id="checkNum" placeholder="e.g. #1042"></div>
+<div id="bankAccountGroup"><label>Account (Last 4 Digits)</label><input id="bankLast4" placeholder="e.g. 8831" maxlength="4"></div>
+</div>
+
 <h3 style="margin-top:22px">Employee & Earnings</h3>
 <div class="grid">
 <div><label>Employee</label><input value="Georgia Ellis" disabled></div>
 <div><label>Employee ID</label><input id="empId" value="2607060" disabled></div>
-<div><label>Regular Hours</label><input id="hours" type="number" min="0" step=".01" value="0"></div>
+<div><label>Regular Hours Worked</label><input id="hours" type="number" min="0" step=".01" value="0"></div>
 <div><label>Hourly Rate ($)</label><input id="rate" type="number" min="0" step=".01" value="15.00"></div>
 <div><label>Bonus ($)</label><input id="bonus" type="number" min="0" step=".01" value="0"></div>
 </div>
@@ -85,6 +118,12 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 <div><label>Reg. Comm. Rate (%)</label><input id="commRate" type="number" min="0" max="100" step=".01" value="10"></div>
 <div><label>Craft/Market Sales ($)</label><input id="craftSales" type="number" min="0" step=".01" value="0"></div>
 <div><label>Market Comm. Rate (%)</label><input id="craftCommRate" type="number" min="0" max="100" step=".01" value="15"></div>
+</div>
+
+<h3 style="margin-top:22px">Time Off & Leave Tracking</h3>
+<div class="grid">
+<div><label>Vacation Hours Used</label><input id="vacUsed" type="number" min="0" step=".01" value="0"></div>
+<div><label>Sick Days Used</label><input id="sickUsed" type="number" min="0" step=".5" value="0"></div>
 </div>
 
 <h3 style="margin-top:22px">Payroll Deductions</h3>
@@ -101,7 +140,8 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 </div>
 </div>
 
-<div id="preview" class="card hidden printable">
+<!-- PRINTABLE PAYSTUB ONLY -->
+<div id="preview" class="card hidden">
 <div class="row">
   <div>
     <h2 style="margin-bottom:3px">D.I.M. Bright Ideas, LLC</h2>
@@ -110,7 +150,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
   </div>
   <div><b id="pStub"></b><br><span id="pDate"></span></div>
 </div>
-<hr>
+<hr style="border:0; border-top:1px solid var(--line); margin: 12px 0;">
 <div class="grid2">
 <div>
   <b>Employee Details</b><br>
@@ -122,36 +162,117 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
   <span id="pPeriod"></span>
 </div>
 </div>
+
 <table style="margin-top:18px">
-<thead><tr><th>Earnings</th><th>Current Amount</th><th>YTD Amount</th></tr></thead>
+<thead>
+  <tr>
+    <th>Earnings Description</th>
+    <th>Hours Worked</th>
+    <th>Rate</th>
+    <th>Current Amount</th>
+    <th>YTD Amount</th>
+  </tr>
+</thead>
 <tbody>
-<tr><td>Regular Pay</td><td id="pRegular"></td><td id="pYtdRegular"></td></tr>
-<tr><td>Regular Commission (<span id="pRegRate"></span>)</td><td id="pRegComm"></td><td id="pYtdRegComm"></td></tr>
-<tr><td>Market/Craft Commission (<span id="pMarketRate"></span>)</td><td id="pMarketComm"></td><td id="pYtdMarketComm"></td></tr>
-<tr><td>Bonus</td><td id="pBonus"></td><td id="pYtdBonus"></td></tr>
-<tr><th>Gross Pay</th><th id="pGross"></th><th id="pYtdGross"></th></tr>
+<tr>
+  <td>Regular Hours</td>
+  <td id="pHoursWorked">0.00</td>
+  <td id="pHourlyRate">$15.00</td>
+  <td id="pRegular">$0.00</td>
+  <td id="pYtdRegular">$0.00</td>
+</tr>
+<tr>
+  <td>Regular Commission (<span id="pRegRate">10%</span>)</td>
+  <td>—</td>
+  <td>—</td>
+  <td id="pRegComm">$0.00</td>
+  <td id="pYtdRegComm">$0.00</td>
+</tr>
+<tr>
+  <td>Market/Craft Commission (<span id="pMarketRate">15%</span>)</td>
+  <td>—</td>
+  <td>—</td>
+  <td id="pMarketComm">$0.00</td>
+  <td id="pYtdMarketComm">$0.00</td>
+</tr>
+<tr>
+  <td>Bonus</td>
+  <td>—</td>
+  <td>—</td>
+  <td id="pBonus">$0.00</td>
+  <td id="pYtdBonus">$0.00</td>
+</tr>
+<tr class="total-row">
+  <th>Gross Pay</th>
+  <th>—</th>
+  <th>—</th>
+  <th id="pGross">$0.00</th>
+  <th id="pYtdGross">$0.00</th>
+</tr>
 </tbody>
 </table>
+
 <table style="margin-top:18px">
-<thead><tr><th>Deductions</th><th>Current Amount</th><th>YTD Amount</th></tr></thead>
+<thead>
+  <tr>
+    <th colspan="3">Deductions Breakdown</th>
+    <th>Current Amount</th>
+    <th>YTD Amount</th>
+  </tr>
+</thead>
 <tbody>
-<tr><td>Federal Income Tax</td><td id="pFederal"></td><td id="pYtdFederal"></td></tr>
-<tr><td>Georgia Income Tax (4.99%)</td><td id="pState"></td><td id="pYtdState"></td></tr>
-<tr><td>Social Security</td><td id="pSS"></td><td id="pYtdSS"></td></tr>
-<tr><td>Medicare</td><td id="pMedicare"></td><td id="pYtdMedicare"></td></tr>
-<tr><td>Other Deductions</td><td id="pOther"></td><td id="pYtdOther"></td></tr>
-<tr><th>Total Deductions</th><th id="pDed"></th><th id="pYtdDed"></th></tr>
-<tr><th>Net Pay</th><th id="pNet"></th><th id="pYtdNet"></th></tr>
+<tr><td colspan="3">Federal Income Tax</td><td id="pFederal">$0.00</td><td id="pYtdFederal">$0.00</td></tr>
+<tr><td colspan="3">Georgia Income Tax (4.99%)</td><td id="pState">$0.00</td><td id="pYtdState">$0.00</td></tr>
+<tr><td colspan="3">Social Security (6.2%)</td><td id="pSS">$0.00</td><td id="pYtdSS">$0.00</td></tr>
+<tr><td colspan="3">Medicare (1.45%)</td><td id="pMedicare">$0.00</td><td id="pYtdMedicare">$0.00</td></tr>
+<tr><td colspan="3">Other Deductions</td><td id="pOther">$0.00</td><td id="pYtdOther">$0.00</td></tr>
+<tr class="total-row">
+  <th colspan="3">Total Deductions</th>
+  <th id="pDed">$0.00</th>
+  <th id="pYtdDed">$0.00</th>
+</tr>
+<tr class="total-row">
+  <th colspan="3">Net Pay</th>
+  <th id="pNet">$0.00</th>
+  <th id="pYtdNet">$0.00</th>
+</tr>
 </tbody>
 </table>
-<p class="small muted" id="pNotes"></p>
+
+<!-- Payment Method Summary Box -->
+<div class="payment-box">
+  <b style="display:block; margin-bottom:4px;">Payment Distribution Details</b>
+  <div class="grid2">
+    <div><b>Method:</b> <span id="pPayMethod">Direct Deposit</span></div>
+    <div><b>Reference / Account:</b> <span id="pPayRef">XXXX-8831</span></div>
+  </div>
+</div>
+
+<!-- Time Off / Accrual Section -->
+<div class="timeoff-box">
+  <b style="display:block; margin-bottom:8px;">Paid Time Off & Sick Leave Summary</b>
+  <div class="grid2">
+    <div>
+      <b>Sick Time (Annual Allowance):</b> 10.00 Days<br>
+      <b>Sick Days Used (This Period):</b> <span id="pSickUsed">0.00</span> Days<br>
+      <b>Sick Days Remaining (YTD):</b> <span id="pSickRem">10.00</span> Days
+    </div>
+    <div>
+      <b>Vacation Accrued (This Period):</b> <span id="pVacAccrued">0.00</span> hrs<br>
+      <b>Vacation Hours Used (This Period):</b> <span id="pVacUsed">0.00</span> hrs<br>
+      <b>Vacation Balance (YTD):</b> <span id="pYtdVacBal">0.00</span> hrs
+    </div>
+  </div>
+</div>
+
+<p class="small muted" id="pNotes" style="margin-top:12px;"></p>
 <div class="actions no-print"><button onclick="window.print()">Print / Save PDF</button><button onclick="saveStub()">Save Paystub to Cloud</button></div>
 </div>
 </section>
 
 <section id="history" class="hidden">
 <div class="card"><div class="row"><h2>Paystub History</h2><button class="danger no-print" onclick="deleteAll()">Delete All</button></div>
-<table><thead><tr><th>Stub</th><th>Pay Date</th><th>Period</th><th>Gross</th><th>Net</th><th></th></tr></thead><tbody id="historyBody"></tbody></table>
+<table><thead><tr style="border-bottom:1px solid var(--line);"><th>Stub</th><th>Pay Date</th><th>Method</th><th>Gross</th><th>Net</th><th></th></tr></thead><tbody id="historyBody"></tbody></table>
 </div>
 </section>
 
@@ -220,6 +341,7 @@ function init(){
   loadSettings();
   updateEmpUI();
   populateFormDefaults();
+  togglePayFields();
   $('payDate').value = today(); 
   $('stubNo').value = 'DIM-' + new Date().getFullYear() + '-0001'; 
 }
@@ -248,6 +370,20 @@ function initFirebase(config) {
       populateFormDefaults();
     }
   });
+}
+
+function togglePayFields(){
+  const method = $('payMethod').value;
+  if (method === 'Check') {
+    $('checkNumGroup').style.display = 'block';
+    $('bankAccountGroup').style.display = 'none';
+  } else if (method === 'Direct Deposit') {
+    $('checkNumGroup').style.display = 'none';
+    $('bankAccountGroup').style.display = 'block';
+  } else {
+    $('checkNumGroup').style.display = 'none';
+    $('bankAccountGroup').style.display = 'none';
+  }
 }
 
 function populateFormDefaults() {
@@ -283,6 +419,7 @@ function calculateYTD(payDateStr, currentStubNo) {
   });
 
   return {
+    hours: pastStubs.reduce((a, s) => a + (s.hours || 0), 0),
     regular: pastStubs.reduce((a, s) => a + (s.regular || 0), 0),
     regCommission: pastStubs.reduce((a, s) => a + (s.regCommission || 0), 0),
     craftCommission: pastStubs.reduce((a, s) => a + (s.craftCommission || 0), 0),
@@ -294,7 +431,10 @@ function calculateYTD(payDateStr, currentStubNo) {
     med: pastStubs.reduce((a, s) => a + (s.med || 0), 0),
     other: pastStubs.reduce((a, s) => a + (s.other || 0), 0),
     ded: pastStubs.reduce((a, s) => a + (s.ded || 0), 0),
-    net: pastStubs.reduce((a, s) => a + (s.net || 0), 0)
+    net: pastStubs.reduce((a, s) => a + (s.net || 0), 0),
+    vacAccrued: pastStubs.reduce((a, s) => a + (s.vacAccrued || 0), 0),
+    vacUsed: pastStubs.reduce((a, s) => a + (s.vacUsed || 0), 0),
+    sickUsed: pastStubs.reduce((a, s) => a + (s.sickUsed || 0), 0)
   };
 }
 
@@ -308,6 +448,11 @@ const regCommission = sales * cr;
 const craftCommission = craftSales * ccr;
 const totalCommission = regCommission + craftCommission;
 const gross = regular + totalCommission + bonus;
+
+// Vacation & Sick Leave Tracking
+const vacUsed = +$('vacUsed').value || 0;
+const sickUsed = +$('sickUsed').value || 0;
+const vacAccrued = hours * 0.0385; 
 
 const periodDays = getPeriodDays();
 const yearFraction = periodDays / 365;
@@ -332,6 +477,10 @@ const net = gross - ded;
 
 const stubNo = $('stubNo').value || 'DIM-' + Date.now();
 const payDate = $('payDate').value;
+const payMethod = $('payMethod').value;
+const checkNum = $('checkNum').value;
+const bankLast4 = $('bankLast4').value;
+
 const ytdPast = calculateYTD(payDate, stubNo);
 
 current={
@@ -340,12 +489,13 @@ current={
   empAddr: settings.empAddr || '205 Bass Rd, Macon GA, 31210',
   periodStart:$('periodStart').value,
   periodEnd:$('periodEnd').value,
-  payDate,
+  payDate, payMethod, checkNum, bankLast4,
   hours,rate,sales,commRate:cr*100,
   craftSales,craftCommRate:ccr*100,
   bonus,regular,commission:totalCommission,
   regCommission,craftCommission,gross,
   federal,state,other,ss,med,ded,net,
+  vacAccrued,vacUsed,sickUsed,
   notes:$('notes').value
 };
 
@@ -353,6 +503,9 @@ $('pStub').textContent=current.stubNo;
 $('pDate').textContent=current.payDate||'';
 $('pPeriod').textContent=(current.periodStart||'')+' to '+(current.periodEnd||'');
 
+// Details on Stub
+$('pHoursWorked').textContent=hours.toFixed(2);
+$('pHourlyRate').textContent=money(rate);
 $('pRegular').textContent=money(regular);
 $('pRegRate').textContent=(cr*100)+'%';
 $('pRegComm').textContent=money(regCommission);
@@ -383,6 +536,28 @@ $('pYtdOther').textContent=money(ytdPast.other + other);
 $('pYtdDed').textContent=money(ytdPast.ded + ded);
 $('pYtdNet').textContent=money(ytdPast.net + net);
 
+// Payment Method Details
+$('pPayMethod').textContent = payMethod;
+if (payMethod === 'Check') {
+  $('pPayRef').textContent = checkNum ? 'Check #' + checkNum : 'N/A';
+} else if (payMethod === 'Direct Deposit') {
+  $('pPayRef').textContent = bankLast4 ? 'Acct ending in ****' + bankLast4 : 'Direct Deposit Account';
+} else {
+  $('pPayRef').textContent = 'N/A';
+}
+
+// Vacation & Sick Leave Calculations
+const totalSickUsedYtd = ytdPast.sickUsed + sickUsed;
+const sickRemaining = Math.max(0, 10 - totalSickUsedYtd);
+const ytdVacationBalance = (ytdPast.vacAccrued + vacAccrued) - (ytdPast.vacUsed + vacUsed);
+
+$('pSickUsed').textContent=sickUsed.toFixed(1);
+$('pSickRem').textContent=sickRemaining.toFixed(1);
+
+$('pVacAccrued').textContent=vacAccrued.toFixed(2);
+$('pVacUsed').textContent=vacUsed.toFixed(2);
+$('pYtdVacBal').textContent=ytdVacationBalance.toFixed(2);
+
 $('pNotes').textContent=current.notes||'';
 updateEmpUI();
 $('preview').classList.remove('hidden');
@@ -404,12 +579,13 @@ function renderHistory(){
 const body=$('historyBody');body.innerHTML='';
 if(!stubs.length){body.innerHTML='<tr><td colspan="6" class="muted">No paystubs saved yet.</td></tr>';return}
 [...stubs].sort((a,b)=>(b.payDate||'').localeCompare(a.payDate||'')).forEach(s=>{
-const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(s.stubNo)}</td><td>${esc(s.payDate||'')}</td><td>${esc(s.periodStart||'')} to ${esc(s.periodEnd||'')}</td><td>${money(s.gross)}</td><td>${money(s.net)}</td><td><button class="secondary" onclick="loadStub('${encodeURIComponent(s.stubNo)}')">View</button> <button class="danger" onclick="deleteStub('${encodeURIComponent(s.stubNo)}')">Delete</button></td>`;body.appendChild(tr)
+const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(s.stubNo)}</td><td>${esc(s.payDate||'')}</td><td>${esc(s.payMethod||'Direct Deposit')}</td><td>${money(s.gross)}</td><td>${money(s.net)}</td><td><button class="secondary" onclick="loadStub('${encodeURIComponent(s.stubNo)}')">View</button> <button class="danger" onclick="deleteStub('${encodeURIComponent(s.stubNo)}')">Delete</button></td>`;body.appendChild(tr)
 })}
 
 function loadStub(enc){
 const s=stubs.find(x=>x.stubNo===decodeURIComponent(enc));if(!s)return;current=s;
-['periodStart','periodEnd','payDate','stubNo','hours','rate','sales','commRate','craftSales','craftCommRate','bonus','federal','state','other','notes'].forEach(k=>{if($(k))$(k).value=s[k]??''});
+['periodStart','periodEnd','payDate','stubNo','payMethod','checkNum','bankLast4','hours','rate','sales','commRate','craftSales','craftCommRate','bonus','vacUsed','sickUsed','federal','state','other','notes'].forEach(k=>{if($(k))$(k).value=s[k]??''});
+togglePayFields();
 calculate();showTab('new')
 }
 
@@ -434,6 +610,7 @@ function dashboard(){ $('mStubs').textContent=stubs.length;$('mGross').textConte
 function clearForm(){
 document.querySelectorAll('#new input').forEach(i=>{if(!i.disabled)i.value=''});
 populateFormDefaults();
+togglePayFields();
 $('payDate').value=today();
 $('stubNo').value='DIM-'+new Date().getFullYear()+'-'+String(stubs.length+1).padStart(4,'0');
 $('preview').classList.add('hidden');
